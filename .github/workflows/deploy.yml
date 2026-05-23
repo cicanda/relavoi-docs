@@ -1,0 +1,48 @@
+name: Deploy
+
+# Vercel auto-deploys on push via the Git integration. This workflow is a stub
+# you can enable when you want CI-driven deploys (e.g. to GitHub Pages instead
+# of Vercel, or for a manual prod cut).
+
+on:
+  workflow_dispatch: # manual trigger only
+
+jobs:
+  # --- Option A: Vercel CLI (mirrors what the Git integration does) ---------
+  vercel:
+    runs-on: ubuntu-latest
+    if: false # enable + set repo secrets to use
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "npm" }
+      - run: npm ci
+      - name: Vercel CLI deploy (prod)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: npx vercel --prod --yes --token "$VERCEL_TOKEN"
+
+  # --- Option B: GitHub Pages (if you'd rather not depend on Vercel) -------
+  github-pages:
+    runs-on: ubuntu-latest
+    if: false # enable + flip the gh-pages setting in repo Settings → Pages
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: "20", cache: "npm" }
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with: { path: build }
+      - id: deployment
+        uses: actions/deploy-pages@v4
