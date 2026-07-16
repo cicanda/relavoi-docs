@@ -49,7 +49,7 @@ Suggested moment: immediately before calling `Relavoi.push.registerToken(...)`.
 
 ## SYSTEM_ALERT_WINDOW (overlay)
 
-Optional. Lets the SDK paint the verification banner as a system overlay even when your app is not the active screen — useful if the user has the native dialer open during the call.
+Optional. Lets the SDK show its floating verification bubble (`FloatingBubbleService`) as a system overlay even when your app is not the active screen — useful if the user has the native dialer open during the call.
 
 This permission cannot be requested through the standard runtime flow. Send the user to system settings:
 
@@ -73,17 +73,24 @@ private val overlayPermLauncher = registerForActivityResult(
 ) { /* result.resultCode does not reflect grant; re-check Settings.canDrawOverlays */ }
 ```
 
-If overlay permission is denied, the SDK falls back to displaying the banner inside your own Activity hierarchy.
+If overlay permission is denied, the floating bubble cannot be shown — render your own in-app banner inside your Activity instead (see [Call verification](./call-verification)).
 
-## Permission status snapshot
+## Checking permission status
 
-You can inspect the SDK's view of permissions at any time:
+The SDK exposes a helper for the phone-state grant; check the other two with the standard Android APIs:
 
 ```kotlin
-val status = Relavoi.permissions.snapshot()
-// status.readPhoneState : Boolean
-// status.postNotifications : Boolean
-// status.systemAlertWindow : Boolean
+import androidx.core.content.ContextCompat
+import android.content.pm.PackageManager
+import android.provider.Settings
+
+val hasPhoneState = Relavoi.verification.hasPhoneStatePermission(this)
+
+val hasNotifications = ContextCompat.checkSelfPermission(
+  this, Manifest.permission.POST_NOTIFICATIONS
+) == PackageManager.PERMISSION_GRANTED
+
+val hasOverlay = Settings.canDrawOverlays(this)
 ```
 
 Useful for a settings screen that shows the user which features are currently degraded.

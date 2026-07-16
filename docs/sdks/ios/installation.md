@@ -38,7 +38,7 @@ let package = Package(
     .target(
       name: "MyApp",
       dependencies: [
-        .product(name: "Relavoi", package: "relavoi-ios-sdk"),
+        .product(name: "RelavoiSDK", package: "relavoi-ios-sdk"),
       ]
     ),
   ]
@@ -48,18 +48,19 @@ let package = Package(
 ## Import
 
 ```swift
-import Relavoi
+import RelavoiSDK
 ```
 
-That is the entire surface — no transitive imports required.
+That is the entire surface — no transitive imports required. The SPM product and module are both named `RelavoiSDK`.
 
 ## Capabilities checklist
 
 Open your target's **Signing & Capabilities** tab and confirm:
 
 - **Push Notifications** capability is enabled (required if you use push)
-- **Background Modes** -> "Remote notifications" and "Voice over IP" (optional, for high-priority push)
-- **Keychain Sharing** is enabled — the SDK persists the JWT in Keychain (see [Initialization](./initialization))
+- **Background Modes** -> "Remote notifications" (optional, for high-priority push)
+
+The SDK persists its short-lived JWT in the device-local Keychain automatically. No **Keychain Sharing** capability is required (see [Initialization](./initialization)).
 
 ## Info.plist entries
 
@@ -72,9 +73,13 @@ The SDK uses no permission-protected APIs by default. CXCallObserver does **not*
 
 ## Verify
 
+Confirm the module resolves by constructing a default config — this compiles only when the package is linked correctly:
+
 ```swift
-import Relavoi
-print("Relavoi SDK version: \(Relavoi.version)")
+import RelavoiSDK
+
+let config = RelavoiConfig()
+print("Relavoi base URL: \(config.baseURL)")
 ```
 
-You should see `Relavoi SDK version: 0.1.0` in the Xcode console. Continue with [Initialization](./initialization).
+You should see `Relavoi base URL: https://api.relavoi.com/v1` in the Xcode console. Continue with [Initialization](./initialization).

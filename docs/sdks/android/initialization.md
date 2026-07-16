@@ -25,8 +25,9 @@ class MyApp : Application() {
       apiSecret = BuildConfig.RELAVOI_API_SECRET,
       tenantId = BuildConfig.RELAVOI_TENANT_ID,
       config = RelavoiConfig(
-        enableLogging = BuildConfig.DEBUG,
-        baseUrl = null  // null means use production https://api.relavoi.com
+        enableLogging = BuildConfig.DEBUG
+        // baseUrl defaults to production (https://api.relavoi.com/v1).
+        // Override it only for staging/testing.
       )
     )
   }
@@ -67,8 +68,8 @@ android {
 Then in `local.properties` (gitignored):
 
 ```properties
-RELAVOI_API_KEY=sk_live_YOUR_API_KEY_HERE
-RELAVOI_API_SECRET=f3a9c7b1d8e4f5a6b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5
+RELAVOI_API_KEY=rk_live_YOUR_API_KEY_HERE
+RELAVOI_API_SECRET=rs_YOUR_API_SECRET_HERE
 RELAVOI_TENANT_ID=a1b2c3d4-e5f6-7890-abcd-ef1234567890
 ```
 
@@ -76,20 +77,21 @@ For production builds, source the same values from your CI secret manager.
 
 ## RelavoiConfig flags
 
+`RelavoiConfig` is a data class with exactly these fields:
+
 | Field | Type | Default | Purpose |
 |-------|------|---------|---------|
+| `baseUrl` | String | `"https://api.relavoi.com/v1"` | REST API host. Override for staging/testing |
+| `webSocketUrl` | String? | `null` | Override the event-stream WebSocket URL. When `null`, it is derived from `baseUrl` (scheme swapped to `ws`/`wss`, `/ws` appended) |
 | `enableLogging` | Boolean | `false` | Verbose Logcat output. Phone numbers always redacted |
-| `baseUrl` | String? | `null` | Override the API host. Use for staging |
-| `connectTimeoutMs` | Long | `10_000` | OkHttp connect timeout |
-| `readTimeoutMs` | Long | `30_000` | OkHttp read timeout |
-| `userAgent` | String? | `null` | Append to default `Relavoi-Android/0.1.0` |
+| `offlineQueueMaxSize` | Int | `100` | Max actions buffered in the offline queue before the oldest are dropped |
 
 ## Token storage
 
 The SDK persists the JWT in **Android Keystore-backed EncryptedSharedPreferences**. You do not need to manage tokens yourself; refresh is transparent.
 
 :::warning Initialize before any other call
-Calling `Relavoi.sessions.create(...)` before `Relavoi.initialize(...)` throws `IllegalStateException`. The SDK ships with a debug assertion if logging is enabled.
+Accessing any subsystem — `Relavoi.sessions`, `Relavoi.events`, `Relavoi.verification`, `Relavoi.push`, `Relavoi.presence` — before `Relavoi.initialize(...)` throws `RelavoiException.NotInitialized`. Use `Relavoi.isInitialized()` to check first if you are unsure.
 :::
 
 Next: [Creating sessions](./sessions).

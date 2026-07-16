@@ -50,18 +50,18 @@ curl -X POST https://api.relavoi.com/v1/sessions \
   }'
 ```
 
-If you submit `recordingEnabled: true` with `consentPrompt: "NONE"`, the API responds:
+If you submit `recordingEnabled: true` with `consentPrompt: "NONE"`, the API rejects the request:
 
 ```json
 {
-  "type": "https://api.relavoi.com/errors/validation",
-  "title": "Unprocessable Entity",
-  "status": 422,
-  "detail": "consentPrompt cannot be NONE when recordingEnabled is true"
+  "type": "https://api.relavoi.com/errors/session-create-failed",
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "recording_enabled requires consent_prompt of DEFAULT or CUSTOM (NDPR compliance)"
 }
 ```
 
-This invariant is non-negotiable.
+This invariant is non-negotiable and enforced by the Session Manager at create time.
 
 ## Storage and retention
 

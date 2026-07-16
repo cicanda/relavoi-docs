@@ -18,9 +18,11 @@ Call verification is the Revolut-style anti-impersonation flow. When your app is
 
 ## Basic usage
 
+`VerificationResult` is a plain data class — not a sealed hierarchy. Read the `verified` boolean and use the `bannerText` helper for a ready-to-display label.
+
 ```kotlin
 import com.relavoi.sdk.Relavoi
-import com.relavoi.sdk.model.VerificationResult
+import com.relavoi.sdk.session.VerificationResult
 
 class HomeFragment : Fragment() {
   override fun onResume() {
@@ -34,52 +36,40 @@ class HomeFragment : Fragment() {
   }
 
   private fun showBanner(result: VerificationResult) {
-    when (result) {
-      is VerificationResult.Verified -> {
-        banner.setBackgroundColor(Color.GREEN)
-        banner.text = result.context ?: "Verified call from ${result.tenantBrand}"
-      }
-      is VerificationResult.Unverified -> {
-        banner.setBackgroundColor(Color.RED)
-        banner.text = "Warning: this call is not from ${result.tenantBrand}"
-      }
+    if (result.verified) {
+      banner.setBackgroundColor(Color.GREEN)
+      // bannerText falls back to "Verified call" when no context string is present.
+      banner.text = result.bannerText ?: "Verified call"
+    } else {
+      banner.setBackgroundColor(Color.RED)
+      banner.text = "Warning: this call is not verified"
     }
   }
 }
 ```
 
-## Polling pattern (observer-driven)
+The fields available on `VerificationResult` are `verified: Boolean`, `context: String?`, `sessionId: String?`, `proxyNumber: String?`, and `expiresAt: String?`, plus the derived `bannerText: String?`.
 
-For long-running screens, register an observer that fires whenever the call state flips:
+:::note About `context`
+The backend does not currently populate the `context` string, so `bannerText` returns the generic `"Verified call"` for verified results today. Do not hard-code a brand name from the result.
+:::
 
-```kotlin
-val observer = Relavoi.verification.observeCallState { isActive ->
-  if (isActive) {
-    lifecycleScope.launch {
-      val result = Relavoi.verification.verify(userPhone)
-      showBanner(result)
-    }
-  } else {
-    hideBanner()
-  }
-}
+## Re-checking on resume
 
-// Detach when the screen goes away
-override fun onDestroyView() {
-  observer.close()
-  super.onDestroyView()
-}
-```
-
-The observer wraps `TelephonyManager.listen(PhoneStateListener.LISTEN_CALL_STATE)` (or `TelephonyCallback` on API 31+) so you do not have to manage the listener lifecycle yourself.
+`CallVerificationManager` does not expose a call-state observer. Poll `isCallActive()` at natural UI moments — typically `onResume()` — and call `verify()` when a call is in progress, as shown above. The SDK installs its own `TelephonyManager` call-state observer internally at `initialize()` time to keep `isCallActive()` current.
 
 ## Permission notes
 
 `READ_PHONE_STATE` is required for the SDK to detect call state. See [Permissions](./permissions) for the runtime-request snippet. If permission is denied:
 
-- `Relavoi.verification.isCallActive()` returns `false`
-- `Relavoi.verification.verify(...)` still works but `isCallActive()` cannot gate it
-- A `Relavoi.verification.lastPermissionDenied` flag is exposed so you can prompt the user
+- `Relavoi.verification.isCallActive()` can never become `true`, so verification never auto-fires
+- Use `Relavoi.verification.hasPhoneStatePermission(context)` to check the grant and prompt the user
+
+```kotlin
+if (!Relavoi.verification.hasPhoneStatePermission(requireContext())) {
+  // Route the user through the runtime permission request.
+}
+```
 
 :::tip UX guidance
 Show the green banner only after `verify()` returns `Verified` — never assume the call is legitimate just because one is in progress. The red banner has even more value than the green one: customers learn to trust the warning.

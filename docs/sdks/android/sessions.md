@@ -10,10 +10,12 @@ All session calls are `suspend` functions. Call them from a coroutine scope — 
 
 ## Create a session
 
+`create` takes named parameters directly — there is no request wrapper class. Only `agentPhone` and `customerPhone` are required; everything else has a default.
+
 ```kotlin
 import com.relavoi.sdk.Relavoi
-import com.relavoi.sdk.model.DirectionMode
-import com.relavoi.sdk.model.SessionRequest
+import com.relavoi.sdk.session.DirectionMode
+import com.relavoi.sdk.session.ConsentPrompt
 import kotlinx.coroutines.launch
 
 class OrderViewModel : ViewModel() {
@@ -21,15 +23,13 @@ class OrderViewModel : ViewModel() {
     viewModelScope.launch {
       runCatching {
         Relavoi.sessions.create(
-          SessionRequest(
-            agentPhone = agent,
-            customerPhone = customer,
-            directionMode = DirectionMode.BIDIRECTIONAL,
-            gracePeriodMinutes = 15,
-            maxDurationMinutes = 120,
-            recordingEnabled = false,
-            metadata = mapOf("orderId" to orderId),
-          )
+          agentPhone = agent,
+          customerPhone = customer,
+          metadata = mapOf("orderId" to orderId),
+          gracePeriodMinutes = 15,
+          directionMode = DirectionMode.BIDIRECTIONAL,
+          recordingEnabled = false,
+          consentPrompt = ConsentPrompt.NONE,
         )
       }.onSuccess { session ->
         Log.d("Relavoi", "Proxy ready: ${session.proxyNumber}")
@@ -41,35 +41,62 @@ class OrderViewModel : ViewModel() {
 }
 ```
 
+The full signature is:
+
+```kotlin
+suspend fun create(
+    agentPhone: String,
+    customerPhone: String,
+    metadata: Map<String, String>? = null,
+    gracePeriodMinutes: Int = 15,
+    directionMode: DirectionMode = DirectionMode.BIDIRECTIONAL,
+    recordingEnabled: Boolean = false,
+    consentPrompt: ConsentPrompt = ConsentPrompt.NONE,
+): Session
+```
+
+If `recordingEnabled` is `true`, `consentPrompt` must not be `ConsentPrompt.NONE` — the server rejects that combination (NDPR consent requirement). `maxDurationMinutes` is set server-side and returned on the `Session`; it is not a create parameter.
+
 ## Fetch one
 
 ```kotlin
 val session = Relavoi.sessions.get("sess_a1b2c3d4")
 ```
 
-Throws `RelavoiException` (extends `IOException`) on transport or API errors. The exception carries the RFC 7807 fields:
+All session calls throw a subclass of `RelavoiException` (a `sealed class : Exception`) on failure. Pattern-match on the subclasses for granular handling — there is no `type` property:
 
 ```kotlin
+import com.relavoi.sdk.RelavoiException
+
 try {
   Relavoi.sessions.get(sessionId)
 } catch (e: RelavoiException) {
-  if (e.type == "https://api.relavoi.com/errors/not-found") {
-    // session gone, refresh UI
+  when (e) {
+    is RelavoiException.ApiError    -> Log.e("Relavoi", "HTTP ${e.statusCode}: ${e.body}")
+    is RelavoiException.Unauthorized -> promptReauth()
+    is RelavoiException.RateLimited  -> retryAfter(e.retryAfterSec)
+    is RelavoiException.Network      -> showOffline()
+    is RelavoiException.Validation   -> Log.e("Relavoi", e.message ?: "invalid input")
+    is RelavoiException.NotInitialized -> error("call Relavoi.initialize first")
   }
 }
 ```
 
 ## List
 
+`list` takes a single optional `state` filter and returns a `SessionListResponse` with `data` and a `pagination` cursor.
+
 ```kotlin
+import com.relavoi.sdk.session.SessionState
+
 val page = Relavoi.sessions.list(
-  state = listOf(SessionState.ACTIVE, SessionState.GRACE_PERIOD),
+  state = SessionState.ACTIVE,
   limit = 50,
 )
 
 page.data.forEach { Log.d("Relavoi", "Active session ${it.id}") }
-page.nextCursor?.let { cursor ->
-  val nextPage = Relavoi.sessions.list(after = cursor, limit = 50)
+page.pagination.after?.let { cursor ->
+  val nextPage = Relavoi.sessions.list(state = SessionState.ACTIVE, after = cursor, limit = 50)
 }
 ```
 
@@ -85,14 +112,14 @@ The session transitions to `GRACE_PERIOD`. Watch the [events stream](./events) f
 
 `initiateCall` opens the OS dialer with the proxy number pre-filled. It does not place the call automatically — Android does not allow that without `CALL_PHONE` permission, which the SDK deliberately does not require.
 
+`initiateCall` is a plain (non-`suspend`) function, so call it directly on the UI thread. The session must already be in the local cache (created or fetched) so its proxy number is known.
+
 ```kotlin
 import android.content.Context
 
 class CallButtonHandler(private val ctx: Context) {
   fun callCustomer(sessionId: String) {
-    viewModelScope.launch {
-      Relavoi.sessions.initiateCall(sessionId = sessionId, context = ctx)
-    }
+    Relavoi.sessions.initiateCall(sessionId = sessionId, context = ctx)
   }
 }
 ```
@@ -104,11 +131,9 @@ Under the hood this fires an `Intent.ACTION_DIAL` with `tel:+2348000000001`. The
 ```kotlin
 viewModelScope.launch {
   val session = Relavoi.sessions.create(
-    SessionRequest(
-      agentPhone = "+2348012345678",
-      customerPhone = "+2348087654321",
-      metadata = mapOf("orderId" to "ORD-9281"),
-    )
+    agentPhone = "+2348012345678",
+    customerPhone = "+2348087654321",
+    metadata = mapOf("orderId" to "ORD-9281"),
   )
 
   // UI shows session.proxyNumber to the agent

@@ -11,71 +11,54 @@ iOS gives us a clean win here: `CXCallObserver` reports active calls without req
 ## How it works
 
 1. The SDK creates a `CXCallObserver` at init time
-2. When an incoming or connected call appears, the SDK flags it
+2. When a call becomes active, `Relavoi.shared.verification.isCallActive` flips to `true`
 3. When your app comes to the foreground, call `Relavoi.shared.verification.verify(userPhone:)`
-4. The SDK hashes the phone with the tenant salt and hits `GET /v1/sessions/verify`
+4. The SDK hashes the phone with the tenant salt server-side and hits `GET /v1/sessions/verify`
 5. You receive a `VerificationResult` and render the appropriate banner
 
 ## Basic usage
 
 ```swift
 import SwiftUI
-import Relavoi
+import RelavoiSDK
 
 struct HomeView: View {
-  @State private var banner: VerificationResult?
+  @State private var result: VerificationResult?
+  let currentUserPhone: String
 
   var body: some View {
     VStack {
-      if let banner { BannerView(result: banner) }
+      if let result { BannerView(result: result) }
       Text("Home")
     }
     .task {
       if Relavoi.shared.verification.isCallActive {
-        banner = try? await Relavoi.shared.verification.verify(userPhone: currentUser.phone)
+        result = try? await Relavoi.shared.verification.verify(userPhone: currentUserPhone)
       }
     }
   }
 }
 ```
 
-## Observe call-state transitions
-
-For long-lived screens, subscribe to the observer:
-
-```swift
-let token = Relavoi.shared.verification.observeCallState { isActive in
-  Task { @MainActor in
-    if isActive {
-      banner = try? await Relavoi.shared.verification.verify(userPhone: currentUser.phone)
-    } else {
-      banner = nil
-    }
-  }
-}
-
-// Detach later
-Relavoi.shared.verification.removeObserver(token)
-```
+`isCallActive` reflects the current `CXCallObserver` state synchronously, so you can gate the network call on it. There is no separate call-state callback API — check `isCallActive` when your view appears or when the app returns to the foreground.
 
 ## Banner UI
 
-A SwiftUI banner sketch:
+`VerificationResult` is a struct with a `verified` flag. Branch on it:
 
 ```swift
 struct BannerView: View {
   let result: VerificationResult
 
   var body: some View {
-    switch result {
-    case .verified(let session, let context):
-      Label(context ?? "Verified call from \(session.tenantBrand)", systemImage: "checkmark.shield.fill")
+    if result.verified {
+      Label(result.context ?? "Verified call", systemImage: "checkmark.shield.fill")
         .padding()
         .background(Color.green.opacity(0.2))
         .foregroundStyle(.green)
         .clipShape(RoundedRectangle(cornerRadius: 12))
-    case .unverified(let brand):
-      Label("Warning: this call is not from \(brand)", systemImage: "exclamationmark.triangle.fill")
+    } else {
+      Label("Warning: this call is not verified", systemImage: "exclamationmark.triangle.fill")
         .padding()
         .background(Color.red.opacity(0.2))
         .foregroundStyle(.red)
@@ -85,25 +68,26 @@ struct BannerView: View {
 }
 ```
 
-## VerificationResult enum
+:::note context is not populated yet
+`context` is reserved for a human-readable string like "Your Chowdeck rider is calling", but the backend does not populate it today — it is always `nil`. Always provide a fallback label as shown above.
+:::
+
+## VerificationResult struct
 
 ```swift
-public enum VerificationResult {
-  case verified(session: VerifiedSession, context: String?)
-  case unverified(tenantBrand: String)
-}
-
-public struct VerifiedSession {
-  public let id: String
-  public let proxyNumber: String
-  public let tenantBrand: String
-  public let metadata: [String: String]
+public struct VerificationResult: Decodable, Equatable {
+  public let verified: Bool
+  public let context: String?
+  public let sessionId: String?
+  public let expiresAt: Date?
 }
 ```
 
+When `verified == true`, `sessionId` identifies the matched session and `expiresAt` is when it stops being callable. When `verified == false`, these are typically `nil`.
+
 ## Why no permission?
 
-`CXCallObserver` is part of CallKit and Apple intentionally exposes it without a permission prompt — Apple considers passive call-state observation by an app whose user is in an active call to be safe. This is why iOS gets the native, Revolut-style UX: no dialogs, just clean detection.
+`CXCallObserver` is part of CallKit and Apple intentionally exposes it without a permission prompt — Apple considers passive call-state observation by an app whose user is in an active call to be safe. This is why iOS gets the native, Revolut-style UX: no dialogs, just clean detection. (On Android the equivalent requires the `READ_PHONE_STATE` runtime permission.)
 
 :::tip Pair with Live Activities
 Combine verification with [Live Activities](./live-activities) to keep the verified banner pinned to the Lock Screen and Dynamic Island for the duration of the call. End users find it dramatically more reassuring.

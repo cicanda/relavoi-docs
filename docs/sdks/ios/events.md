@@ -11,12 +11,16 @@ The iOS SDK exposes the same WebSocket event stream as Android. The Swift API us
 ## Connecting
 
 ```swift
-import Relavoi
+import RelavoiSDK
 
 @main
 struct MyApp: App {
   init() {
-    Relavoi.initialize(...)
+    Relavoi.initialize(
+      apiKey: Secrets.relavoiApiKey,
+      apiSecret: Secrets.relavoiApiSecret,
+      tenantId: Secrets.relavoiTenantId
+    )
     Task {
       await Relavoi.shared.events.connect()
     }
@@ -25,79 +29,74 @@ struct MyApp: App {
 }
 ```
 
-`connect()` is idempotent. Calling it again on an active connection is a no-op.
+`connect()` is idempotent — calling it again on an active connection is a no-op. The WebSocket URL is derived from your `baseURL` (or set explicitly via `RelavoiConfig.webSocketURL`).
 
 ## Registering a handler
 
-Each listener registers under a string key. Re-registering with the same key replaces the previous handler — handy for SwiftUI views that re-render.
+Each listener registers under a string key (the first, unlabeled argument). Re-registering with the same key replaces the previous handler — handy for SwiftUI views that re-render.
 
 ```swift
-Relavoi.shared.events.addListener(id: "home-view") { event in
+Relavoi.shared.events.addListener("home-view") { event in
   switch event {
-  case .sessionCreated(let payload):
-    print("Created \(payload.sessionId)")
-  case .sessionActivated(let payload):
-    print("Activated \(payload.sessionId)")
-  case .sessionExpired(let payload):
-    print("Expired \(payload.sessionId)")
-  case .callIncoming(let payload):
-    print("Incoming on \(payload.proxyNumber)")
-  case .callAnswered(let payload):
-    print("Answered \(payload.callId)")
-  case .callEnded(let payload):
-    print("Ended after \(payload.durationSeconds)s")
-  case .callFailed(let payload):
-    print("Failed: \(payload.reason)")
-  case .smsReceived(let payload):
-    print("SMS in: \(payload.body)")
-  case .smsSent(let payload):
-    print("SMS out delivered: \(payload.status)")
+  case let .sessionCreated(sessionId, proxyNumber, ts):
+    print("Created \(sessionId) on \(proxyNumber) at \(ts)")
+  case let .sessionActivated(sessionId, _):
+    print("Activated \(sessionId)")
+  case let .sessionExpired(sessionId, _):
+    print("Expired \(sessionId)")
+  case let .callIncoming(sessionId, callerNumber, _):
+    print("Incoming on session \(sessionId) from \(callerNumber)")
+  case let .callAnswered(sessionId, _):
+    print("Answered \(sessionId)")
+  case let .callEnded(sessionId, durationSeconds, _):
+    print("Session \(sessionId) ended after \(durationSeconds)s")
+  case let .smsReceived(sessionId, _):
+    print("SMS in on \(sessionId)")
+  case let .unknown(type, payload):
+    print("Unhandled event \(type): \(payload)")
   }
 }
 ```
 
-Remove a listener when the view goes away:
+Remove a listener when the view goes away (id is also unlabeled):
 
 ```swift
-Relavoi.shared.events.removeListener(id: "home-view")
+Relavoi.shared.events.removeListener("home-view")
 ```
 
 ## RelavoiEvent shape
 
+`RelavoiEvent` is an enum with associated values — there are no separate payload structs. Every case carries a `ts: Date` timestamp:
+
 ```swift
-public enum RelavoiEvent {
-  case sessionCreated(SessionEventPayload)
-  case sessionActivated(SessionEventPayload)
-  case sessionExpired(SessionEventPayload)
-  case callIncoming(CallEventPayload)
-  case callAnswered(CallEventPayload)
-  case callEnded(CallEventPayload)
-  case callFailed(CallFailedPayload)
-  case smsReceived(SmsEventPayload)
-  case smsSent(SmsEventPayload)
+public enum RelavoiEvent: Equatable {
+  case sessionCreated(sessionId: String, proxyNumber: String, ts: Date)
+  case sessionActivated(sessionId: String, ts: Date)
+  case sessionExpired(sessionId: String, ts: Date)
+  case callIncoming(sessionId: String, callerNumber: String, ts: Date)
+  case callAnswered(sessionId: String, ts: Date)
+  case callEnded(sessionId: String, durationSeconds: Int, ts: Date)
+  case smsReceived(sessionId: String, ts: Date)
+  case unknown(type: String, payload: JSONValue)
 }
 ```
 
-Each payload includes `eventId`, `sessionId`, `tenantId`, and `occurredAt`.
+Unrecognized server event types decode into `.unknown(type:payload:)` rather than being dropped, so you can log or inspect them without a crash. `JSONValue` is the SDK's small `Codable` bridge for arbitrary JSON (`.string`, `.int`, `.double`, `.bool`, `.null`, `.array`, `.object`).
 
-## Connection state stream
+## Checking connection state
+
+`isConnected` is an `async` property:
 
 ```swift
 Task {
-  for await state in Relavoi.shared.events.connectionStateStream {
-    switch state {
-    case .connecting:   print("Connecting...")
-    case .connected:    print("Live")
-    case .disconnected: print("Offline")
-    case .failed(let e): print("Failed: \(e)")
-    }
-  }
+  let live = await Relavoi.shared.events.isConnected
+  print(live ? "Live" : "Offline")
 }
 ```
 
 ## Auto-reconnect
 
-Same exponential backoff schedule as Android: 1s, 2s, 4s, 8s, 16s, then 30s cap. After 60 minutes of continuous failure the stream surfaces `.failed`. Call `connect()` again to retry.
+The stream reconnects automatically with exponential backoff after a drop. Call `connect()` again at any time to force a reconnect.
 
 ## Disconnecting
 
@@ -105,7 +104,7 @@ Same exponential backoff schedule as Android: 1s, 2s, 4s, 8s, 16s, then 30s cap.
 await Relavoi.shared.events.disconnect()
 ```
 
-Call this on user logout. The SDK also tears down the connection automatically when the app is suspended for more than 5 minutes.
+Call this on user logout to tear down the connection and stop reconnect attempts.
 
 :::tip Foreground gating
 If you only need events while the app is visible, observe `ScenePhase` and `connect()` / `disconnect()` on `.active` / `.background`. This avoids unnecessary battery drain.

@@ -35,7 +35,8 @@ Every error `type` resolves to a human-readable description page at `https://api
 | `validation` | 400 / 422 | Field-level validation failure; includes `errors[]` |
 | `rate-limit` | 429 | Per-tenant rate limit exceeded; check `Retry-After` header |
 | `not-found` | 404 | Resource does not exist or is not visible to your tenant |
-| `pool-exhausted` | 409 | Number Pool Manager cannot satisfy participant-overlap rule with any available DID |
+| `pool-exhausted` | 503 | Number Pool Manager cannot satisfy participant-overlap rule with any available DID |
+| `tier-session-limit` | 429 | Tenant's concurrent-session ceiling reached on `POST /v1/sessions` |
 | `internal` | 500 | Server-side error; transient — retry with backoff |
 
 ## Worked examples
@@ -86,13 +87,13 @@ X-RateLimit-Remaining: 0
 X-RateLimit-Reset: 1747920712
 ```
 
-### 409 pool-exhausted
+### 503 pool-exhausted
 
 ```json
 {
   "type": "https://api.relavoi.com/errors/pool-exhausted",
-  "title": "Conflict",
-  "status": 409,
+  "title": "Service Unavailable",
+  "status": 503,
   "detail": "No proxy number available satisfies the participant non-overlap rule. Try again or request more DIDs."
 }
 ```

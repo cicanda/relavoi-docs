@@ -30,8 +30,8 @@ Auth: none (this is the bootstrap endpoint).
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| apiKey | string | yes | The `sk_live_...` key from signup |
-| apiSecret | string | yes | The 64-char hex secret |
+| apiKey | string | yes | The `rk_live_...` key from signup (`rk_live_` + 48 hex chars) |
+| apiSecret | string | yes | The `rs_...` secret (`rs_` + 64 hex chars) |
 
 **Request**
 
@@ -39,8 +39,8 @@ Auth: none (this is the bootstrap endpoint).
 curl -X POST https://api.relavoi.com/v1/auth/token \
   -H "Content-Type: application/json" \
   -d '{
-    "apiKey": "sk_live_YOUR_API_KEY_HERE",
-    "apiSecret": "f3a9c7b1d8e4f5a6b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5"
+    "apiKey": "rk_live_YOUR_API_KEY_HERE",
+    "apiSecret": "rs_YOUR_API_SECRET_HERE"
   }'
 ```
 
@@ -49,10 +49,8 @@ curl -X POST https://api.relavoi.com/v1/auth/token \
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "tokenType": "Bearer",
   "expiresIn": 900,
-  "tenantId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "tier": "GROWTH"
+  "tokenType": "Bearer"
 }
 ```
 
@@ -74,11 +72,11 @@ Programmatic tenant provisioning. The dashboard wraps this with extra UX, but yo
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| workspaceName | string | yes | Human label for the tenant |
-| adminEmail | string | yes | Initial admin user |
-| adminPassword | string | yes | Min 12 chars, mixed case, digit |
-| country | string | yes | ISO-3166 alpha-2, currently `NG` only |
-| tier | string | no | `STARTER` (default), `GROWTH`, `ENTERPRISE` |
+| companyName | string | yes | Human label for the tenant (1-255 chars) |
+| email | string | yes | Initial owner user email |
+| password | string | yes | 8-128 chars |
+| companySize | string | no | Optional onboarding hint |
+| useCase | string | no | Optional onboarding hint |
 
 **Request**
 
@@ -86,22 +84,30 @@ Programmatic tenant provisioning. The dashboard wraps this with extra UX, but yo
 curl -X POST https://api.relavoi.com/v1/auth/signup \
   -H "Content-Type: application/json" \
   -d '{
-    "workspaceName": "Chowdeck Production",
-    "adminEmail": "ops@example.com",
-    "adminPassword": "YOUR_PASSWORD",
-    "country": "NG",
-    "tier": "GROWTH"
+    "companyName": "Chowdeck Production",
+    "email": "ops@example.com",
+    "password": "YOUR_PASSWORD",
+    "companySize": "50-200",
+    "useCase": "delivery"
   }'
 ```
 
 **Response**
 
+New tenants are created on the `STARTER` tier. The response returns the API credentials once, plus an initial `accessToken` (15-minute JWT) so you can start calling the API immediately.
+
 ```json
 {
-  "tenantId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "apiKey": "sk_live_YOUR_API_KEY_HERE",
-  "apiSecret": "f3a9c7b1d8e4f5a6b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5",
-  "tier": "GROWTH"
+  "tenantId": "058784e8-6755-49d3-a3da-e11550dd3e29",
+  "apiKey": "rk_live_YOUR_API_KEY_HERE",
+  "apiSecret": "rs_YOUR_API_SECRET_HERE",
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "user": {
+    "id": "0c95072b-7e4e-42a1-a556-42127c60ef3c",
+    "email": "ops@example.com",
+    "role": "OWNER",
+    "tenantId": "058784e8-6755-49d3-a3da-e11550dd3e29"
+  }
 }
 ```
 
@@ -113,8 +119,8 @@ The plaintext `apiSecret` is returned exactly once. Store it immediately.
 
 | Status | Code | When |
 |--------|------|------|
-| 400 | validation | Weak password or unsupported country |
-| 409 | conflict | Email already in use |
+| 400 | validation | Missing or malformed fields (e.g. password shorter than 8 chars) |
+| 409 | conflict | Email or company already in use |
 
 ---
 
@@ -122,7 +128,7 @@ The plaintext `apiSecret` is returned exactly once. Store it immediately.
 
 Auth: none.
 
-Dashboard login flow for human operators. Returns a `typ=user` JWT that grants access to dashboard endpoints (analytics, billing, webhook config) but not SDK endpoints.
+Dashboard login flow for human operators. Returns a longer-lived dashboard JWT (24h) that grants access to owner/dashboard endpoints (analytics, billing, webhook config, number provisioning) in addition to the standard API endpoints.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -145,14 +151,18 @@ curl -X POST https://api.relavoi.com/v1/auth/dashboard/login \
 ```json
 {
   "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "tokenType": "Bearer",
-  "expiresIn": 3600,
   "user": {
-    "id": "usr_5e6f7a8b",
+    "id": "57f24ff5-953e-470e-9a1c-e2e99f0c41dd",
     "email": "ops@example.com",
-    "role": "ADMIN"
+    "role": "OWNER",
+    "tenantId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
   },
-  "tenantId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+  "tenant": {
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Chowdeck",
+    "tier": "GROWTH",
+    "status": "ACTIVE"
+  }
 }
 ```
 
@@ -167,30 +177,23 @@ curl -X POST https://api.relavoi.com/v1/auth/dashboard/login \
 
 ### POST /v1/auth/rotate-key
 
-Auth: Bearer JWT (tenant) **or** Bearer JWT (user with ADMIN role).
+Auth: Bearer dashboard JWT with `OWNER` role (obtained from `/auth/dashboard/login`).
 
-Issues a new API key + secret pair and revokes the old one immediately. All SDK clients using the old credentials will fail their next JWT refresh and must be redeployed.
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| reason | string | no | Audit annotation (e.g. `"leaked-on-github"`) |
+Issues a new API key + secret pair and revokes the old one immediately. All SDK clients using the old credentials will fail their next JWT refresh and must be redeployed. The request takes no body.
 
 **Request**
 
 ```bash
 curl -X POST https://api.relavoi.com/v1/auth/rotate-key \
-  -H "Authorization: Bearer $RELAVOI_JWT" \
-  -H "Content-Type: application/json" \
-  -d '{ "reason": "scheduled-quarterly-rotation" }'
+  -H "Authorization: Bearer $RELAVOI_DASHBOARD_JWT"
 ```
 
 **Response**
 
 ```json
 {
-  "apiKey": "sk_live_YOUR_API_KEY_HERE",
-  "apiSecret": "b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5f6a7b8c9d0e1f2a3",
-  "rotatedAt": "2026-05-22T14:30:00Z"
+  "apiKey": "rk_live_YOUR_API_KEY_HERE",
+  "apiSecret": "rs_YOUR_API_SECRET_HERE"
 }
 ```
 
@@ -199,4 +202,4 @@ curl -X POST https://api.relavoi.com/v1/auth/rotate-key \
 | Status | Code | When |
 |--------|------|------|
 | 401 | unauthorized | Missing or invalid JWT |
-| 403 | forbidden | User JWT without ADMIN role |
+| 403 | forbidden | Not an `OWNER` dashboard user |

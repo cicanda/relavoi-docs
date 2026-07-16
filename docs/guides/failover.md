@@ -49,24 +49,23 @@ If a failover lasts more than 30 minutes, the Auto-Provisioner kicks in and requ
 
 ## Observing breaker state
 
-The current state is exposed at `GET /v1/analytics/cpaas-health`:
+The current state is exposed at `GET /v1/health/cpaas`:
 
 ```json
 {
-  "primary": {
-    "provider": "AFRICASTALKING",
-    "state": "CLOSED",
-    "failureCount": 0,
-    "errorRate2m": 0.012,
-    "lastHealthCheckAt": "2026-05-22T14:30:00Z"
-  },
-  "failover": {
-    "provider": "TWILIO",
-    "poolUtilization": 0.04,
-    "poolSize": 200
-  }
+  "providers": [
+    {
+      "name": "africastalking",
+      "state": "CLOSED",
+      "openedAt": null,
+      "lastError": null
+    }
+  ],
+  "timestamp": "2026-07-15T12:15:35.907Z"
 }
 ```
+
+Each provider entry reports its circuit breaker `state` (`CLOSED`, `OPEN`, or `HALF_OPEN`), the `openedAt` timestamp (non-null only while the breaker is `OPEN`), and the `lastError` that most recently tripped it.
 
 :::tip Capacity planning
 If your peak concurrent sessions are 5,000 on AT, you should plan for ~1,000 Twilio DIDs in failover reserve. Confirm capacity with your account manager before scaling beyond ENTERPRISE defaults.

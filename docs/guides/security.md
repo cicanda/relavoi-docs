@@ -13,7 +13,7 @@ This page is the canonical reference for how Relavoi protects credentials, phone
 All sensitive fields are encrypted with **AES-256-GCM**:
 
 - Phone numbers (`partyA`, `partyB`) in `sessions.party_a_phone_enc` / `party_b_phone_enc`
-- SMS bodies in `sms_records.body_enc`
+- SMS bodies in `sms_records.message_text_enc`
 - Call recordings in object storage
 
 Key hierarchy:
@@ -46,11 +46,11 @@ If you spot a plaintext MSISDN in any Relavoi log or response, file a security b
 
 ## API key and secret model
 
-Tenants authenticate with an `apiKey` + `apiSecret` pair.
+Tenants authenticate with an `apiKey` + `apiSecret` pair. The key is prefixed `rk_live_` and the secret `rs_` (for example `rk_live_dd38d52e...`, `rs_e028efcc...`).
 
 - `apiKey` is a SHA-256 hash stored in `tenants.api_key_hash`
 - `apiSecret` is a bcrypt hash (cost factor 12) stored in `tenants.api_secret_hash`
-- Neither value is recoverable. Rotation via `POST /v1/auth/rotate-key` issues a new pair and immediately invalidates the old.
+- Neither value is recoverable. Rotation via `POST /v1/auth/rotate-key` (OWNER only) issues a new pair and immediately invalidates the old.
 
 The credentials never appear in dashboard URLs, logs, or webhook payloads.
 

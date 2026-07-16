@@ -10,91 +10,83 @@ The Android SDK exposes a persistent WebSocket to Relavoi's event stream. All se
 
 ## Connecting
 
+Add at least one listener, then call `connect()`. `addListener` takes an `EventListener` (a `fun interface`, so a lambda works) and returns `Unit`.
+
 ```kotlin
 import com.relavoi.sdk.Relavoi
+import com.relavoi.sdk.events.EventListener
 import com.relavoi.sdk.events.RelavoiEvent
 
 class App : Application() {
+  private val listener = EventListener { event ->
+    when (event) {
+      is RelavoiEvent.SessionCreated   -> handleSessionCreated(event)
+      is RelavoiEvent.SessionActivated -> handleSessionActivated(event)
+      is RelavoiEvent.SessionExpired   -> handleSessionExpired(event)
+      is RelavoiEvent.CallIncoming     -> handleCallIncoming(event)
+      is RelavoiEvent.CallAnswered     -> handleCallAnswered(event)
+      is RelavoiEvent.CallEnded        -> handleCallEnded(event)
+      is RelavoiEvent.SmsReceived      -> handleSmsReceived(event)
+      is RelavoiEvent.Unknown          -> handleUnknown(event)
+    }
+  }
+
   override fun onCreate() {
     super.onCreate()
     Relavoi.initialize(...)
 
+    Relavoi.events.addListener(listener)
     Relavoi.events.connect()
-    Relavoi.events.addListener { event ->
-      when (event) {
-        is RelavoiEvent.SessionCreated   -> handleSessionCreated(event)
-        is RelavoiEvent.SessionActivated -> handleSessionActivated(event)
-        is RelavoiEvent.SessionExpired   -> handleSessionExpired(event)
-        is RelavoiEvent.CallIncoming     -> handleCallIncoming(event)
-        is RelavoiEvent.CallAnswered     -> handleCallAnswered(event)
-        is RelavoiEvent.CallEnded        -> handleCallEnded(event)
-        is RelavoiEvent.CallFailed       -> handleCallFailed(event)
-        is RelavoiEvent.SmsReceived      -> handleSmsReceived(event)
-        is RelavoiEvent.SmsSent          -> handleSmsSent(event)
-      }
-    }
   }
 }
 ```
 
-`connect()` is idempotent — calling it multiple times is harmless.
+`connect()` and `disconnect()` are both idempotent. Listeners are invoked on the WebSocket dispatcher thread — keep them fast and post to the main thread for UI work. If no listeners remain, the stream auto-disconnects.
 
 ## Event payloads
 
-Every `RelavoiEvent` carries `eventId`, `sessionId`, `tenantId`, and `occurredAt`. Specific subclasses add typed fields:
+`RelavoiEvent` is a sealed class. The only common member is the nullable `sessionId`; each subclass carries a `ts` (ISO-8601 string) plus its own typed fields. There is no `eventId`, `tenantId`, or `occurredAt`.
 
 ```kotlin
-data class CallAnswered(
-  override val eventId: String,
+// Representative subclasses (see the SDK source for the full set):
+data class CallIncoming(
   override val sessionId: String,
-  override val tenantId: String,
-  override val occurredAt: Instant,
-  val callId: String,
-  val direction: CallDirection,
-  val durationSeconds: Int? = null,
+  val callerNumber: String,
+  val ts: String,
+) : RelavoiEvent()
+
+data class CallEnded(
+  override val sessionId: String,
+  val durationSeconds: Int,
+  val ts: String,
 ) : RelavoiEvent()
 ```
 
+The full hierarchy is `SessionCreated`, `SessionActivated`, `SessionExpired`, `CallIncoming`, `CallAnswered`, `CallEnded`, `SmsReceived`, and `Unknown` (a forward-compat fallback carrying `type` and `rawPayload`).
+
 ## Auto-reconnect
 
-The SDK reconnects automatically with exponential backoff and jitter:
-
-| Attempt | Delay before retry |
-|---------|--------------------|
-| 1 | 1 s |
-| 2 | 2 s |
-| 3 | 4 s |
-| 4 | 8 s |
-| 5 | 16 s |
-| 6+ | 30 s (cap) |
-
-It stops retrying after 60 minutes of continuous failure and surfaces a `ConnectionState.Failed`. You can re-trigger with `Relavoi.events.connect()`.
-
-Observe connection state:
+The SDK reconnects automatically with exponential backoff on transport failures. There is no connection-state stream to observe; use `isConnected()` for a synchronous snapshot:
 
 ```kotlin
-Relavoi.events.observeConnectionState().onEach { state ->
-  when (state) {
-    ConnectionState.Connecting   -> showSpinner()
-    ConnectionState.Connected    -> hideSpinner()
-    ConnectionState.Disconnected -> showOfflineBadge()
-    is ConnectionState.Failed    -> showRetryButton()
-  }
-}.launchIn(applicationScope)
+if (!Relavoi.events.isConnected()) {
+  Relavoi.events.connect()
+}
 ```
 
 ## Removing listeners
 
-`addListener` returns a `ListenerRegistration`:
+Keep a reference to the listener you added and pass it to `removeListener`:
 
 ```kotlin
-val reg = Relavoi.events.addListener { event -> ... }
+val listener = EventListener { event -> /* ... */ }
+Relavoi.events.addListener(listener)
 
 // Later
-reg.remove()
+Relavoi.events.removeListener(listener)
 ```
 
-If your listener is tied to a UI component, remove it in `onDestroy()` to avoid leaks.
+If your listener is tied to a UI component, remove it in `onDestroy()` to avoid leaks. When the last listener is removed, the stream auto-disconnects.
 
 ## Disconnecting
 

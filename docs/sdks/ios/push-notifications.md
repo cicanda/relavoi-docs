@@ -32,10 +32,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 ## 2. Forward the device token to Relavoi
 
-When APNs returns the token in `didRegisterForRemoteNotificationsWithDeviceToken`, pass the raw `Data` directly to the SDK. **Do not** convert to hex yourself — the SDK does it (and ensures consistent uppercase / no-spaces formatting):
+When APNs returns the token in `didRegisterForRemoteNotificationsWithDeviceToken`, pass the raw `Data` directly to the SDK. **Do not** convert to hex yourself — the SDK does it (lowercase hex, no spaces). `appBundleId` is optional; pass `Bundle.main.bundleIdentifier` so the backend can target the right app for pushes.
+
+The full signature is `registerToken(userPhone:deviceToken:appBundleId:)`, where `deviceToken` is the raw `Data` and `appBundleId` defaults to `nil`.
 
 ```swift
-import Relavoi
+import RelavoiSDK
 
 func application(
   _ application: UIApplication,
@@ -45,7 +47,8 @@ func application(
     do {
       try await Relavoi.shared.push.registerToken(
         userPhone: currentUser.phone,
-        deviceToken: deviceToken
+        deviceToken: deviceToken,
+        appBundleId: Bundle.main.bundleIdentifier
       )
     } catch {
       print("Failed to register push token: \(error)")
@@ -65,10 +68,10 @@ func application(
 
 If APNs reports the token as unregistered, the Relavoi backend deactivates it automatically and returns no more pushes for it. On the next successful `registerToken` call after a fresh APNs registration, the SDK reactivates.
 
-You can explicitly deactivate (e.g. on logout):
+You can explicitly deactivate (e.g. on logout). `deactivateToken` requires the same raw `Data` device token you registered:
 
 ```swift
-try await Relavoi.shared.push.deactivateToken()
+try await Relavoi.shared.push.deactivateToken(deviceToken: deviceToken)
 ```
 
 ## 4. Notification payload shape

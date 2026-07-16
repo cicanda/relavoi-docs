@@ -12,8 +12,8 @@ Proxy numbers are managed centrally by Relavoi's Number Pool Manager. These endp
 
 | Method | Path | Summary |
 |--------|------|---------|
-| GET | `/v1/numbers/pool` | View pool capacity and utilization |
-| POST | `/v1/numbers/provision` | Request additional numbers (Roadmap) |
+| GET | `/v1/numbers/pool` | View pool capacity per region and provider |
+| POST | `/v1/numbers/provision` | Request additional numbers (not yet available) |
 
 ---
 
@@ -21,15 +21,12 @@ Proxy numbers are managed centrally by Relavoi's Number Pool Manager. These endp
 
 Auth: Bearer JWT (tenant).
 
-| Query | Type | Required | Description |
-|-------|------|----------|-------------|
-| region | string | no | Filter by region, e.g. `NG-LA` (Lagos) |
-| provider | string | no | `AFRICASTALKING` or `TWILIO` |
+Returns one entry per region/provider combination. This endpoint takes no query parameters.
 
 **Request**
 
 ```bash
-curl "https://api.relavoi.com/v1/numbers/pool?region=NG-LA" \
+curl https://api.relavoi.com/v1/numbers/pool \
   -H "Authorization: Bearer $RELAVOI_JWT"
 ```
 
@@ -37,22 +34,27 @@ curl "https://api.relavoi.com/v1/numbers/pool?region=NG-LA" \
 
 ```json
 {
-  "totals": {
-    "provisioned": 250,
-    "available": 198,
-    "inUse": 48,
-    "cooldown": 4,
-    "quarantined": 0
-  },
-  "byProvider": {
-    "AFRICASTALKING": { "provisioned": 200, "available": 158 },
-    "TWILIO": { "provisioned": 50, "available": 40 }
-  },
-  "utilization": 0.21,
-  "p95Utilization7d": 0.62,
-  "recommendedSize": 312
+  "pools": [
+    {
+      "region": "lagos",
+      "provider": "AFRICASTALKING",
+      "total": 10,
+      "available": 9,
+      "inUse": 1,
+      "cooldown": 0
+    }
+  ]
 }
 ```
+
+| Field | Description |
+|-------|-------------|
+| region | Pool region label |
+| provider | `AFRICASTALKING`, `TWILIO`, or `PLIVO` |
+| total | Numbers provisioned in this region/provider |
+| available | Numbers ready for allocation |
+| inUse | Numbers currently bound to an active session |
+| cooldown | Numbers in post-session cooldown, temporarily unavailable |
 
 **Errors**
 
@@ -64,48 +66,32 @@ curl "https://api.relavoi.com/v1/numbers/pool?region=NG-LA" \
 
 ### POST /v1/numbers/provision
 
-Auth: Bearer JWT (tenant) with ADMIN role.
+Auth: Bearer **dashboard** JWT with `OWNER` role (from `/auth/dashboard/login`). A standard SDK/tenant token is rejected with `403`.
 
-:::warning Roadmap
-Self-service provisioning is on the roadmap and currently returns `501 Not Implemented`. Today, requesting additional capacity is a human-in-the-loop step routed to your account manager. The endpoint contract is documented here so integrations can be staged against it.
+:::warning Not yet available
+Self-service provisioning is not yet implemented. Even with a valid owner token the endpoint returns `501`. Requesting additional capacity today is a human-in-the-loop step — contact support. The contract is documented here so integrations can be staged against it.
 :::
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| count | integer | yes | Number of DIDs to provision (1-500) |
-| region | string | yes | e.g. `NG-LA` |
-| provider | string | no | Default `AFRICASTALKING` |
+| region | string | yes | Pool region label |
+| count | integer | yes | Number of DIDs to provision (1-100) |
+| provider | string | no | `AFRICASTALKING` (default), `TWILIO`, or `PLIVO` |
 
 **Request**
 
 ```bash
 curl -X POST https://api.relavoi.com/v1/numbers/provision \
-  -H "Authorization: Bearer $RELAVOI_JWT" \
+  -H "Authorization: Bearer $RELAVOI_DASHBOARD_JWT" \
   -H "Content-Type: application/json" \
-  -d '{ "count": 50, "region": "NG-LA" }'
+  -d '{ "count": 50, "region": "lagos" }'
 ```
 
-**Response (today)**
+**Response (today)** — `501 Not Implemented`. Note this body is a plain `{ error }` object, not the RFC 7807 shape.
 
 ```json
 {
-  "type": "https://api.relavoi.com/errors/not-implemented",
-  "title": "Not Implemented",
-  "status": 501,
-  "detail": "Self-service provisioning is roadmap. Contact your account manager."
-}
-```
-
-**Future success response**
-
-```json
-{
-  "requestId": "prov_77aa88bb",
-  "status": "PENDING",
-  "estimatedCompletion": "2026-05-22T15:30:00Z",
-  "count": 50,
-  "region": "NG-LA",
-  "provider": "AFRICASTALKING"
+  "error": "Number provisioning via API is not yet available. Contact support."
 }
 ```
 
@@ -113,5 +99,6 @@ curl -X POST https://api.relavoi.com/v1/numbers/provision \
 
 | Status | Code | When |
 |--------|------|------|
-| 403 | forbidden | Not an ADMIN |
-| 501 | not-implemented | Endpoint not yet GA |
+| 400 | validation | Missing/invalid `region` or `count` |
+| 403 | forbidden | Called with a tenant/SDK token instead of an `OWNER` dashboard token |
+| 501 | — | Endpoint not yet implemented (returned for authorized owners) |

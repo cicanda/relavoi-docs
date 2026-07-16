@@ -25,7 +25,7 @@ A **session** is a time-bounded, two-party link between a real `partyA` (typical
                 |  ACTIVE   |  <-- at least one call landed
                 +-----------+
                   |     |
-       end()      |     | hard timeout (max_duration_min)
+       end()      |     | hard timeout (maxDurationMinutes)
                   v     v
               +----------------+
               | GRACE_PERIOD   |  <-- callbacks still routed

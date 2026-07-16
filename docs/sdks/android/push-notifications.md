@@ -6,21 +6,24 @@ description: Receive branded incoming-call notifications via Firebase Cloud Mess
 
 # Push notifications (FCM)
 
-The SDK delivers branded incoming-call notifications via FCM. You provide the FCM token; we handle the rest — template, image, sound, deep link.
+The SDK routes FCM token refresh and delivers Relavoi push payloads to a hook you implement. You provide the FCM token and render the notification in the hook; the SDK handles token registration and the FCM plumbing.
 
 ## 1. Subclass RelavoiFirebaseService
 
-`RelavoiFirebaseService` extends `FirebaseMessagingService` and forwards token refresh and message receipt to the SDK. Create your own subclass and register it in the manifest.
+`RelavoiFirebaseService` extends `FirebaseMessagingService`. It auto-registers refreshed tokens (see step 2) and hands Relavoi payloads to the overridable `onRelavoiNotification(message: RemoteMessage)` hook. Create your own subclass and register it in the manifest.
 
 ```kotlin
 package com.example.app.push
 
+import com.google.firebase.messaging.RemoteMessage
 import com.relavoi.sdk.push.RelavoiFirebaseService
 
 class MyPushService : RelavoiFirebaseService() {
-  // Hook your own non-Relavoi push handling here if you have other senders.
-  override fun onCustomMessage(payload: Map<String, String>) {
-    // Optional: handle messages that are not from Relavoi
+  // Called for every message the base service receives. Render your own
+  // notification / update UI here. The default implementation only logs.
+  override fun onRelavoiNotification(message: RemoteMessage) {
+    val data = message.data
+    // e.g. build and post a NotificationCompat notification from `data`
   }
 }
 ```
@@ -37,7 +40,7 @@ In `AndroidManifest.xml`:
 </service>
 ```
 
-The SDK detects Relavoi-originated messages by inspecting `data["relavoi"] == "1"` and renders the notification according to your tenant's branding config.
+If you override `onMessageReceived`, call `super.onMessageReceived(message)` so the base service can dispatch to `onRelavoiNotification`.
 
 ## 2. Register the FCM token
 
@@ -63,21 +66,33 @@ class LoginFlow : AppCompatActivity() {
 }
 ```
 
-Re-call `registerToken` whenever the user logs in to a new account or the FCM token rotates (`onNewToken` in your service, automatically forwarded by `RelavoiFirebaseService`).
+To have `RelavoiFirebaseService.onNewToken` auto-register rotated tokens, tell the SDK which user this device belongs to after sign-in:
 
-## 3. Auto-deactivation of bad tokens
+```kotlin
+import com.relavoi.sdk.push.RelavoiFirebaseService
 
-If FCM responds with `INVALID_REGISTRATION` or `NOT_REGISTERED`, the SDK marks the token inactive on the server and stops sending to it. You do not need to explicitly delete tokens — uninstalled apps are pruned automatically. If you want to be explicit (e.g. on logout):
+// After sign-in — stored in encrypted prefs so onNewToken can register silently.
+RelavoiFirebaseService.setUserForPushUpdates(context, currentUser.phone)
+
+// On logout:
+RelavoiFirebaseService.clearUserForPushUpdates(context)
+```
+
+`registerToken` also de-dupes: passing the same `(userPhone, fcmToken)` pair twice skips the network round-trip.
+
+## 3. Deactivating a token
+
+On logout, deactivate the current token. `deactivateToken` requires the token to remove:
 
 ```kotlin
 viewModelScope.launch {
-  Relavoi.push.deactivateToken()
+  Relavoi.push.deactivateToken(fcmToken = token)
 }
 ```
 
-## 4. Notification channels
+## 4. Rendering the notification
 
-On API 26+ the SDK creates a high-importance channel named `relavoi_calls` for incoming-call notifications. You can rename or restyle it via `RelavoiConfig.pushChannelName` at init time.
+The SDK does not build or post the system notification for you — its default `onRelavoiNotification` only logs. Render the notification yourself inside your `onRelavoiNotification` override (step 1), including creating any notification channel on API 26+. This gives you full control over channel, importance, icon, and deep link.
 
 ## 5. POST_NOTIFICATIONS runtime permission
 
@@ -98,5 +113,5 @@ if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 ```
 
 :::tip Test deliverability
-Use `POST /v1/webhooks/test` with a `call.incoming` payload to trigger a real push to your device while developing.
+During development, trigger a masked call against a live session and confirm the FCM payload reaches your `onRelavoiNotification` override (log `message.data.keys`).
 :::

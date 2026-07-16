@@ -46,7 +46,7 @@ android {
 }
 ```
 
-Sync Gradle. The SDK pulls in `kotlinx-coroutines-core`, `okhttp` 4.x, and `kotlinx-serialization-json` transitively.
+Sync Gradle. The SDK pulls in `kotlinx-coroutines-android`, `okhttp` 4.x, and `kotlinx-serialization-json` transitively.
 
 ## Manifest permissions
 
@@ -56,11 +56,17 @@ The SDK declares these permissions automatically via manifest merger:
 <uses-permission android:name="android.permission.INTERNET" />
 <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+<uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+```
+
+If you use push notifications, add `POST_NOTIFICATIONS` to your own app's manifest — the SDK does not declare it for you:
+
+```xml
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 ```
 
 :::warning Runtime permission still required
-Declaring `READ_PHONE_STATE` in the manifest is necessary but not sufficient. On API 23+ your host app must request it at runtime — see [Permissions](./permissions). Same for `POST_NOTIFICATIONS` on API 33+ and `SYSTEM_ALERT_WINDOW` (for branded incoming-call overlays).
+Declaring `READ_PHONE_STATE` in the manifest is necessary but not sufficient. On API 23+ your host app must request it at runtime — see [Permissions](./permissions). Same for `POST_NOTIFICATIONS` on API 33+ and `SYSTEM_ALERT_WINDOW` (for the floating verification bubble).
 :::
 
 ## ProGuard / R8
@@ -82,9 +88,11 @@ import com.relavoi.sdk.Relavoi
 class MainActivity : AppCompatActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
-    Log.d("Relavoi", "SDK version: ${Relavoi.VERSION}")
+    // Before initialize() this is false; it flips to true once you call
+    // Relavoi.initialize(...) in your Application class.
+    Log.d("Relavoi", "Relavoi initialized? ${Relavoi.isInitialized()}")
   }
 }
 ```
 
-You should see `SDK version: 0.1.0` in Logcat. Continue with [Initialization](./initialization).
+If the class resolves and this logs without a `ClassNotFoundException`, the artifact is wired up. Continue with [Initialization](./initialization).

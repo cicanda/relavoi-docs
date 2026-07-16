@@ -6,7 +6,7 @@ description: Query aggregate usage, session and call timeseries, and call succes
 
 # Analytics API
 
-Pre-aggregated metrics for tenant dashboards. All endpoints accept a `from` / `to` time window and `granularity` for timeseries.
+Pre-aggregated metrics for tenant dashboards. Every endpoint takes a `periodStart` / `periodEnd` window (ISO 8601, with offset). Timeseries endpoints also accept a `granularity` bucket.
 
 ## Endpoints
 
@@ -14,24 +14,26 @@ Pre-aggregated metrics for tenant dashboards. All endpoints accept a `from` / `t
 |--------|------|---------|
 | GET | `/v1/analytics/usage` | Aggregated usage for billing alignment |
 | GET | `/v1/analytics/sessions-over-time` | Sessions created per bucket |
-| GET | `/v1/analytics/call-success-rate` | Answer / completion ratios |
-| GET | `/v1/analytics/calls` | Call counts with filters |
+| GET | `/v1/analytics/call-success-rate` | Answer / completion ratios per bucket |
+| GET | `/v1/analytics/calls` | Call totals with status / direction breakdown |
+
+All endpoints require a Bearer JWT (tenant). Errors follow RFC 7807 Problem Details.
 
 ---
 
 ### GET /v1/analytics/usage
 
-Auth: Bearer JWT (tenant).
+Aggregated billable-event counts for the window.
 
 | Query | Type | Required | Description |
 |-------|------|----------|-------------|
-| from | string (ISO 8601) | yes | Window start (inclusive) |
-| to | string (ISO 8601) | yes | Window end (exclusive) |
+| periodStart | string (ISO 8601) | yes | Window start (inclusive) |
+| periodEnd | string (ISO 8601) | yes | Window end (exclusive) |
 
 **Request**
 
 ```bash
-curl "https://api.relavoi.com/v1/analytics/usage?from=2026-05-01T00:00:00Z&to=2026-06-01T00:00:00Z" \
+curl "https://api.relavoi.com/v1/analytics/usage?periodStart=2026-07-01T00:00:00Z&periodEnd=2026-07-31T00:00:00Z" \
   -H "Authorization: Bearer $RELAVOI_JWT"
 ```
 
@@ -39,16 +41,18 @@ curl "https://api.relavoi.com/v1/analytics/usage?from=2026-05-01T00:00:00Z&to=20
 
 ```json
 {
-  "from": "2026-05-01T00:00:00Z",
-  "to": "2026-06-01T00:00:00Z",
-  "sessionsCreated": 18432,
-  "callsAttempted": 31204,
-  "callsAnswered": 28117,
-  "callsCompleted": 27410,
-  "callMinutes": 64882,
-  "smsSent": 4291,
-  "smsReceived": 4198,
-  "peakConcurrentSessions": 412
+  "tenantId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "periodStart": "2026-07-01T00:00:00.000Z",
+  "periodEnd": "2026-07-31T00:00:00.000Z",
+  "metrics": {
+    "session_created": 3,
+    "call_minute": 0,
+    "sms_sent": 0,
+    "sms_received": 0,
+    "recording_minute": 0,
+    "number_rental": 0
+  },
+  "totalEvents": 3
 }
 ```
 
@@ -56,88 +60,82 @@ curl "https://api.relavoi.com/v1/analytics/usage?from=2026-05-01T00:00:00Z&to=20
 
 ### GET /v1/analytics/sessions-over-time
 
-Auth: Bearer JWT (tenant).
+Count of sessions created per time bucket. Returns a **bare array** (no envelope).
 
 | Query | Type | Required | Description |
 |-------|------|----------|-------------|
-| from | string (ISO 8601) | yes | Window start |
-| to | string (ISO 8601) | yes | Window end |
-| granularity | string | no | `hour` (default), `day`, `week` |
+| periodStart | string (ISO 8601) | yes | Window start |
+| periodEnd | string (ISO 8601) | yes | Window end |
+| granularity | string | no | `hour` or `day` (default `day`) |
 
 **Request**
 
 ```bash
-curl "https://api.relavoi.com/v1/analytics/sessions-over-time?from=2026-05-22T00:00:00Z&to=2026-05-23T00:00:00Z&granularity=hour" \
+curl "https://api.relavoi.com/v1/analytics/sessions-over-time?periodStart=2026-07-13T00:00:00Z&periodEnd=2026-07-16T00:00:00Z&granularity=day" \
   -H "Authorization: Bearer $RELAVOI_JWT"
 ```
 
 **Response**
 
 ```json
-{
-  "granularity": "hour",
-  "points": [
-    { "t": "2026-05-22T00:00:00Z", "created": 12, "expired": 9 },
-    { "t": "2026-05-22T01:00:00Z", "created": 8, "expired": 11 },
-    { "t": "2026-05-22T02:00:00Z", "created": 5, "expired": 6 }
-  ]
-}
+[
+  { "ts": "2026-07-13T00:00:00.000Z", "count": 2 },
+  { "ts": "2026-07-15T00:00:00.000Z", "count": 1 }
+]
 ```
 
 ---
 
 ### GET /v1/analytics/call-success-rate
 
-Auth: Bearer JWT (tenant).
+Per-bucket call outcome counts and a computed success `rate` (answered + completed over total, rounded to 4 dp). Returns a **bare array** (empty when there are no calls in the window).
 
 | Query | Type | Required | Description |
 |-------|------|----------|-------------|
-| from | string (ISO 8601) | yes | Window start |
-| to | string (ISO 8601) | yes | Window end |
-| granularity | string | no | `hour`, `day` (default) |
+| periodStart | string (ISO 8601) | yes | Window start |
+| periodEnd | string (ISO 8601) | yes | Window end |
+| granularity | string | no | `hour` or `day` (default `day`) |
 
 **Request**
 
 ```bash
-curl "https://api.relavoi.com/v1/analytics/call-success-rate?from=2026-05-15T00:00:00Z&to=2026-05-22T00:00:00Z&granularity=day" \
+curl "https://api.relavoi.com/v1/analytics/call-success-rate?periodStart=2026-07-01T00:00:00Z&periodEnd=2026-07-31T00:00:00Z&granularity=day" \
   -H "Authorization: Bearer $RELAVOI_JWT"
 ```
 
 **Response**
 
 ```json
-{
-  "points": [
-    {
-      "t": "2026-05-15T00:00:00Z",
-      "attempted": 4112,
-      "answered": 3702,
-      "completed": 3608,
-      "answerRate": 0.9003,
-      "completionRate": 0.8774
-    }
-  ]
-}
+[
+  {
+    "ts": "2026-07-15T00:00:00.000Z",
+    "total": 120,
+    "answered": 12,
+    "completed": 96,
+    "missed": 9,
+    "failed": 3,
+    "rate": 0.9
+  }
+]
 ```
 
 ---
 
 ### GET /v1/analytics/calls
 
-Auth: Bearer JWT (tenant).
-
-Aggregated call counts grouped by status or direction.
+Total calls in the window, average duration, and breakdowns by status and by direction. The window can optionally be narrowed with `status` and `direction` filters.
 
 | Query | Type | Required | Description |
 |-------|------|----------|-------------|
-| from | string (ISO 8601) | yes | Window start |
-| to | string (ISO 8601) | yes | Window end |
-| groupBy | string | no | `status` (default) or `direction` |
+| periodStart | string (ISO 8601) | yes | Window start |
+| periodEnd | string (ISO 8601) | yes | Window end |
+| status | string | no | Filter: `RINGING`, `ANSWERED`, `COMPLETED`, `MISSED`, `FAILED` |
+| direction | string | no | Filter: `A_TO_B` or `B_TO_A` |
 
 **Request**
 
 ```bash
-curl "https://api.relavoi.com/v1/analytics/calls?from=2026-05-22T00:00:00Z&to=2026-05-23T00:00:00Z&groupBy=status" \
+curl "https://api.relavoi.com/v1/analytics/calls?periodStart=2026-07-01T00:00:00Z&periodEnd=2026-07-31T00:00:00Z" \
   -H "Authorization: Bearer $RELAVOI_JWT"
 ```
 
@@ -145,20 +143,52 @@ curl "https://api.relavoi.com/v1/analytics/calls?from=2026-05-22T00:00:00Z&to=20
 
 ```json
 {
-  "groupBy": "status",
-  "buckets": {
-    "COMPLETED": 1842,
-    "ANSWERED": 47,
-    "MISSED": 211,
-    "FAILED": 18
-  }
+  "periodStart": "2026-07-01T00:00:00Z",
+  "periodEnd": "2026-07-31T00:00:00Z",
+  "total": 0,
+  "avgDurationSeconds": 0,
+  "byStatus": [],
+  "byDirection": []
 }
 ```
 
+When calls exist, `byStatus` and `byDirection` contain one row per group:
+
+```json
+{
+  "periodStart": "2026-07-01T00:00:00Z",
+  "periodEnd": "2026-07-31T00:00:00Z",
+  "total": 120,
+  "avgDurationSeconds": 142,
+  "byStatus": [
+    { "status": "COMPLETED", "count": 96 },
+    { "status": "MISSED", "count": 21 },
+    { "status": "FAILED", "count": 3 }
+  ],
+  "byDirection": [
+    { "direction": "A_TO_B", "count": 74 },
+    { "direction": "B_TO_A", "count": 46 }
+  ]
+}
+```
+
+---
+
 **Errors (all endpoints)**
 
-| Status | Code | When |
-|--------|------|------|
-| 400 | validation | `from` after `to`, or window greater than 90 days |
-| 401 | unauthorized | Missing JWT |
-| 429 | rate-limit | Tier analytics quota exceeded |
+Errors follow RFC 7807 Problem Details (`application/problem+json`):
+
+```json
+{
+  "type": "https://api.relavoi.com/errors/validation",
+  "title": "Bad Request",
+  "status": 400,
+  "detail": "periodStart: Invalid datetime"
+}
+```
+
+| Status | Type slug | When |
+|--------|-----------|------|
+| 400 | validation | Missing/invalid `periodStart` or `periodEnd` |
+| 401 | unauthorized | Missing or invalid JWT |
+| 429 | rate-limit | Tier rate limit exceeded |

@@ -8,7 +8,7 @@ Built with [Docusaurus 3](https://docusaurus.io/) (TypeScript template).
 
 ```bash
 npm install
-npm start         # dev server with hot reload on http://localhost:3000
+npm start         # dev server with hot reload on http://localhost:8080
                   # NOTE: collides with relavoi-backend's :3000 — use:
                   # npm start -- --port 3010
 ```

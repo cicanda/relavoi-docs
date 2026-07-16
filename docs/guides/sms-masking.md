@@ -33,7 +33,7 @@ Replies follow the same path in reverse. Neither party ever sees the other's rea
 
 ## Encryption at rest
 
-Message bodies are encrypted with **AES-256-GCM** using a tenant-scoped Data Encryption Key (DEK) wrapped by your tenant's KMS-managed Key Encryption Key (KEK). The ciphertext, nonce, and auth tag are stored in `sms_records.body_enc`. Plaintext is only materialized in memory in the SMS Router for the few milliseconds between decryption and forwarding.
+Message bodies are encrypted with **AES-256-GCM** using a tenant-scoped key. The ciphertext, nonce, and auth tag are stored in `sms_records.message_text_enc`. Plaintext is only materialized in memory in the SMS Router for the few milliseconds between decryption and forwarding — and it is **never returned by any API**. The SMS history endpoint exposes metadata only (see below).
 
 The same encryption envelope is used for phone numbers themselves — see [Security](./security) for the full crypto model.
 
@@ -44,17 +44,19 @@ Direction modes you set at session create time apply to SMS exactly as they do t
 | directionMode | Agent -> Customer SMS | Customer -> Agent SMS |
 |---------------|----------------------|----------------------|
 | BIDIRECTIONAL | delivered | delivered |
-| A_TO_B_ONLY | delivered | silently dropped, logged |
-| B_TO_A_ONLY | silently dropped, logged | delivered |
+| A_TO_B_ONLY | delivered | dropped |
+| B_TO_A_ONLY | dropped | delivered |
 
-Dropped messages are visible in `GET /v1/sessions/:id/sms` with `status: "BLOCKED_DIRECTION"`, so you can audit them.
+A message that violates the session's direction mode is dropped and **not** persisted — there is no `sms_records` row and no delivery attempt.
 
 ## Reading message history
 
 ```bash
-curl https://api.relavoi.com/v1/sessions/sess_a1b2c3d4/sms \
+curl https://api.relavoi.com/v1/sessions/{sessionId}/sms \
   -H "Authorization: Bearer $RELAVOI_JWT"
 ```
+
+The response is paginated (`{ "data": [...], "pagination": { "count", "after" } }`). Each record carries `id`, `sessionId`, `direction`, `status` (`PENDING`, `DELIVERED`, or `FAILED`), `cpaasMessageId`, `cpaasProvider`, `sentAt`, and `deliveredAt`. The message body is **never** included.
 
 See [SMS API reference](../api-reference/sms) for the full schema and filters.
 

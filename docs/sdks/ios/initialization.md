@@ -12,7 +12,7 @@ The SDK is a process-wide singleton accessed via `Relavoi.shared`. Initialize it
 
 ```swift
 import SwiftUI
-import Relavoi
+import RelavoiSDK
 
 @main
 struct MyApp: App {
@@ -34,7 +34,7 @@ struct MyApp: App {
 
 ```swift
 import UIKit
-import Relavoi
+import RelavoiSDK
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -64,38 +64,40 @@ Sample `Secrets.swift` (generated):
 
 ```swift
 enum Secrets {
-  static let relavoiApiKey    = "sk_live_YOUR_API_KEY_HERE"
-  static let relavoiApiSecret = "f3a9c7b1d8e4f5a6b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5"
+  static let relavoiApiKey    = "rk_live_YOUR_API_KEY_HERE"
+  static let relavoiApiSecret = "rs_YOUR_API_SECRET_HERE"
   static let relavoiTenantId  = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
 }
 ```
 
-## Keychain Sharing
+## Keychain storage
 
-The SDK persists the short-lived JWT in the iOS Keychain. By default it writes to the access group `<TEAM_ID>.com.relavoi.sdk`. If you share authentication state across multiple apps in your team, override:
+The SDK persists the short-lived JWT in the iOS Keychain as a device-local generic-password item (service `com.relavoi.sdk.auth`, accessible after first unlock, this-device-only). The tenant ID is used as the account, so multiple tenants can coexist in one host app. This is fully automatic — no configuration and no **Keychain Sharing** capability are required.
 
-```swift
-Relavoi.initialize(
-  apiKey: ...,
-  apiSecret: ...,
-  tenantId: ...,
-  config: RelavoiConfig(
-    keychainAccessGroup: "TEAMID.com.example.shared"
-  )
-)
-```
+## RelavoiConfig fields
 
-Enable **Keychain Sharing** capability on your target and add the matching access group.
-
-## RelavoiConfig flags
+`RelavoiConfig` exposes exactly four stored fields (all with defaults):
 
 | Field | Type | Default | Purpose |
 |-------|------|---------|---------|
-| `enableLogging` | Bool | `false` | Verbose `os_log` output. Phone numbers always redacted |
-| `baseURL` | URL? | `nil` | Override the API host. Use for staging |
-| `requestTimeout` | TimeInterval | `30` | URLSession timeout |
-| `keychainAccessGroup` | String? | `nil` | Custom Keychain access group |
-| `userAgentSuffix` | String? | `nil` | Append to default `Relavoi-iOS/0.1.0` |
+| `baseURL` | `URL` | `https://api.relavoi.com/v1` | REST base URL. Override for staging |
+| `webSocketURL` | `URL?` | `nil` | Explicit WebSocket URL. When `nil`, it is derived from `baseURL` (scheme swapped to `ws`/`wss`, path set to `/ws`) |
+| `enableLogging` | `Bool` | `false` | Verbose `os_log` output. Phone numbers always redacted |
+| `offlineQueueMaxSize` | `Int` | `100` | Maximum offline-queue length; oldest entries drop when exceeded |
+
+Example overriding the base URL for staging:
+
+```swift
+Relavoi.initialize(
+  apiKey: Secrets.relavoiApiKey,
+  apiSecret: Secrets.relavoiApiSecret,
+  tenantId: Secrets.relavoiTenantId,
+  config: RelavoiConfig(
+    baseURL: URL(string: "https://staging.api.relavoi.com/v1")!,
+    enableLogging: true
+  )
+)
+```
 
 :::warning Initialize first
 Touching `Relavoi.shared.sessions` before `Relavoi.initialize(...)` traps with a precondition failure. Initialize in `App.init` or `application(_:didFinishLaunchingWithOptions:)`.
