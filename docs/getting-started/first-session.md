@@ -89,7 +89,7 @@ export RELAVOI_SESSION_ID="5661962a-d7ad-4aea-88a0-210388e1285b"
 
 ## 3. Inspect the session's calls
 
-In production, real PSTN calls arrive at our webhook handler from Africa's Talking, and each leg is recorded against the session. You can list those call records at any time. A brand-new session has none yet:
+In production, real PSTN calls arrive at our webhook handler from the telephony provider, and each leg is recorded against the session. You can list those call records at any time. A brand-new session has none yet:
 
 ```bash
 curl -X GET "https://api.relavoi.com/v1/sessions/$RELAVOI_SESSION_ID/calls" \

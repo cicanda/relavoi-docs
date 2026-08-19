@@ -6,7 +6,7 @@ description: List SMS message records exchanged within a masking session. SMS ma
 
 # SMS API
 
-SMS masking rides on an existing masking session. There is **no send-SMS API endpoint** — you do not push messages through Relavoi with an API call. Instead, when an end user texts a proxy number, Africa's Talking delivers it to `POST /v1/webhooks/cpaas/sms`, Relavoi matches it to the active session, and forwards it to the other party from the same proxy. Replies follow the same path in reverse.
+SMS masking rides on an existing masking session. There is **no send-SMS API endpoint** — you do not push messages through Relavoi with an API call. Instead, when an end user texts a proxy number, the telephony provider delivers it to `POST /v1/webhooks/cpaas/sms`, Relavoi matches it to the active session, and forwards it to the other party from the same proxy. Replies follow the same path in reverse.
 
 The only tenant-facing SMS endpoint lists the **records** of those exchanges. See [SMS masking](../guides/sms-masking) for the full flow.
 
@@ -64,8 +64,7 @@ curl "https://api.relavoi.com/v1/sessions/5661962a-d7ad-4aea-88a0-210388e1285b/s
       "sessionId": "5661962a-d7ad-4aea-88a0-210388e1285b",
       "direction": "A_TO_B",
       "status": "DELIVERED",
-      "cpaasMessageId": "ATXid_9f2b1c",
-      "cpaasProvider": "AFRICASTALKING",
+      "cpaasMessageId": "msg_9f2b1c",
       "sentAt": "2026-07-15T12:38:00.000Z",
       "deliveredAt": "2026-07-15T12:38:02.000Z"
     }

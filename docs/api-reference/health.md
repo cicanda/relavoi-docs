@@ -51,7 +51,7 @@ curl https://api.relavoi.com/v1/health
 
 ### GET /v1/health/cpaas
 
-Reports the circuit-breaker state for each CPaaS provider. Use this to observe failover between Africa's Talking (primary) and Twilio (failover).
+Reports the circuit-breaker state for each telephony provider. Use this to observe automatic failover between the primary and backup providers.
 
 **Request**
 
@@ -65,7 +65,7 @@ curl https://api.relavoi.com/v1/health/cpaas
 {
   "providers": [
     {
-      "name": "africastalking",
+      "name": "primary",
       "state": "CLOSED",
       "openedAt": null,
       "lastError": null
@@ -77,7 +77,7 @@ curl https://api.relavoi.com/v1/health/cpaas
 
 | Field | Type | Description |
 |-------|------|-------------|
-| providers[].name | string | Provider identifier, e.g. `africastalking` |
+| providers[].name | string | Provider identifier, e.g. `primary` |
 | providers[].state | string | Circuit-breaker state: `CLOSED`, `OPEN`, or `HALF_OPEN` |
 | providers[].openedAt | string \| null | When the breaker last opened, or `null` if closed |
 | providers[].lastError | string \| null | Last recorded error, or `null` |

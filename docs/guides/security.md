@@ -64,7 +64,7 @@ Relavoi is built around the Nigeria Data Protection Regulation 2019 (and the NDP
 - **Data minimization**: phone numbers encrypted at rest, hashed for lookup, never logged
 - **Retention limits**: default 90 days for call data, configurable down to 30
 - **Breach notification**: 72-hour notification SLA via `security@relavoi.com`
-- **Data Processing Agreements** with both Africa's Talking and Twilio cover sub-processor obligations
+- **Data Processing Agreements** with our telephony sub-processors cover sub-processor obligations
 - **Right to erasure**: tenant-initiated deletion endpoint scrubs all session, call, and recording data within 30 days
 
 For a copy of the NDPR DPA template or our SOC 2 Type II report, contact your account manager.

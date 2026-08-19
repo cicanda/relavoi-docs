@@ -14,7 +14,7 @@ Every Relavoi session is dual-channel: the same proxy number that carries voice 
 sequenceDiagram
   participant Agent
   participant Telco as Nigerian PSTN
-  participant AT as Africa's Talking
+  participant AT as Telephony Provider
   participant WH as Webhook Handler
   participant Router as SMS Router
   participant Customer

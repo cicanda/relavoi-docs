@@ -53,8 +53,7 @@ curl "https://api.relavoi.com/v1/calls?status=COMPLETED&periodStart=2026-07-01T0
       "initiatedAt": "2026-07-15T12:31:00.000Z",
       "answeredAt": "2026-07-15T12:31:02.000Z",
       "endedAt": "2026-07-15T12:33:24.000Z",
-      "cpaasCallId": "ATCall_abc123",
-      "cpaasProvider": "AFRICASTALKING",
+      "cpaasCallId": "call_abc123",
       "recordingUrl": null
     }
   ],
@@ -105,8 +104,7 @@ curl https://api.relavoi.com/v1/calls/call_88ee2af1 \
   "initiatedAt": "2026-07-15T12:31:00.000Z",
   "answeredAt": "2026-07-15T12:31:02.000Z",
   "endedAt": "2026-07-15T12:33:24.000Z",
-  "cpaasCallId": "ATCall_abc123",
-  "cpaasProvider": "AFRICASTALKING",
+  "cpaasCallId": "call_abc123",
   "recordingUrl": null
 }
 ```
@@ -163,8 +161,7 @@ curl https://api.relavoi.com/v1/sessions/5661962a-d7ad-4aea-88a0-210388e1285b/ca
       "status": "COMPLETED",
       "direction": "A_TO_B",
       "durationSeconds": 142,
-      "cpaasCallId": "ATCall_abc123",
-      "cpaasProvider": "AFRICASTALKING",
+      "cpaasCallId": "call_abc123",
       "recordingUrl": "https://recordings.relavoi.com/.../call_88ee2af1.mp3?sig=...",
       "recordingConsentPlayed": true,
       "initiatedAt": "2026-07-15T12:31:00.000Z",

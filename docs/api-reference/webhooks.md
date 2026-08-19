@@ -9,7 +9,7 @@ description: Configure the single tenant webhook URL, send a test event, review 
 There are two distinct webhook flows:
 
 - **Tenant webhooks** (outbound, us → you): you configure **one** webhook URL for your tenant and a list of event types. We POST events to that URL and sign each delivery with your webhook secret. See [Webhook integration](../guides/webhook-integration).
-- **CPaaS callbacks** (inbound, Africa's Talking → us): the telephony provider posts call and SMS events to Relavoi. You do **not** call these endpoints; they are documented under [CPaaS callbacks (inbound)](#cpaas-callbacks-inbound) so you understand the full picture.
+- **CPaaS callbacks** (inbound, provider → us): the telephony provider posts call and SMS events to Relavoi. You do **not** call these endpoints; they are documented under [CPaaS callbacks (inbound)](#cpaas-callbacks-inbound) so you understand the full picture.
 
 :::info Single webhook URL per tenant
 Relavoi stores **one** webhook URL per tenant, not a collection of webhook subscriptions. Registering again overwrites the previous URL, event list, and secret. There are no per-webhook ids and no `409 conflict` on duplicate URLs.
@@ -192,11 +192,11 @@ Delivery-log fields: `event`, `url`, `statusCode`, `success`, `attemptCount`, `r
 
 ## CPaaS callbacks (inbound)
 
-These endpoints are called by the CPaaS provider (Africa's Talking), **not** by tenants. They are listed here so you understand what Relavoi receives on your behalf. In production they are verified via an `X-AfricasTalking-Signature` HMAC header; the signature check is skipped only in the provider sandbox.
+These endpoints are called by the telephony provider, **not** by tenants. They are listed here so you understand what Relavoi receives on your behalf. In production they are verified via an HMAC signature header; the signature check is skipped only in the provider sandbox.
 
 ### POST /v1/webhooks/cpaas/voice
 
-Africa's Talking posts inbound call events here (form-encoded). Relavoi makes the routing decision and responds with **Africa's Talking voice XML** (`<Say>`, `<Dial>`, `<Reject>`, `<Redirect>`, `<Play>`) telling the provider how to handle the call. For an expired session with `DEAD_LINE` behavior, for example, the response is:
+The telephony provider posts inbound call events here (form-encoded). Relavoi makes the routing decision and responds with **provider voice XML** (`<Say>`, `<Dial>`, `<Reject>`, `<Redirect>`, `<Play>`) telling the provider how to handle the call. For an expired session with `DEAD_LINE` behavior, for example, the response is:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -207,7 +207,7 @@ An active session with recording enabled returns a consent `<Say>`/`<Play>` foll
 
 ### POST /v1/webhooks/cpaas/sms
 
-Africa's Talking posts inbound SMS here (form-encoded). Relavoi matches the message to an active session and forwards it to the other party. The endpoint returns a small JSON acknowledgement:
+The telephony provider posts inbound SMS here (form-encoded). Relavoi matches the message to an active session and forwards it to the other party. The endpoint returns a small JSON acknowledgement:
 
 ```json
 { "ok": true }

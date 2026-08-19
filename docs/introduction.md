@@ -1,7 +1,7 @@
 ---
 title: Introduction to Relavoi
 sidebar_label: Introduction
-description: Relavoi is a B2B phone-masking SaaS purpose-built for the Nigerian market, covering voice and SMS privacy on top of CPaaS providers.
+description: Relavoi is a B2B phone-masking SaaS purpose-built for the Nigerian market, covering voice and SMS privacy across the Nigerian telephony network.
 ---
 
 # Introduction to Relavoi
@@ -18,7 +18,7 @@ Unlike consumer privacy apps (Burner, Hushed) which target individual users, Rel
 - Real-time call verification banners
 - Webhook delivery for every session and call event
 - Built-in NDPR-compliant call recording with consent prompts
-- Multi-CPaaS failover (Africa's Talking primary, Twilio backup)
+- Automatic multi-provider failover for high availability
 
 ## Five-layer architecture
 
@@ -42,13 +42,13 @@ Unlike consumer privacy apps (Burner, Hushed) which target individual users, Rel
                 |
                 v
 +--------------------------------------+
-| Layer 4: CPaaS Provider              |   Africa's Talking (primary) or
-| (telephony infrastructure)           |   Twilio (failover) terminates calls.
+| Layer 4: Telephony Provider          |   A resilient telephony layer with
+| (telephony infrastructure)           |   automatic failover terminates calls.
 +--------------------------------------+
                 |
                 v
 +--------------------------------------+
-| Layer 5: Telco Infrastructure        |   MTN, Airtel, Glo, 9mobile — the
+| Layer 5: Telco Infrastructure        |   Nigerian mobile networks — the
 | (Nigerian PSTN + mobile networks)    |   end user just answers their phone.
 +--------------------------------------+
 ```
@@ -63,15 +63,15 @@ A lightweight Kotlin or Swift library. It handles short-lived JWT refresh, liste
 
 ### Layer 3 — Relavoi Platform
 
-The control plane. Allocates proxy numbers atomically, routes calls in under 500 ms p99, deduplicates CPaaS webhooks, and fans out events to your registered webhooks.
+The control plane. Allocates proxy numbers atomically, routes calls in under 500 ms p99, deduplicates telephony webhooks, and fans out events to your registered webhooks.
 
-### Layer 4 — CPaaS Provider
+### Layer 4 — Telephony Provider
 
-We multiplex over Africa's Talking for Nigerian voice and SMS because their pricing and PSTN routing are best-in-region. Twilio is on standby for failover at roughly 20% of primary pool capacity.
+We route Nigerian voice and SMS over a licensed telephony provider optimized for in-region pricing and PSTN routing, with an automatic failover provider on standby for high availability.
 
 ### Layer 5 — Telco Infrastructure
 
-The user never installs anything weird. The proxy number is a real Nigerian MSISDN, so calls ring the same way they always do on MTN, Airtel, Glo, and 9mobile.
+The user never installs anything weird. The proxy number is a real Nigerian MSISDN, so calls ring the same way they always do on the national mobile networks.
 
 ## Use cases
 

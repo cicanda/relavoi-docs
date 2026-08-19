@@ -37,7 +37,6 @@ curl https://api.relavoi.com/v1/numbers/pool \
   "pools": [
     {
       "region": "lagos",
-      "provider": "AFRICASTALKING",
       "total": 10,
       "available": 9,
       "inUse": 1,
@@ -50,8 +49,7 @@ curl https://api.relavoi.com/v1/numbers/pool \
 | Field | Description |
 |-------|-------------|
 | region | Pool region label |
-| provider | `AFRICASTALKING`, `TWILIO`, or `PLIVO` |
-| total | Numbers provisioned in this region/provider |
+| total | Numbers provisioned in this region |
 | available | Numbers ready for allocation |
 | inUse | Numbers currently bound to an active session |
 | cooldown | Numbers in post-session cooldown, temporarily unavailable |
@@ -76,7 +74,6 @@ Self-service provisioning is not yet implemented. Even with a valid owner token 
 |-------|------|----------|-------------|
 | region | string | yes | Pool region label |
 | count | integer | yes | Number of DIDs to provision (1-100) |
-| provider | string | no | `AFRICASTALKING` (default), `TWILIO`, or `PLIVO` |
 
 **Request**
 

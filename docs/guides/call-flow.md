@@ -17,7 +17,7 @@ sequenceDiagram
   participant Agent as Agent (Driver app)
   participant SDK as Relavoi SDK
   participant Dialer as Native dialer
-  participant AT as Africa's Talking
+  participant AT as Telephony Provider
   participant WH as Webhook Handler
   participant CR as Call Router
   participant Redis
@@ -46,7 +46,7 @@ When `recordingEnabled = true`, the Call Router prepends a `<Say>` or `<Play>` a
 
 ```mermaid
 sequenceDiagram
-  participant AT as Africa's Talking
+  participant AT as Telephony Provider
   participant WH as Webhook Handler
   participant CR as Call Router
   participant Customer as Customer phone
