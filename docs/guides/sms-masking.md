@@ -56,7 +56,7 @@ curl https://api.relavoi.com/v1/sessions/{sessionId}/sms \
   -H "Authorization: Bearer $RELAVOI_JWT"
 ```
 
-The response is paginated (`{ "data": [...], "pagination": { "count", "after" } }`). Each record carries `id`, `sessionId`, `direction`, `status` (`PENDING`, `DELIVERED`, or `FAILED`), `cpaasMessageId`, `cpaasProvider`, `sentAt`, and `deliveredAt`. The message body is **never** included.
+The response is paginated (`{ "data": [...], "pagination": { "count", "after" } }`). Each record carries `id`, `sessionId`, `direction`, `status` (`PENDING`, `DELIVERED`, or `FAILED`), `sentAt`, and `deliveredAt`. The message body is **never** included.
 
 See [SMS API reference](../api-reference/sms) for the full schema and filters.
 

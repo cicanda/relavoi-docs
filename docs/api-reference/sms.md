@@ -64,7 +64,6 @@ curl "https://api.relavoi.com/v1/sessions/5661962a-d7ad-4aea-88a0-210388e1285b/s
       "sessionId": "5661962a-d7ad-4aea-88a0-210388e1285b",
       "direction": "A_TO_B",
       "status": "DELIVERED",
-      "cpaasMessageId": "msg_9f2b1c",
       "sentAt": "2026-07-15T12:38:00.000Z",
       "deliveredAt": "2026-07-15T12:38:02.000Z"
     }
