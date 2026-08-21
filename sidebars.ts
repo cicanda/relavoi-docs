@@ -75,6 +75,19 @@ const sidebars: SidebarsConfig = {
         'sdks/ios/live-activities',
       ],
     },
+    {
+      type: 'category',
+      label: 'Flutter SDK (Dart)',
+      items: [
+        'sdks/flutter/installation',
+        'sdks/flutter/initialization',
+        'sdks/flutter/sessions',
+        'sdks/flutter/verification',
+        'sdks/flutter/events',
+        'sdks/flutter/push',
+        'sdks/flutter/presence',
+      ],
+    },
   ],
 };
 
