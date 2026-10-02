@@ -16,6 +16,7 @@ A session binds two real phone numbers to a proxy MSISDN for a bounded period. S
 | GET | `/v1/sessions` | List sessions with filters |
 | GET | `/v1/sessions/:id` | Get one session |
 | PATCH | `/v1/sessions/:id` | Update metadata / extend grace period |
+| PATCH | `/v1/sessions/:id/target` | [Swap party B](./target-swap) without changing the proxy |
 | POST | `/v1/sessions/:id/end` | End a session (enters GRACE_PERIOD) |
 | GET | `/v1/sessions/verify` | SDK call-verification lookup |
 | GET | `/v1/sessions/:id/calls` | List call records for one session |
