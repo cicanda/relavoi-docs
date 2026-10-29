@@ -7,6 +7,13 @@ const config: Config = {
   tagline: 'Privacy communication platform for the Nigerian market',
   favicon: 'img/favicon.ico',
 
+  headTags: [
+    {
+      tagName: 'link',
+      attributes: { rel: 'icon', type: 'image/svg+xml', href: '/img/favicon.svg' },
+    },
+  ],
+
   future: { v4: true },
 
   url: 'https://docs.relavoi.com',
@@ -44,8 +51,11 @@ const config: Config = {
     image: 'img/relavoi-social.png',
     colorMode: { respectPrefersColorScheme: true },
     navbar: {
-      title: 'Relavoi',
-      logo: { alt: 'Relavoi', src: 'img/logo.svg' },
+      logo: {
+        alt: 'Relavoi',
+        src: 'img/logo-header.svg',
+        srcDark: 'img/logo-footer.svg',
+      },
       items: [
         { type: 'docSidebar', sidebarId: 'docs', position: 'left', label: 'Docs' },
         { type: 'docSidebar', sidebarId: 'api', position: 'left', label: 'API Reference' },
@@ -55,6 +65,12 @@ const config: Config = {
     },
     footer: {
       style: 'dark',
+      logo: {
+        alt: 'Relavoi',
+        src: 'img/logo-footer.svg',
+        href: '/',
+        height: 40,
+      },
       links: [
         {
           title: 'Docs',

@@ -1,6 +1,7 @@
 import type {ReactNode} from 'react';
 import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
+import useBaseUrl from '@docusaurus/useBaseUrl';
 import Layout from '@theme/Layout';
 
 // Recreated from the design canvas's Cover artboard (Relavoi Frontend.html):
@@ -64,28 +65,15 @@ function Cover() {
         <div>
           {/* Brand mark */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div
-              style={{
-                width: 42,
-                height: 42,
-                background: 'oklch(0.72 0.16 145)',
-                color: '#0B1220',
-                display: 'grid',
-                placeItems: 'center',
-                borderRadius: 9,
-                fontFamily: "'IBM Plex Mono', monospace",
-                fontWeight: 700,
-                fontSize: 22,
-              }}
-            >
-              R
-            </div>
             <div>
-              <div style={{ fontSize: 18, fontWeight: 600, letterSpacing: '-0.01em' }}>
-                Relavoi
-              </div>
+              <img
+                src={useBaseUrl('/img/logo-footer.svg')}
+                alt="Relavoi"
+                style={{ height: 48, width: 'auto', display: 'block' }}
+              />
               <div
                 style={{
+                  marginTop: 10,
                   fontSize: 11,
                   color: '#94A3B8',
                   fontFamily: "'IBM Plex Mono', monospace",
