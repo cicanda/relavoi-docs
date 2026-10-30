@@ -236,7 +236,7 @@ function Cover() {
               fontFamily: "'IBM Plex Mono', monospace",
             }}
           >
-            v1.1 architecture · NDPR-aligned · NCC type-approved CPaaS
+            v1.1 architecture · NDPR-aligned · NCC type-approved carrier
           </div>
         </div>
       </div>

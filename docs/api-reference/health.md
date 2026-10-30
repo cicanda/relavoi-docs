@@ -1,7 +1,7 @@
 ---
 title: Health API
 sidebar_label: Health
-description: Unauthenticated liveness and CPaaS circuit-breaker status endpoints for monitoring and uptime checks.
+description: Unauthenticated liveness and carrier circuit-breaker status endpoints for monitoring and uptime checks.
 ---
 
 # Health API
@@ -13,7 +13,7 @@ These endpoints report platform health. They require **no authentication** and a
 | Method | Path | Summary |
 |--------|------|---------|
 | GET | `/v1/health` | Liveness and dependency checks |
-| GET | `/v1/health/cpaas` | CPaaS provider circuit-breaker state |
+| GET | `/v1/health/cpaas` | Carrier circuit-breaker state |
 
 ---
 

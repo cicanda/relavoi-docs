@@ -1,7 +1,7 @@
 ---
 title: Webhooks API
 sidebar_label: Webhooks
-description: Configure the single tenant webhook URL, send a test event, review delivery logs, and understand the inbound CPaaS callbacks.
+description: Configure the single tenant webhook URL, send a test event, review delivery logs, and understand the inbound carrier callbacks.
 ---
 
 # Webhooks API
@@ -9,7 +9,7 @@ description: Configure the single tenant webhook URL, send a test event, review 
 There are two distinct webhook flows:
 
 - **Tenant webhooks** (outbound, us → you): you configure **one** webhook URL for your tenant and a list of event types. We POST events to that URL and sign each delivery with your webhook secret. See [Webhook integration](../guides/webhook-integration).
-- **CPaaS callbacks** (inbound, provider → us): the telephony provider posts call and SMS events to Relavoi. You do **not** call these endpoints; they are documented under [CPaaS callbacks (inbound)](#cpaas-callbacks-inbound) so you understand the full picture.
+- **Carrier callbacks** (inbound, provider → us): the telephony provider posts call and SMS events to Relavoi. You do **not** call these endpoints; they are documented under [Carrier callbacks (inbound)](#carrier-callbacks-inbound) so you understand the full picture.
 
 :::info Single webhook URL per tenant
 Relavoi stores **one** webhook URL per tenant, not a collection of webhook subscriptions. Registering again overwrites the previous URL, event list, and secret. There are no per-webhook ids and no `409 conflict` on duplicate URLs.
@@ -23,8 +23,8 @@ Relavoi stores **one** webhook URL per tenant, not a collection of webhook subsc
 | GET | `/v1/webhooks` | Get current webhook config + recent deliveries |
 | POST | `/v1/webhooks/test` | Enqueue a synthetic `session.created` delivery |
 | GET | `/v1/webhooks/logs` | Paginated delivery logs |
-| POST | `/v1/webhooks/cpaas/voice` | Inbound CPaaS voice callback (returns XML) |
-| POST | `/v1/webhooks/cpaas/sms` | Inbound CPaaS SMS callback |
+| POST | `/v1/webhooks/cpaas/voice` | Inbound carrier voice callback (returns XML) |
+| POST | `/v1/webhooks/cpaas/sms` | Inbound carrier SMS callback |
 
 Tenant endpoints require a Bearer JWT. Errors follow RFC 7807 Problem Details.
 
@@ -190,7 +190,7 @@ Delivery-log fields: `event`, `url`, `statusCode`, `success`, `attemptCount`, `r
 
 ---
 
-## CPaaS callbacks (inbound)
+## Carrier callbacks (inbound)
 
 These endpoints are called by the telephony provider, **not** by tenants. They are listed here so you understand what Relavoi receives on your behalf. In production they are verified via an HMAC signature header; the signature check is skipped only in the provider sandbox.
 

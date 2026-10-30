@@ -75,7 +75,7 @@ Our routing SLO is `p99 < 500 ms` from webhook receipt to dial response. The bud
 | Redis session lookup | 10 ms | `HGETALL session:proxy:{number}` |
 | Routing decision | 5 ms | Pure CPU, no I/O |
 | Response serialization | 10 ms | XML build |
-| Network back to CPaaS | 30 ms | Same-region (Cape Town) |
+| Network back to carrier | 30 ms | Same-region (Cape Town) |
 | **Total p50** | ~85 ms | |
 | **Total p99 headroom** | 415 ms | Absorbs GC pauses, retries |
 

@@ -37,7 +37,7 @@ A **session** is a time-bounded, two-party link between a real `partyA` (typical
                 +-----------+
 ```
 
-A failed creation (number pool exhausted, CPaaS error) transitions `PENDING` to `FAILED`. You can retry, which returns to `PENDING`.
+A failed creation (number pool exhausted, carrier error) transitions `PENDING` to `FAILED`. You can retry, which returns to `PENDING`.
 
 | State | Routes inbound calls? | Notes |
 |-------|----------------------|-------|
@@ -49,7 +49,7 @@ A failed creation (number pool exhausted, CPaaS error) transitions `PENDING` to 
 
 ## Proxy numbers
 
-A proxy number is a real Nigerian MSISDN provisioned through our CPaaS pool. Proxy numbers are a finite resource, and the Number Pool Manager allocates them under three invariants:
+A proxy number is a real Nigerian MSISDN provisioned through our carrier pool. Proxy numbers are a finite resource, and the Number Pool Manager allocates them under three invariants:
 
 1. **Pool sharing**. A single proxy may host multiple concurrent sessions as long as no participant overlaps between sessions on that proxy.
 2. **Participant non-overlap**. If session S1 on proxy P contains phones `+2348012345678` and `+2348087654321`, no other session on P may include either of those phones. This is enforced atomically via a Redis Lua script.

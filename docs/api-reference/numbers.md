@@ -1,7 +1,7 @@
 ---
 title: Numbers API
 sidebar_label: Numbers
-description: Inspect your proxy number pool and request additional capacity from the CPaaS provider.
+description: Inspect your proxy number pool and request additional capacity from the carrier.
 ---
 
 # Numbers API

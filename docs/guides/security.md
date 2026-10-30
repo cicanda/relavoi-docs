@@ -24,7 +24,7 @@ KMS Master Key (AWS KMS, region-locked)
         -> Per-record DEK (envelope-encrypted, stored alongside ciphertext)
 ```
 
-The DEK is generated per record and discarded from memory after use. Plaintext phone numbers only ever exist in the Call Router process for the few milliseconds required to issue the dial command to the CPaaS.
+The DEK is generated per record and discarded from memory after use. Plaintext phone numbers only ever exist in the Call Router process for the few milliseconds required to issue the dial command to the carrier.
 
 Hash lookups use a separate **SHA-256 + per-tenant salt** column (`party_a_phone_hash`). This lets the routing layer match incoming callers without decrypting any session.
 
