@@ -171,7 +171,7 @@ function StyleGuide() {
 
             <div style={{ height: 1, background: '#EEF2F7', margin: '18px 0' }} />
             <div style={{ fontSize: 14, lineHeight: 1.5 }}>
-              Body — used everywhere for paragraph copy, descriptions and form labels. Designed
+              Body: used everywhere for paragraph copy, descriptions and form labels. Designed
               for readability at standard interface densities.
             </div>
             <div
@@ -307,7 +307,7 @@ function StyleGuide() {
               padding: 16,
             }}
           >
-            <div style={{ fontWeight: 600, marginBottom: 4 }}>Tenant console — light</div>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>Tenant console (light)</div>
             <div style={{ fontSize: 13, color: '#64748B', lineHeight: 1.5 }}>
               Bone-100 page background, white cards, ink-200 borders. For builders integrating
               the platform: warm, document-oriented, low contrast.
@@ -323,7 +323,7 @@ function StyleGuide() {
               padding: 16,
             }}
           >
-            <div style={{ fontWeight: 600, marginBottom: 4 }}>Operator console — dark</div>
+            <div style={{ fontWeight: 600, marginBottom: 4 }}>Operator console (dark)</div>
             <div style={{ fontSize: 13, color: '#94A3B8', lineHeight: 1.5 }}>
               Ink-900 page, ink-800 chrome and cards, signal-green active states. For Relavoi
               operations: NOC-style, high-density, status-first.

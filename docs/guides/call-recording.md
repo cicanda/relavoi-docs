@@ -27,13 +27,13 @@ Set `recordingConsentMode` on the tenant (or `consentPrompt` per session) to one
 |------|-----------|-------------|
 | `DEFAULT` | Built-in TTS: "This call may be recorded for quality and safety purposes." | You want zero ops overhead and a neutral message. |
 | `CUSTOM` | Your own audio file (hosted at `recordingConsentAudioUrl`) | You need brand voice, multilingual greetings, or extra wording. |
-| `NONE` | Nothing — and `recordingEnabled` MUST be `false` | You are not recording. The API rejects sessions that try to mix `NONE` with recording enabled. |
+| `NONE` | Nothing, and `recordingEnabled` MUST be `false` | You are not recording. The API rejects sessions that try to mix `NONE` with recording enabled. |
 
 The default English text is exactly:
 
 > "This call may be recorded for quality and safety purposes."
 
-It plays at the start of the very first call leg of a session, before audio bridges. Subsequent calls within the same session do **not** replay the prompt — the consent is recorded once per session.
+It plays at the start of the very first call leg of a session, before audio bridges. Subsequent calls within the same session do **not** replay the prompt. The consent is recorded once per session.
 
 ## Enabling recording on a session
 

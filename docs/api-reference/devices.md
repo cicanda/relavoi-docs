@@ -8,7 +8,7 @@ description: Register push tokens and report device presence so masked-call noti
 
 These endpoints are used by the Relavoi SDK to register APNs/FCM push tokens and to report device presence (app foreground state / reachability). The Push Notification Service uses this data to deliver branded call notifications to the correct device.
 
-Auth: Bearer JWT — a tenant SDK token (`POST /auth/token`) or a dashboard user token.
+Auth: Bearer JWT, either a tenant SDK token (`POST /auth/token`) or a dashboard user token.
 
 Phone numbers are Nigerian mobile numbers. `+2348012345678`, `08012345678` and
 `8012345678` are all accepted and normalised to E.164; anything else is a `422
@@ -52,7 +52,7 @@ curl -X POST https://api.relavoi.com/v1/devices/token \
 
 **Response**
 
-`204 No Content` — empty body. The token is registered/refreshed.
+`204 No Content` with an empty body. The token is registered/refreshed.
 
 **Errors**
 
@@ -86,7 +86,7 @@ curl -X DELETE https://api.relavoi.com/v1/devices/token \
 
 **Response**
 
-`204 No Content` — empty body. The token is deactivated.
+`204 No Content` with an empty body. The token is deactivated.
 
 **Errors**
 
@@ -122,7 +122,7 @@ curl -X POST https://api.relavoi.com/v1/devices/presence \
 
 **Response**
 
-`204 No Content` — empty body.
+`204 No Content` with an empty body.
 
 **Errors**
 

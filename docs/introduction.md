@@ -53,23 +53,23 @@ Unlike consumer privacy apps (Burner, Hushed) which target individual users, Rel
 +--------------------------------------+
 ```
 
-### Layer 1 — Client Applications
+### Layer 1: Client Applications
 
 Your existing mobile and web products. You decide when to start a masking session (typically the moment an order is created or an agent is assigned) and when to end it.
 
-### Layer 2 — Relavoi SDK
+### Layer 2: Relavoi SDK
 
 A lightweight Kotlin or Swift library. It handles short-lived JWT refresh, listens for active calls on the device, displays branded verification banners, and forwards push tokens to our backend.
 
-### Layer 3 — Relavoi Platform
+### Layer 3: Relavoi Platform
 
 The control plane. Allocates proxy numbers atomically, routes calls in under 500 ms p99, deduplicates telephony webhooks, and fans out events to your registered webhooks.
 
-### Layer 4 — Telephony Provider
+### Layer 4: Telephony Provider
 
 We route Nigerian voice and SMS over a licensed telephony provider optimized for in-region pricing and PSTN routing, with an automatic failover provider on standby for high availability.
 
-### Layer 5 — Telco Infrastructure
+### Layer 5: Telco Infrastructure
 
 The user never installs anything weird. The proxy number is a real Nigerian MSISDN, so calls ring the same way they always do on the national mobile networks.
 

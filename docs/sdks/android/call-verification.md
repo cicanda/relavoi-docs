@@ -18,7 +18,7 @@ Call verification is the Revolut-style anti-impersonation flow. When your app is
 
 ## Basic usage
 
-`VerificationResult` is a plain data class — not a sealed hierarchy. Read the `verified` boolean and use the `bannerText` helper for a ready-to-display label.
+`VerificationResult` is a plain data class, not a sealed hierarchy. Read the `verified` boolean and use the `bannerText` helper for a ready-to-display label.
 
 ```kotlin
 import com.relavoi.sdk.Relavoi
@@ -56,7 +56,7 @@ The backend does not currently populate the `context` string, so `bannerText` re
 
 ## Re-checking on resume
 
-`CallVerificationManager` does not expose a call-state observer. Poll `isCallActive()` at natural UI moments — typically `onResume()` — and call `verify()` when a call is in progress, as shown above. The SDK installs its own `TelephonyManager` call-state observer internally at `initialize()` time to keep `isCallActive()` current.
+`CallVerificationManager` does not expose a call-state observer. Poll `isCallActive()` at natural UI moments (typically `onResume()`) and call `verify()` when a call is in progress, as shown above. The SDK installs its own `TelephonyManager` call-state observer internally at `initialize()` time to keep `isCallActive()` current.
 
 ## Permission notes
 
@@ -72,5 +72,5 @@ if (!Relavoi.verification.hasPhoneStatePermission(requireContext())) {
 ```
 
 :::tip UX guidance
-Show the green banner only after `verify()` returns `Verified` — never assume the call is legitimate just because one is in progress. The red banner has even more value than the green one: customers learn to trust the warning.
+Show the green banner only after `verify()` returns `Verified`. Never assume the call is legitimate just because one is in progress. The red banner has even more value than the green one: customers learn to trust the warning.
 :::

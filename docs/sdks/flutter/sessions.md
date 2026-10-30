@@ -6,7 +6,7 @@ description: Create, fetch, list, and end masking sessions from the Flutter SDK 
 
 # Sessions on Flutter
 
-All session APIs are `Future`-returning and are reached through `Relavoi.instance.sessions`. Errors throw a subclass of `RelavoiException` — typically `SessionException`, `ValidationException`, or `TierLimitException`.
+All session APIs are `Future`-returning and are reached through `Relavoi.instance.sessions`. Errors throw a subclass of `RelavoiException`, typically `SessionException`, `ValidationException`, or `TierLimitException`.
 
 ## Create a session
 
@@ -86,7 +86,7 @@ final session = await Relavoi.instance.sessions.create(
 ```
 
 :::note maxDurationMinutes is server-controlled
-The hard call-duration cap is enforced by the backend and surfaced on the returned `Session` as `maxDurationMinutes`. It is not a creation parameter. Likewise, if recording is enabled the server requires a consent prompt — that combination is validated server-side.
+The hard call-duration cap is enforced by the backend and surfaced on the returned `Session` as `maxDurationMinutes`. It is not a creation parameter. Likewise, if recording is enabled the server requires a consent prompt. That combination is validated server-side.
 :::
 
 ## Fetch one
@@ -136,7 +136,7 @@ The session transitions to `SessionState.gracePeriod`. Watch the [events stream]
 
 ## Initiate a call from the agent's device
 
-`initiateCall` opens the OS dialer with the proxy number pre-filled, via `url_launcher` and a `tel:` URI. It does not place the call automatically — the agent taps the dial button, meeting both platforms' policies for dialer integrations.
+`initiateCall` opens the OS dialer with the proxy number pre-filled, via `url_launcher` and a `tel:` URI. It does not place the call automatically. The agent taps the dial button, meeting both platforms' policies for dialer integrations.
 
 Pass the proxy number (not the session id):
 

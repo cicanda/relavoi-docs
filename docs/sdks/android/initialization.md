@@ -91,7 +91,7 @@ For production builds, source the same values from your CI secret manager.
 The SDK persists the JWT in **Android Keystore-backed EncryptedSharedPreferences**. You do not need to manage tokens yourself; refresh is transparent.
 
 :::warning Initialize before any other call
-Accessing any subsystem — `Relavoi.sessions`, `Relavoi.events`, `Relavoi.verification`, `Relavoi.push`, `Relavoi.presence` — before `Relavoi.initialize(...)` throws `RelavoiException.NotInitialized`. Use `Relavoi.isInitialized()` to check first if you are unsure.
+Accessing any subsystem (`Relavoi.sessions`, `Relavoi.events`, `Relavoi.verification`, `Relavoi.push`, `Relavoi.presence`) before `Relavoi.initialize(...)` throws `RelavoiException.NotInitialized`. Use `Relavoi.isInitialized()` to check first if you are unsure.
 :::
 
 Next: [Creating sessions](./sessions).

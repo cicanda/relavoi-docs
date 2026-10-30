@@ -6,7 +6,7 @@ description: Report device reachability and app foreground state to Relavoi auto
 
 # Presence reporting
 
-The presence module reports device reachability to Relavoi so the backend knows whether a user is online, backgrounded, or offline. That state feeds routing and push decisions — for example, whether to lean on a push notification because the app is not in the foreground.
+The presence module reports device reachability to Relavoi so the backend knows whether a user is online, backgrounded, or offline. That state feeds routing and push decisions, for example whether to lean on a push notification because the app is not in the foreground.
 
 Presence is pure Dart. Once started, it wires itself to the app lifecycle and reports transitions automatically; you do not send heartbeats by hand.
 
@@ -42,7 +42,7 @@ On sign-out, stop reporting:
 Relavoi.instance.presence.stop();
 ```
 
-This detaches the lifecycle observer and halts heartbeats. Pair it with the sign-out steps for the other modules — [`push.deactivateToken()`](./push) and [`events.disconnect()`](./events) — so the device goes fully quiet.
+This detaches the lifecycle observer and halts heartbeats. Pair it with the sign-out steps for the other modules ([`push.deactivateToken()`](./push) and [`events.disconnect()`](./events)) so the device goes fully quiet.
 
 ## Typical wiring
 
@@ -61,5 +61,5 @@ Future<void> onSignedOut() async {
 ```
 
 :::tip Start once
-Call `start` a single time per signed-in session. Calling it again with a different phone is how you switch users; there is no need to restart it on every foreground — the module already tracks lifecycle transitions on its own.
+Call `start` a single time per signed-in session. Calling it again with a different phone is how you switch users; there is no need to restart it on every foreground, as the module already tracks lifecycle transitions on its own.
 :::

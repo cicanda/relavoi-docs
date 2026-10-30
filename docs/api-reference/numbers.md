@@ -67,7 +67,7 @@ curl https://api.relavoi.com/v1/numbers/pool \
 Auth: Bearer **dashboard** JWT with `OWNER` role (from `/auth/dashboard/login`). A standard SDK/tenant token is rejected with `403`.
 
 :::warning Not yet available
-Self-service provisioning is not yet implemented. Even with a valid owner token the endpoint returns `501`. Requesting additional capacity today is a human-in-the-loop step — contact support. The contract is documented here so integrations can be staged against it.
+Self-service provisioning is not yet implemented. Even with a valid owner token the endpoint returns `501`. Requesting additional capacity today is a human-in-the-loop step: contact support. The contract is documented here so integrations can be staged against it.
 :::
 
 | Field | Type | Required | Description |
@@ -84,7 +84,7 @@ curl -X POST https://api.relavoi.com/v1/numbers/provision \
   -d '{ "count": 50, "region": "lagos" }'
 ```
 
-**Response (today)** — `501 Not Implemented`. Note this body is a plain `{ error }` object, not the RFC 7807 shape.
+**Response (today):** `501 Not Implemented`. Note this body is a plain `{ error }` object, not the RFC 7807 shape.
 
 ```json
 {
@@ -98,4 +98,4 @@ curl -X POST https://api.relavoi.com/v1/numbers/provision \
 |--------|------|------|
 | 400 | validation | Missing/invalid `region` or `count` |
 | 403 | forbidden | Called with a tenant/SDK token instead of an `OWNER` dashboard token |
-| 501 | — | Endpoint not yet implemented (returned for authorized owners) |
+| 501 | None | Endpoint not yet implemented (returned for authorized owners) |

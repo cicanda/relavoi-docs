@@ -59,14 +59,14 @@ The SDK declares these permissions automatically via manifest merger:
 <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 ```
 
-If you use push notifications, add `POST_NOTIFICATIONS` to your own app's manifest — the SDK does not declare it for you:
+If you use push notifications, add `POST_NOTIFICATIONS` to your own app's manifest, since the SDK does not declare it for you:
 
 ```xml
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 ```
 
 :::warning Runtime permission still required
-Declaring `READ_PHONE_STATE` in the manifest is necessary but not sufficient. On API 23+ your host app must request it at runtime — see [Permissions](./permissions). Same for `POST_NOTIFICATIONS` on API 33+ and `SYSTEM_ALERT_WINDOW` (for the floating verification bubble).
+Declaring `READ_PHONE_STATE` in the manifest is necessary but not sufficient. On API 23+ your host app must request it at runtime. See [Permissions](./permissions). Same for `POST_NOTIFICATIONS` on API 33+ and `SYSTEM_ALERT_WINDOW` (for the floating verification bubble).
 :::
 
 ## ProGuard / R8

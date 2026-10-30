@@ -67,7 +67,7 @@ curl -X POST https://api.relavoi.com/v1/webhooks \
   }'
 ```
 
-**Response** — `201 Created`
+**Response:** `201 Created`
 
 ```json
 {
@@ -105,16 +105,16 @@ curl https://api.relavoi.com/v1/webhooks \
 }
 ```
 
-- `url` — the configured webhook URL, or `null` if none is set.
-- `events` — the subscribed event names.
-- `hasSecret` — whether a signing secret is configured (the secret itself is never returned here).
-- `recentDeliveries` — up to the latest 50 delivery-log entries (same shape as [`/v1/webhooks/logs`](#get-v1webhookslogs)).
+- `url`: the configured webhook URL, or `null` if none is set.
+- `events`: the subscribed event names.
+- `hasSecret`: whether a signing secret is configured (the secret itself is never returned here).
+- `recentDeliveries`: up to the latest 50 delivery-log entries (same shape as [`/v1/webhooks/logs`](#get-v1webhookslogs)).
 
 ---
 
 ### POST /v1/webhooks/test
 
-Enqueues a synthetic `session.created` delivery to your configured webhook URL. Useful for verifying your signature-verification implementation. Takes **no request body** — the event type is always `session.created`.
+Enqueues a synthetic `session.created` delivery to your configured webhook URL. Useful for verifying your signature-verification implementation. Takes **no request body**. The event type is always `session.created`.
 
 **Request**
 
@@ -123,7 +123,7 @@ curl -X POST https://api.relavoi.com/v1/webhooks/test \
   -H "Authorization: Bearer $RELAVOI_JWT"
 ```
 
-**Response** — `202 Accepted`
+**Response:** `202 Accepted`
 
 ```json
 {
@@ -153,7 +153,7 @@ Paginated delivery logs, newest first. Cursor pagination by delivery timestamp.
 | Query | Type | Required | Description |
 |-------|------|----------|-------------|
 | limit | integer | no | Default 50, max 200 |
-| after | string (ISO 8601) | no | Cursor — timestamp of the last row from the previous page |
+| after | string (ISO 8601) | no | Cursor: timestamp of the last row from the previous page |
 
 **Request**
 

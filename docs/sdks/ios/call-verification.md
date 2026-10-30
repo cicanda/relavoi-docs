@@ -1,12 +1,12 @@
 ---
 title: Call verification banner
 sidebar_label: Call verification
-description: Use CXCallObserver to detect active calls without permission prompts, then show a verified or warning banner — Revolut-style.
+description: Use CXCallObserver to detect active calls without permission prompts, then show a verified or warning banner, Revolut-style.
 ---
 
 # Call verification banner
 
-iOS gives us a clean win here: `CXCallObserver` reports active calls without requiring any permission prompt. Verification is therefore frictionless on iOS — the user never sees a permission dialog.
+iOS gives us a clean win here: `CXCallObserver` reports active calls without requiring any permission prompt. Verification is therefore frictionless on iOS. The user never sees a permission dialog.
 
 ## How it works
 
@@ -40,7 +40,7 @@ struct HomeView: View {
 }
 ```
 
-`isCallActive` reflects the current `CXCallObserver` state synchronously, so you can gate the network call on it. There is no separate call-state callback API — check `isCallActive` when your view appears or when the app returns to the foreground.
+`isCallActive` reflects the current `CXCallObserver` state synchronously, so you can gate the network call on it. There is no separate call-state callback API. Check `isCallActive` when your view appears or when the app returns to the foreground.
 
 ## Banner UI
 
@@ -69,7 +69,7 @@ struct BannerView: View {
 ```
 
 :::note context is not populated yet
-`context` is reserved for a human-readable string like "Your Chowdeck rider is calling", but the backend does not populate it today — it is always `nil`. Always provide a fallback label as shown above.
+`context` is reserved for a human-readable string like "Your Chowdeck rider is calling", but the backend does not populate it today: it is always `nil`. Always provide a fallback label as shown above.
 :::
 
 ## VerificationResult struct
@@ -87,7 +87,7 @@ When `verified == true`, `sessionId` identifies the matched session and `expires
 
 ## Why no permission?
 
-`CXCallObserver` is part of CallKit and Apple intentionally exposes it without a permission prompt — Apple considers passive call-state observation by an app whose user is in an active call to be safe. This is why iOS gets the native, Revolut-style UX: no dialogs, just clean detection. (On Android the equivalent requires the `READ_PHONE_STATE` runtime permission.)
+`CXCallObserver` is part of CallKit and Apple intentionally exposes it without a permission prompt. Apple considers passive call-state observation by an app whose user is in an active call to be safe. This is why iOS gets the native, Revolut-style UX: no dialogs, just clean detection. (On Android the equivalent requires the `READ_PHONE_STATE` runtime permission.)
 
 :::tip Pair with Live Activities
 Combine verification with [Live Activities](./live-activities) to keep the verified banner pinned to the Lock Screen and Dynamic Island for the duration of the call. End users find it dramatically more reassuring.

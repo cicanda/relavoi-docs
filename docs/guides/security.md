@@ -42,7 +42,7 @@ Logging policy is enforced by lint rules and a redaction layer in the logger:
 - Database query logs use bound parameters, never inline string interpolation
 - Crash reports and APM traces redact PII before transmission
 
-If you spot a plaintext MSISDN in any Relavoi log or response, file a security bug at `security@relavoi.com` — that is a P0.
+If you spot a plaintext MSISDN in any Relavoi log or response, file a security bug at `security@relavoi.com`. That is a P0.
 
 ## API key and secret model
 

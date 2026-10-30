@@ -1,7 +1,7 @@
 ---
 title: Sessions API
 sidebar_label: Sessions
-description: Create, list, fetch, update, end, and verify masking sessions — the core primitive of the Relavoi platform.
+description: Create, list, fetch, update, end, and verify masking sessions, the core primitive of the Relavoi platform.
 ---
 
 # Sessions API
@@ -55,7 +55,7 @@ curl -X POST https://api.relavoi.com/v1/sessions \
   }'
 ```
 
-**Response** — `201 Created`. The session becomes `ACTIVE` immediately and a proxy number is allocated.
+**Response:** `201 Created`. The session becomes `ACTIVE` immediately and a proxy number is allocated.
 
 ```json
 {
@@ -221,7 +221,7 @@ curl -X PATCH https://api.relavoi.com/v1/sessions/5661962a-d7ad-4aea-88a0-210388
   -d '{ "metadata": { "note": "x" } }'
 ```
 
-**Response** — the full, updated session. Note `metadata` is merged, not replaced.
+**Response:** the full, updated session. Note `metadata` is merged, not replaced.
 
 ```json
 {
@@ -267,7 +267,7 @@ curl -X POST https://api.relavoi.com/v1/sessions/5661962a-d7ad-4aea-88a0-210388e
   -H "Authorization: Bearer $RELAVOI_JWT"
 ```
 
-**Response** — the full session, now in `GRACE_PERIOD`.
+**Response:** the full session, now in `GRACE_PERIOD`.
 
 ```json
 {
@@ -304,7 +304,7 @@ curl -X POST https://api.relavoi.com/v1/sessions/5661962a-d7ad-4aea-88a0-210388e
 
 Auth: Bearer JWT (tenant). Called by the SDK to drive the call-verification banner; not typically called by your backend directly.
 
-The tenant is derived from the JWT. Pass the user's **raw phone number** as `userPhone` — the backend normalises it, then hashes it internally with the per-tenant salt to look up an active session. A local form such as `08012345678` works, which matters because that is often what a handset reports.
+The tenant is derived from the JWT. Pass the user's **raw phone number** as `userPhone`. The backend normalises it, then hashes it internally with the per-tenant salt to look up an active session. A local form such as `08012345678` works, which matters because that is often what a handset reports.
 
 | Query | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -317,7 +317,7 @@ curl "https://api.relavoi.com/v1/sessions/verify?userPhone=+2348012340001" \
   -H "Authorization: Bearer $RELAVOI_JWT"
 ```
 
-**Response — verified**
+**Response: verified**
 
 ```json
 {
@@ -328,7 +328,7 @@ curl "https://api.relavoi.com/v1/sessions/verify?userPhone=+2348012340001" \
 }
 ```
 
-**Response — not verified**
+**Response: not verified**
 
 ```json
 {

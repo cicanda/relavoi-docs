@@ -19,7 +19,7 @@ iOS 16.1+ Live Activities let you show the verified-call banner on the Lock Scre
 
 ## 1. Start an activity when a verified call connects
 
-`LiveActivityManager` is a standalone class you own — it is **not** exposed on `Relavoi.shared`. Create one instance and hold it for the lifetime of the call:
+`LiveActivityManager` is a standalone class you own. It is **not** exposed on `Relavoi.shared`. Create one instance and hold it for the lifetime of the call:
 
 ```swift
 import RelavoiSDK
@@ -55,7 +55,7 @@ final class CallActivityController {
 
 ## 2. Wire the activity views into your Widget bundle
 
-Create a Widget Extension target in Xcode if you do not have one. The extension needs its own imports — `ActivityKit`, `SwiftUI`, and `WidgetKit` — plus `RelavoiSDK` for the prebuilt views:
+Create a Widget Extension target in Xcode if you do not have one. The extension needs its own imports (`ActivityKit`, `SwiftUI`, and `WidgetKit`) plus `RelavoiSDK` for the prebuilt views:
 
 ```swift
 import ActivityKit
@@ -116,7 +116,7 @@ public struct RelavoiCallAttributes: ActivityAttributes {
 }
 ```
 
-You typically do not construct this yourself — `LiveActivityManager.start(...)` does. If you have custom needs you can build a `RelavoiCallAttributes(sessionId:proxyNumber:startedAt:)` and drive `Activity.request` directly.
+You typically do not construct this yourself. `LiveActivityManager.start(...)` does. If you have custom needs you can build a `RelavoiCallAttributes(sessionId:proxyNumber:startedAt:)` and drive `Activity.request` directly.
 
 ## 4. Manual updates
 

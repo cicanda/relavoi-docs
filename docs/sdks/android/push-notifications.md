@@ -92,7 +92,7 @@ viewModelScope.launch {
 
 ## 4. Rendering the notification
 
-The SDK does not build or post the system notification for you — its default `onRelavoiNotification` only logs. Render the notification yourself inside your `onRelavoiNotification` override (step 1), including creating any notification channel on API 26+. This gives you full control over channel, importance, icon, and deep link.
+The SDK does not build or post the system notification for you. Its default `onRelavoiNotification` only logs. Render the notification yourself inside your `onRelavoiNotification` override (step 1), including creating any notification channel on API 26+. This gives you full control over channel, importance, icon, and deep link.
 
 ## 5. POST_NOTIFICATIONS runtime permission
 

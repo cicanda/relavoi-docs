@@ -21,8 +21,8 @@ All Relavoi API errors follow [RFC 7807 (Problem Details for HTTP APIs)](https:/
 
 Optional fields:
 
-- `instance` — a unique error correlation id (`urn:relavoi:err:<uuid>`)
-- `errors` — array of field-level issues for validation errors
+- `instance`: a unique error correlation id (`urn:relavoi:err:<uuid>`)
+- `errors`: array of field-level issues for validation errors
 
 ## Type catalog
 
@@ -41,7 +41,7 @@ Every error `type` resolves to a human-readable description page at `https://api
 | `cross-border-not-supported` | 422 | Both numbers are valid, but they are in different countries |
 | `country-not-enabled` | 422 | The country is not enabled for your workspace |
 | `feature-not-available` | 422 | The feature is not available yet. See [Call recording](#call-recording) |
-| `internal` | 500 | Server-side error; transient — retry with backoff |
+| `internal` | 500 | Server-side error; transient, so retry with backoff |
 
 ## Worked examples
 

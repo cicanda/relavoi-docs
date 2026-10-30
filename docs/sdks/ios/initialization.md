@@ -72,7 +72,7 @@ enum Secrets {
 
 ## Keychain storage
 
-The SDK persists the short-lived JWT in the iOS Keychain as a device-local generic-password item (service `com.relavoi.sdk.auth`, accessible after first unlock, this-device-only). The tenant ID is used as the account, so multiple tenants can coexist in one host app. This is fully automatic — no configuration and no **Keychain Sharing** capability are required.
+The SDK persists the short-lived JWT in the iOS Keychain as a device-local generic-password item (service `com.relavoi.sdk.auth`, accessible after first unlock, this-device-only). The tenant ID is used as the account, so multiple tenants can coexist in one host app. This is fully automatic: no configuration and no **Keychain Sharing** capability are required.
 
 ## RelavoiConfig fields
 

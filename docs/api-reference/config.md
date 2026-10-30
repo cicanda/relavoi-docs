@@ -1,7 +1,7 @@
 ---
 title: Tenant Config API
 sidebar_label: Config
-description: Read and update your tenant configuration — webhook URL, grace period, expired-call behavior, and recording settings.
+description: Read and update your tenant configuration, covering webhook URL, grace period, expired-call behavior, and recording settings.
 ---
 
 # Tenant Config API
@@ -90,7 +90,7 @@ Updates one or more configuration fields. Only the fields you send are changed. 
 | pushConfig | object | Push notification config |
 
 :::warning Recording consent is enforced
-If `recordingEnabled` is `true`, `recordingConsentMode` cannot be `NONE`. This is an NDPR compliance requirement — a consent announcement must play before calls are bridged. A request that would leave recording enabled with consent disabled is rejected with `400`.
+If `recordingEnabled` is `true`, `recordingConsentMode` cannot be `NONE`. This is an NDPR compliance requirement: a consent announcement must play before calls are bridged. A request that would leave recording enabled with consent disabled is rejected with `400`.
 :::
 
 **Request**

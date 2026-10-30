@@ -29,7 +29,7 @@ private fun ensurePhonePermission() {
 }
 ```
 
-Suggested moment to ask: the first time the user enters a screen that displays the call-verification banner — not at app launch.
+Suggested moment to ask: the first time the user enters a screen that displays the call-verification banner, not at app launch.
 
 ## POST_NOTIFICATIONS (API 33+)
 
@@ -49,7 +49,7 @@ Suggested moment: immediately before calling `Relavoi.push.registerToken(...)`.
 
 ## SYSTEM_ALERT_WINDOW (overlay)
 
-Optional. Lets the SDK show its floating verification bubble (`FloatingBubbleService`) as a system overlay even when your app is not the active screen — useful if the user has the native dialer open during the call.
+Optional. Lets the SDK show its floating verification bubble (`FloatingBubbleService`) as a system overlay even when your app is not the active screen. This is useful if the user has the native dialer open during the call.
 
 This permission cannot be requested through the standard runtime flow. Send the user to system settings:
 
@@ -73,7 +73,7 @@ private val overlayPermLauncher = registerForActivityResult(
 ) { /* result.resultCode does not reflect grant; re-check Settings.canDrawOverlays */ }
 ```
 
-If overlay permission is denied, the floating bubble cannot be shown — render your own in-app banner inside your Activity instead (see [Call verification](./call-verification)).
+If overlay permission is denied, the floating bubble cannot be shown. Render your own in-app banner inside your Activity instead (see [Call verification](./call-verification)).
 
 ## Checking permission status
 
@@ -96,5 +96,5 @@ val hasOverlay = Settings.canDrawOverlays(this)
 Useful for a settings screen that shows the user which features are currently degraded.
 
 :::warning Do not ask all at once
-A wall of permission prompts at launch tanks grant rates. Ask each permission contextually — when the feature it unlocks is about to be used.
+A wall of permission prompts at launch tanks grant rates. Ask each permission contextually: when the feature it unlocks is about to be used.
 :::

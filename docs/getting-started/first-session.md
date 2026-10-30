@@ -1,7 +1,7 @@
 ---
 title: Your first masking session
 sidebar_label: First session
-description: Exchange your API key for a JWT, create a session, inspect it, and tear it down — all from curl.
+description: Exchange your API key for a JWT, create a session, inspect it, and tear it down, all from curl.
 ---
 
 # Your first masking session
@@ -31,7 +31,7 @@ Response:
 }
 ```
 
-`expiresIn` is in seconds — 900 seconds is 15 minutes. Stash the token in a shell variable:
+`expiresIn` is in seconds: 900 seconds is 15 minutes. Stash the token in a shell variable:
 
 ```bash
 export RELAVOI_JWT="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
@@ -79,7 +79,7 @@ Response:
 }
 ```
 
-A freshly created session is `ACTIVE` and its proxy is ready to route calls immediately. `proxyNumber` is the only phone number your UI should ever show — both parties dial it and answer it.
+A freshly created session is `ACTIVE` and its proxy is ready to route calls immediately. `proxyNumber` is the only phone number your UI should ever show. Both parties dial it and answer it.
 
 Save the session ID for the next steps:
 

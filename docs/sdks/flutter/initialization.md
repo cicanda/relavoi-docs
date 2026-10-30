@@ -6,7 +6,7 @@ description: Initialize the Relavoi Flutter SDK once at app startup, configure R
 
 # Flutter SDK initialization
 
-The SDK is a process-wide singleton. Initialize it exactly once, before `runApp`, and await the call — `initialize` is `static` and asynchronous.
+The SDK is a process-wide singleton. Initialize it exactly once, before `runApp`, and await the call. `initialize` is `static` and asynchronous.
 
 ## Basic initialization
 
@@ -106,7 +106,7 @@ if (Relavoi.isInitialized) {
 
 ## Shutting down
 
-To tear the SDK down — for example on sign-out in a multi-account host app — call the static `shutdown`:
+To tear the SDK down (for example on sign-out in a multi-account host app), call the static `shutdown`:
 
 ```dart
 Relavoi.shutdown();

@@ -1,12 +1,12 @@
 ---
 title: Core concepts
 sidebar_label: Concepts
-description: Sessions, proxy numbers, direction modes, grace periods, and consent — the five primitives every Relavoi integrator needs to internalise.
+description: Sessions, proxy numbers, direction modes, grace periods, and consent. These are the five primitives every Relavoi integrator needs to internalise.
 ---
 
 # Core concepts
 
-This page is the conceptual ground floor. Every other doc — guides, API, SDKs — assumes you understand these primitives.
+This page is the conceptual ground floor. Every other doc (guides, API, SDKs) assumes you understand these primitives.
 
 ## Sessions
 
@@ -71,8 +71,8 @@ A proxy number is a real Nigerian MSISDN provisioned through our CPaaS pool. Pro
 
 Two independent timers govern session lifetime:
 
-- `gracePeriodMinutes` (default 15) — runs **after** you call `end()`. Allows late callbacks to land on the same proxy. Once this elapses, the session moves to `EXPIRED`.
-- `maxDurationMinutes` (default 120) — runs **from creation**. A hard cap on total session lifetime regardless of activity. When this expires, the session jumps straight from `ACTIVE` to `EXPIRED`, skipping `GRACE_PERIOD`.
+- `gracePeriodMinutes` (default 15): runs **after** you call `end()`. Allows late callbacks to land on the same proxy. Once this elapses, the session moves to `EXPIRED`.
+- `maxDurationMinutes` (default 120): runs **from creation**. A hard cap on total session lifetime regardless of activity. When this expires, the session jumps straight from `ACTIVE` to `EXPIRED`, skipping `GRACE_PERIOD`.
 
 Pick `gracePeriodMinutes` based on your customer-callback window. Pick `maxDurationMinutes` based on your worst-case order fulfilment time.
 

@@ -6,7 +6,7 @@ description: Add the Relavoi iOS SDK via Swift Package Manager. iOS 15+, Swift 5
 
 # iOS SDK installation
 
-The Relavoi iOS SDK is distributed as a Swift package with no external dependencies. It uses URLSession, CryptoKit, and CallKit — all first-party Apple frameworks.
+The Relavoi iOS SDK is distributed as a Swift package with no external dependencies. It uses URLSession, CryptoKit, and CallKit (all first-party Apple frameworks).
 
 ## Requirements
 
@@ -51,7 +51,7 @@ let package = Package(
 import RelavoiSDK
 ```
 
-That is the entire surface — no transitive imports required. The SPM product and module are both named `RelavoiSDK`.
+That is the entire surface: no transitive imports required. The SPM product and module are both named `RelavoiSDK`.
 
 ## Capabilities checklist
 
@@ -73,7 +73,7 @@ The SDK uses no permission-protected APIs by default. CXCallObserver does **not*
 
 ## Verify
 
-Confirm the module resolves by constructing a default config — this compiles only when the package is linked correctly:
+Confirm the module resolves by constructing a default config (this compiles only when the package is linked correctly):
 
 ```swift
 import RelavoiSDK

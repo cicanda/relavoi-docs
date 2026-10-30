@@ -6,7 +6,7 @@ description: Fetch period usage, raw billable events, billing periods, and the p
 
 # Billing API
 
-Billing is metered from the same usage events that power analytics. All billing endpoints require a Bearer JWT (tenant) — there is no public billing endpoint. Errors follow RFC 7807 Problem Details.
+Billing is metered from the same usage events that power analytics. All billing endpoints require a Bearer JWT (tenant). There is no public billing endpoint. Errors follow RFC 7807 Problem Details.
 
 ## Endpoints
 
@@ -105,7 +105,7 @@ Lists the tenant's billing periods, newest first. Cursor pagination by period `i
 | Query | Type | Required | Description |
 |-------|------|----------|-------------|
 | limit | integer | no | Default 12, max 24 |
-| after | string (UUID) | no | Cursor — id of the last period from the previous page |
+| after | string (UUID) | no | Cursor: id of the last period from the previous page |
 
 **Request**
 
@@ -139,7 +139,7 @@ curl "https://api.relavoi.com/v1/billing/periods" \
 
 ### GET /v1/billing/pricing
 
-Per-tier, per-metric pricing rows. Requires authentication (Bearer JWT) — this is **not** a public endpoint. Rows are returned as `camelCase` DTOs with numeric price / quantity fields.
+Per-tier, per-metric pricing rows. Requires authentication (Bearer JWT). This is **not** a public endpoint. Rows are returned as `camelCase` DTOs with numeric price / quantity fields.
 
 **Request**
 

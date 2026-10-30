@@ -42,7 +42,7 @@ curl -X POST https://api.relavoi.com/v1/webhooks \
 }
 ```
 
-Store the `secret` (prefixed `whsec_`) somewhere safe — you need it for signature verification, and it is only returned at registration time. `GET /v1/webhooks` returns your current `url`, subscribed `events`, `hasSecret`, and recent delivery attempts, but never the secret itself.
+Store the `secret` (prefixed `whsec_`) somewhere safe: you need it for signature verification, and it is only returned at registration time. `GET /v1/webhooks` returns your current `url`, subscribed `events`, `hasSecret`, and recent delivery attempts, but never the secret itself.
 
 ## 2. Event types
 
@@ -68,9 +68,9 @@ Every delivered request body is a JSON envelope with three fields:
 }
 ```
 
-- `event` — the event name (same values as the table above)
-- `timestamp` — ISO 8601 UTC time the delivery was generated
-- `data` — an event-specific object
+- `event`: the event name (same values as the table above)
+- `timestamp`: ISO 8601 UTC time the delivery was generated
+- `data`: an event-specific object
 
 ## 3. Signature headers
 
@@ -89,7 +89,7 @@ The signing string is the timestamp header value, a literal `.`, and the raw req
 ${timestamp}.${rawBody}
 ```
 
-The signature is the hex HMAC-SHA256 of the signing string using your webhook secret as the key, sent as `X-Relavoi-Signature: sha256=<hex>`. The `X-Relavoi-Delivery` header is a stable delivery id (unchanged across retries of the same event) — use it as your idempotency key.
+The signature is the hex HMAC-SHA256 of the signing string using your webhook secret as the key, sent as `X-Relavoi-Signature: sha256=<hex>`. The `X-Relavoi-Delivery` header is a stable delivery id (unchanged across retries of the same event). Use it as your idempotency key.
 
 :::warning Reject stale timestamps
 Always reject requests where `|now - timestamp| > 300 seconds`. This prevents replay attacks if a signed payload leaks.
@@ -231,5 +231,5 @@ If your endpoint returns anything other than `2xx` within 5 seconds, Relavoi ret
 After the fourth attempt the event goes to the dead-letter queue, visible at `GET /v1/webhooks/logs`. You can replay any DLQ event from the dashboard.
 
 :::tip Idempotency
-Always treat webhook delivery as at-least-once. Use the `X-Relavoi-Delivery` header as your idempotency key — it is stable across retries of the same event.
+Always treat webhook delivery as at-least-once. Use the `X-Relavoi-Delivery` header as your idempotency key. It is stable across retries of the same event.
 :::

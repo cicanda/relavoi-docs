@@ -20,7 +20,7 @@ Native call detection is the one place the Flutter SDK drops to a platform chann
 
 ## Basic usage
 
-Poll `isCallActive()` at a natural UI moment — typically when your screen resumes — and call `verify()` when a call is in progress. A phone number passed here can be the local `0803...` form, `234...`, or full `+234...` (for example `+2348087654321`). Separators such as spaces and brackets are stripped for you.
+Poll `isCallActive()` at a natural UI moment (typically when your screen resumes) and call `verify()` when a call is in progress. A phone number passed here can be the local `0803...` form, `234...`, or full `+234...` (for example `+2348087654321`). Separators such as spaces and brackets are stripped for you.
 
 ```dart
 import 'package:flutter/material.dart';
@@ -110,7 +110,7 @@ if (await Relavoi.instance.verification.isCallActive()) {
 
 ## Permission notes
 
-On Android, `READ_PHONE_STATE` is required for the SDK to detect call state (declared in the manifest — see [Installation](./installation) — and requested at runtime). The verification module exposes platform-aware permission helpers:
+On Android, `READ_PHONE_STATE` is required for the SDK to detect call state (declared in the manifest, as shown in [Installation](./installation), and requested at runtime). The verification module exposes platform-aware permission helpers:
 
 ```dart
 // Android returns the real grant; iOS always returns true (no permission needed).
@@ -139,5 +139,5 @@ if (!hasOverlay) {
 ```
 
 :::tip UX guidance
-Show the green banner only after `verify()` returns `verified: true` — never assume the call is legitimate just because one is in progress. The red banner has even more value than the green one: customers learn to trust the warning.
+Show the green banner only after `verify()` returns `verified: true`. Never assume the call is legitimate just because one is in progress. The red banner has even more value than the green one: customers learn to trust the warning.
 :::

@@ -124,7 +124,7 @@ function Cover() {
               lineHeight: 1.5,
             }}
           >
-            The privacy-preserving telephony platform for the Nigerian market — masked phone
+            The privacy-preserving telephony platform for the Nigerian market: masked phone
             calls, SMS, push notifications, and call verification, behind a single API.
           </p>
 

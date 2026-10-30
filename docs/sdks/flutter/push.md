@@ -6,7 +6,7 @@ description: Receive branded incoming-call notifications via Firebase Cloud Mess
 
 # Push notifications (FCM)
 
-The push module delivers branded incoming-call notifications through Firebase Cloud Messaging. It uses `firebase_messaging` under the hood — the dependency is pulled in transitively by `relavoi_flutter`, so you do not add it yourself. You do, however, need a configured Firebase project.
+The push module delivers branded incoming-call notifications through Firebase Cloud Messaging. It uses `firebase_messaging` under the hood, and the dependency is pulled in transitively by `relavoi_flutter`, so you do not add it yourself. You do, however, need a configured Firebase project.
 
 ## 1. Configure Firebase
 
@@ -23,7 +23,7 @@ Call `Firebase.initializeApp()` during app startup (per the FlutterFire docs) be
 
 ## 2. Register the device token
 
-After the user signs in and you know their phone number, register the device so Relavoi can target incoming-call notifications to it. `registerToken` fetches the current FCM token internally and POSTs it to the backend — you pass only the user's phone, in any of the accepted forms:
+After the user signs in and you know their phone number, register the device so Relavoi can target incoming-call notifications to it. `registerToken` fetches the current FCM token internally and POSTs it to the backend, so you pass only the user's phone, in any of the accepted forms:
 
 ```dart
 import 'package:relavoi_flutter/relavoi_flutter.dart';
@@ -56,7 +56,7 @@ Relavoi.instance.push.onMessage.listen((RemoteMessage message) {
 });
 ```
 
-You retain full control over how the notification renders — channel, importance, icon, and any deep link — since you build the UI from the `RemoteMessage`.
+You retain full control over how the notification renders (channel, importance, icon, and any deep link), since you build the UI from the `RemoteMessage`.
 
 ## 4. Deactivate on logout
 
@@ -68,7 +68,7 @@ await Relavoi.instance.push.deactivateToken();
 
 ## Android runtime permission
 
-On Android 13 (API 33) and above, the OS requires the `POST_NOTIFICATIONS` runtime permission before any notification displays. Request it at a contextual moment — typically just before `registerToken` — using your notification-permission flow of choice (for example the `permission_handler` package or `firebase_messaging`'s `requestPermission`).
+On Android 13 (API 33) and above, the OS requires the `POST_NOTIFICATIONS` runtime permission before any notification displays. Request it at a contextual moment, typically just before `registerToken`, using your notification-permission flow of choice (for example the `permission_handler` package or `firebase_messaging`'s `requestPermission`).
 
 :::tip Test deliverability
 During development, trigger a masked call against a live session and confirm the payload reaches your `onMessage` listener (log `message.data.keys`).

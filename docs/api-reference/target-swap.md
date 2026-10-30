@@ -45,7 +45,7 @@ curl -X PATCH https://api.relavoi.com/v1/sessions/67701c43-2a23-4233-b723-80d2b9
   -d '{"customerPhone":"+2349090000002"}'
 ```
 
-**Response** `200 OK` — the full session, identical in shape to `GET /v1/sessions/:id`:
+**Response** `200 OK`, the full session, identical in shape to `GET /v1/sessions/:id`:
 
 ```json
 {

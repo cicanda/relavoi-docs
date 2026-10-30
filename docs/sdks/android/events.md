@@ -41,7 +41,7 @@ class App : Application() {
 }
 ```
 
-`connect()` and `disconnect()` are both idempotent. Listeners are invoked on the WebSocket dispatcher thread — keep them fast and post to the main thread for UI work. If no listeners remain, the stream auto-disconnects.
+`connect()` and `disconnect()` are both idempotent. Listeners are invoked on the WebSocket dispatcher thread, so keep them fast and post to the main thread for UI work. If no listeners remain, the stream auto-disconnects.
 
 ## Event payloads
 

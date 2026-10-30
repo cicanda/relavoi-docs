@@ -29,11 +29,11 @@ struct MyApp: App {
 }
 ```
 
-`connect()` is idempotent — calling it again on an active connection is a no-op. The WebSocket URL is derived from your `baseURL` (or set explicitly via `RelavoiConfig.webSocketURL`).
+`connect()` is idempotent: calling it again on an active connection is a no-op. The WebSocket URL is derived from your `baseURL` (or set explicitly via `RelavoiConfig.webSocketURL`).
 
 ## Registering a handler
 
-Each listener registers under a string key (the first, unlabeled argument). Re-registering with the same key replaces the previous handler — handy for SwiftUI views that re-render.
+Each listener registers under a string key (the first, unlabeled argument). Re-registering with the same key replaces the previous handler, handy for SwiftUI views that re-render.
 
 ```swift
 Relavoi.shared.events.addListener("home-view") { event in
@@ -66,7 +66,7 @@ Relavoi.shared.events.removeListener("home-view")
 
 ## RelavoiEvent shape
 
-`RelavoiEvent` is an enum with associated values — there are no separate payload structs. Every case carries a `ts: Date` timestamp:
+`RelavoiEvent` is an enum with associated values. There are no separate payload structs. Every case carries a `ts: Date` timestamp:
 
 ```swift
 public enum RelavoiEvent: Equatable {

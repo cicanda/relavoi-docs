@@ -32,7 +32,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
 ## 2. Forward the device token to Relavoi
 
-When APNs returns the token in `didRegisterForRemoteNotificationsWithDeviceToken`, pass the raw `Data` directly to the SDK. **Do not** convert to hex yourself — the SDK does it (lowercase hex, no spaces). `appBundleId` is optional; pass `Bundle.main.bundleIdentifier` so the backend can target the right app for pushes.
+When APNs returns the token in `didRegisterForRemoteNotificationsWithDeviceToken`, pass the raw `Data` directly to the SDK. **Do not** convert to hex yourself. The SDK does it (lowercase hex, no spaces). `appBundleId` is optional; pass `Bundle.main.bundleIdentifier` so the backend can target the right app for pushes.
 
 The full signature is `registerToken(userPhone:deviceToken:appBundleId:)`, where `deviceToken` is the raw `Data` and `appBundleId` defaults to `nil`.
 

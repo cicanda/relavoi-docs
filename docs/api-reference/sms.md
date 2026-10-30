@@ -1,12 +1,12 @@
 ---
 title: SMS API
 sidebar_label: SMS
-description: List SMS message records exchanged within a masking session. SMS masking flows automatically through the existing session — there is no send-SMS API.
+description: List SMS message records exchanged within a masking session. SMS masking flows automatically through the existing session. There is no send-SMS API.
 ---
 
 # SMS API
 
-SMS masking rides on an existing masking session. There is **no send-SMS API endpoint** — you do not push messages through Relavoi with an API call. Instead, when an end user texts a proxy number, the telephony provider delivers it to `POST /v1/webhooks/cpaas/sms`, Relavoi matches it to the active session, and forwards it to the other party from the same proxy. Replies follow the same path in reverse.
+SMS masking rides on an existing masking session. There is **no send-SMS API endpoint**. You do not push messages through Relavoi with an API call. Instead, when an end user texts a proxy number, the telephony provider delivers it to `POST /v1/webhooks/cpaas/sms`, Relavoi matches it to the active session, and forwards it to the other party from the same proxy. Replies follow the same path in reverse.
 
 The only tenant-facing SMS endpoint lists the **records** of those exchanges. See [SMS masking](../guides/sms-masking) for the full flow.
 
@@ -33,7 +33,7 @@ Auth: Bearer JWT (tenant). Returns SMS records for the session, newest first, wi
 | Query | Type | Required | Description |
 |-------|------|----------|-------------|
 | limit | integer | no | Default 50, max 200 |
-| after | string | no | Cursor — `sentAt` timestamp of the last row from the previous page |
+| after | string | no | Cursor: `sentAt` timestamp of the last row from the previous page |
 
 **Request**
 
@@ -75,7 +75,7 @@ curl "https://api.relavoi.com/v1/sessions/5661962a-d7ad-4aea-88a0-210388e1285b/s
 }
 ```
 
-Note the absence of any `body` / message-content field — see the privacy note above.
+Note the absence of any `body` / message-content field (see the privacy note above).
 
 ---
 

@@ -6,7 +6,7 @@ description: Subscribe to a WebSocket stream of session and call events with aut
 
 # Real-time events
 
-The Flutter SDK exposes a persistent WebSocket to Relavoi's event stream through `Relavoi.instance.events`. All session and call events for your tenant land here within ~100 ms of the underlying telephony event. This is pure Dart — no platform channel involved.
+The Flutter SDK exposes a persistent WebSocket to Relavoi's event stream through `Relavoi.instance.events`. All session and call events for your tenant land here within ~100 ms of the underlying telephony event. This is pure Dart, with no platform channel involved.
 
 ## Connecting
 
@@ -73,7 +73,7 @@ Relavoi.instance.events.on(EventType.sessionExpired, (event) {
 
 ## Listening to everything
 
-`onAny` fires for every event regardless of type — handy for logging or a central dispatcher:
+`onAny` fires for every event regardless of type, which is handy for logging or a central dispatcher:
 
 ```dart
 Relavoi.instance.events.onAny((event) {

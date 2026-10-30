@@ -42,7 +42,7 @@ dependencies:
       ref: main
 ```
 
-`firebase_messaging` is pulled in transitively for the push module — you do not add it yourself. See [Push notifications](./push) for the Firebase project setup that push additionally requires.
+`firebase_messaging` is pulled in transitively for the push module, so you do not add it yourself. See [Push notifications](./push) for the Firebase project setup that push additionally requires.
 
 ## Android configuration
 
@@ -66,7 +66,7 @@ Declare the required permissions in `android/app/src/main/AndroidManifest.xml`, 
 `INTERNET` covers all REST and WebSocket traffic. `READ_PHONE_STATE` backs native call detection for the [verification banner](./verification).
 
 :::warning Runtime permission still required
-Declaring `READ_PHONE_STATE` in the manifest is necessary but not sufficient. On API 23+ your app must also request it at runtime. The SDK exposes `Relavoi.instance.verification.hasPhoneStatePermission()` to check the grant — see [Verification](./verification).
+Declaring `READ_PHONE_STATE` in the manifest is necessary but not sufficient. On API 23+ your app must also request it at runtime. The SDK exposes `Relavoi.instance.verification.hasPhoneStatePermission()` to check the grant. See [Verification](./verification).
 :::
 
 ## iOS configuration

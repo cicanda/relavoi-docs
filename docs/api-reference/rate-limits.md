@@ -8,8 +8,8 @@ description: Per-tier request and concurrent-session ceilings, the 429 response 
 
 Relavoi enforces two ceilings per tenant:
 
-1. **Requests per minute** — sliding window over all API calls
-2. **Concurrent sessions** — sessions in `PENDING`, `ACTIVE`, or `GRACE_PERIOD`
+1. **Requests per minute**: sliding window over all API calls
+2. **Concurrent sessions**: sessions in `PENDING`, `ACTIVE`, or `GRACE_PERIOD`
 
 ## Tier matrix
 
@@ -46,7 +46,7 @@ X-RateLimit-Policy: sliding-window-60s
 
 | Header | Meaning |
 |--------|---------|
-| `Retry-After` | Seconds until you may safely retry. Honour this — backoff respects the algorithm |
+| `Retry-After` | Seconds until you may safely retry. Honour this: backoff respects the algorithm |
 | `X-RateLimit-Limit` | Your tier's quota for the window |
 | `X-RateLimit-Remaining` | Requests left in the current window |
 | `X-RateLimit-Reset` | Unix epoch seconds when the oldest request in the window ages out |
@@ -69,7 +69,7 @@ This is a separate counter (`tenant:{tenantId}:active_sessions`) atomically incr
 ## Best practices
 
 - Implement exponential backoff with jitter starting from `Retry-After`
-- Use the SDK — it handles 429 transparently with backoff
+- Use the SDK, which handles 429 transparently with backoff
 - Spread session creation across the minute rather than bursting at the top of every minute (cron jobs are a common culprit)
 - If you regularly hit the ceiling, upgrade tier or request a temporary lift via your account manager
 

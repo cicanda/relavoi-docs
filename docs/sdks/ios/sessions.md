@@ -209,7 +209,7 @@ public struct Session: Codable, Identifiable, Equatable {
 }
 ```
 
-Note that on the returned `Session`, `metadata` is `[String: JSONValue]?` — the backend allows nested/typed JSON values, even though the `create` call accepts only `[String: String]`. `SessionState` is one of `.pending`, `.active`, `.gracePeriod`, `.expired`, `.failed`.
+Note that on the returned `Session`, `metadata` is `[String: JSONValue]?`. The backend allows nested/typed JSON values, even though the `create` call accepts only `[String: String]`. `SessionState` is one of `.pending`, `.active`, `.gracePeriod`, `.expired`, `.failed`.
 
 ## Full lifecycle
 
