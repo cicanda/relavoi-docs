@@ -12,7 +12,7 @@ Presence is pure Dart. Once started, it wires itself to the app lifecycle and re
 
 ## Starting presence
 
-Call `start` with the signed-in user's phone (E.164). It begins reporting online, background, and offline transitions as the app moves through its lifecycle:
+Call `start` with the signed-in user's phone. The local `0803...` form, `234...` and full `+234...` are all accepted. It begins reporting online, background, and offline transitions as the app moves through its lifecycle:
 
 ```dart
 import 'package:relavoi_flutter/relavoi_flutter.dart';

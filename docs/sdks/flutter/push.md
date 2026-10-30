@@ -23,7 +23,7 @@ Call `Firebase.initializeApp()` during app startup (per the FlutterFire docs) be
 
 ## 2. Register the device token
 
-After the user signs in and you know their phone number, register the device so Relavoi can target incoming-call notifications to it. `registerToken` fetches the current FCM token internally and POSTs it to the backend — you pass only the user's phone (E.164):
+After the user signs in and you know their phone number, register the device so Relavoi can target incoming-call notifications to it. `registerToken` fetches the current FCM token internally and POSTs it to the backend — you pass only the user's phone, in any of the accepted forms:
 
 ```dart
 import 'package:relavoi_flutter/relavoi_flutter.dart';

@@ -20,7 +20,7 @@ Native call detection is the one place the Flutter SDK drops to a platform chann
 
 ## Basic usage
 
-Poll `isCallActive()` at a natural UI moment — typically when your screen resumes — and call `verify()` when a call is in progress. Phone numbers passed here must be E.164 (for example `+2348087654321`).
+Poll `isCallActive()` at a natural UI moment — typically when your screen resumes — and call `verify()` when a call is in progress. A phone number passed here can be the local `0803...` form, `234...`, or full `+234...` (for example `+2348087654321`). Separators such as spaces and brackets are stripped for you.
 
 ```dart
 import 'package:flutter/material.dart';
