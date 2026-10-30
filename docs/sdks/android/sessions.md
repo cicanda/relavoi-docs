@@ -12,6 +12,18 @@ All session calls are `suspend` functions. Call them from a coroutine scope — 
 
 `create` takes named parameters directly — there is no request wrapper class. Only `agentPhone` and `customerPhone` are required; everything else has a default.
 
+:::info Supported numbers
+Relavoi connects **Nigerian mobile numbers** today: `+234` followed by 10
+digits starting 7, 8 or 9. You can pass `+2348012345678`, `2348012345678`,
+`08012345678` or `8012345678` and the backend normalises it, so there is no
+need to reformat what a user typed.
+
+Anything else comes back as `422` with type `number-not-supported`, and the
+message never contains the number that was sent. Both people in a session must
+have numbers from the same country.
+:::
+
+
 ```kotlin
 import com.relavoi.sdk.Relavoi
 import com.relavoi.sdk.session.DirectionMode

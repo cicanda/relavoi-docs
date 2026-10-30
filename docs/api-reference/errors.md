@@ -37,6 +37,9 @@ Every error `type` resolves to a human-readable description page at `https://api
 | `not-found` | 404 | Resource does not exist or is not visible to your tenant |
 | `pool-exhausted` | 503 | Number Pool Manager cannot satisfy participant-overlap rule with any available DID |
 | `tier-session-limit` | 429 | Tenant's concurrent-session ceiling reached on `POST /v1/sessions` |
+| `number-not-supported` | 422 | A phone number is not one Relavoi can connect. See [Supported numbers](#supported-numbers) |
+| `cross-border-not-supported` | 422 | Both numbers are valid, but they are in different countries |
+| `country-not-enabled` | 422 | The country is not enabled for your workspace |
 | `internal` | 500 | Server-side error; transient — retry with backoff |
 
 ## Worked examples
@@ -113,3 +116,63 @@ X-RateLimit-Reset: 1747920712
 :::tip Correlation
 Whenever you open a support ticket, include the `instance` value from the error payload. It maps directly to a trace span in our observability stack.
 :::
+
+## Supported numbers
+
+Relavoi currently connects **Nigerian mobile numbers only**: `+234` followed by
+10 digits starting 7, 8 or 9. That covers the 70x, 80x, 81x, 90x and 91x
+ranges.
+
+Any of these forms is accepted and normalised to E.164 for you, so you do not
+have to reformat before calling:
+
+| You send | Stored as |
+|---|---|
+| `+2348012345678` | `+2348012345678` |
+| `2348012345678` | `+2348012345678` |
+| `08012345678` | `+2348012345678` |
+| `8012345678` | `+2348012345678` |
+| `0801 234 5678` | `+2348012345678` |
+
+Anything else is a `422`:
+
+```json
+{
+  "type": "https://api.relavoi.com/errors/number-not-supported",
+  "title": "Unprocessable Entity",
+  "status": 422,
+  "detail": "Relavoi currently connects Nigerian mobile numbers only."
+}
+```
+
+This applies to `agentPhone` and `customerPhone` on session create, the new
+target on retarget, `userPhone` on verification and device registration.
+
+**The error never contains the number you sent.** It reaches logs and error
+trackers, so there is nothing to redact.
+
+### Not accepted as a session party
+
+- **Numbers outside Nigeria.** A `+44`, `+1` or `+233` number is refused.
+- **Nigerian landlines.** A landline cannot receive a masked call. It is
+  accepted for `supportPhone` in `PATCH /v1/config`, because the expired-call
+  redirect often points at a business line that is not a mobile.
+
+### One country per session
+
+Both people in a session must have numbers from the same country, and the
+proxy number comes from that country's pool. A mixed pair is refused with
+`cross-border-not-supported`, and that stays true as further countries are
+added: international calling is a separate product, not a wider version of
+this one.
+
+```json
+{
+  "type": "https://api.relavoi.com/errors/cross-border-not-supported",
+  "title": "Unprocessable Entity",
+  "status": 422,
+  "detail": "Both people in a session must have numbers from the same country."
+}
+```
+
+Nigeria is the country supported today.

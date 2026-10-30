@@ -8,7 +8,11 @@ description: Register push tokens and report device presence so masked-call noti
 
 These endpoints are used by the Relavoi SDK to register APNs/FCM push tokens and to report device presence (app foreground state / reachability). The Push Notification Service uses this data to deliver branded call notifications to the correct device.
 
-Auth: Bearer JWT — a tenant SDK token (`POST /auth/token`) or a dashboard user token. All phone numbers are E.164 (`+234XXXXXXXXXX`).
+Auth: Bearer JWT — a tenant SDK token (`POST /auth/token`) or a dashboard user token.
+
+Phone numbers are Nigerian mobile numbers. `+2348012345678`, `08012345678` and
+`8012345678` are all accepted and normalised to E.164; anything else is a `422
+number-not-supported`. See [Supported numbers](./errors#supported-numbers).
 
 ## Endpoints
 
@@ -27,7 +31,7 @@ Registers a new APNs/FCM device token or refreshes an existing one. The operatio
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| userPhone | string | yes | End-user phone in E.164, e.g. `+2348012345678` |
+| userPhone | string | yes | End-user Nigerian mobile, any accepted form, e.g. `+2348012345678` or `08012345678` |
 | token | string | yes | APNs or FCM device token |
 | platform | string | yes | `ios` or `android` |
 | appBundleId | string | no | Client app bundle identifier |
@@ -99,7 +103,7 @@ Reports a device's presence state. The SDK typically calls this on app foregroun
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| userPhone | string | yes | End-user phone in E.164 |
+| userPhone | string | yes | End-user Nigerian mobile, any accepted form |
 | status | string | yes | `online`, `background`, or `offline` |
 | platform | string | yes | `ios` or `android` |
 
@@ -135,7 +139,7 @@ Returns the most recently reported presence for a user.
 
 | Query | Type | Required | Description |
 |-------|------|----------|-------------|
-| userPhone | string | yes | End-user phone in E.164 |
+| userPhone | string | yes | End-user Nigerian mobile, any accepted form |
 
 **Request**
 
@@ -161,4 +165,5 @@ curl "https://api.relavoi.com/v1/devices/presence?userPhone=+2348012345678" \
 | Status | Code | When |
 |--------|------|------|
 | 400 | validation-error | Missing `userPhone` |
+| 422 | number-not-supported | `userPhone` is not a Nigerian mobile number |
 | 401 | unauthorized | Missing or invalid JWT |

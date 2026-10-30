@@ -83,7 +83,7 @@ Updates one or more configuration fields. Only the fields you send are changed. 
 | webhookUrl | string | Client webhook URL |
 | defaultGracePeriod | integer | Default grace period (minutes) |
 | expiredCallBehavior | string | `DEAD_LINE`, `REDIRECT_SUPPORT`, or `PLAY_MESSAGE` |
-| supportPhone | string | Support number in E.164 |
+| supportPhone | string | Support number. A Nigerian **mobile or landline**, since a support line often is not a mobile. Normalised to E.164; anything else is a `422 number-not-supported`. This number is dialled by the carrier, so a foreign number is refused here |
 | recordingEnabled | boolean | Enable/disable call recording |
 | recordingConsentMode | string | `DEFAULT`, `CUSTOM`, or `NONE` |
 | recordingConsentAudioUrl | string | URL of custom consent audio |

@@ -30,8 +30,8 @@ Auth: Bearer JWT (tenant).
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| agentPhone | string | yes | E.164, e.g. `+2348012345678` |
-| customerPhone | string | yes | E.164 |
+| agentPhone | string | yes | Nigerian mobile. `+2348012345678`, `2348012345678`, `08012345678` and `8012345678` are all accepted and normalised. See [Supported numbers](./errors#supported-numbers) |
+| customerPhone | string | yes | Nigerian mobile, same forms |
 | metadata | object | no | Free-form key/value context |
 | gracePeriodMinutes | integer | no | Default 15 |
 | directionMode | string | no | `BIDIRECTIONAL` (default), `A_TO_B_ONLY`, `B_TO_A_ONLY` |
@@ -83,7 +83,9 @@ curl -X POST https://api.relavoi.com/v1/sessions \
 
 | Status | Code | When |
 |--------|------|------|
-| 400 | validation | Bad E.164, invalid enum, or invalid recording/consent combination |
+| 400 | validation | Invalid enum, or an invalid recording/consent combination |
+| 422 | number-not-supported | A number is not a Nigerian mobile. The detail never echoes the number |
+| 422 | cross-border-not-supported | Both numbers are valid but in different countries |
 | 429 | tier-session-limit | Tier concurrent-session quota exceeded |
 | 503 | pool-exhausted | No proxy number satisfies the participant-overlap rule |
 
@@ -301,11 +303,11 @@ curl -X POST https://api.relavoi.com/v1/sessions/5661962a-d7ad-4aea-88a0-210388e
 
 Auth: Bearer JWT (tenant). Called by the SDK to drive the call-verification banner; not typically called by your backend directly.
 
-The tenant is derived from the JWT. Pass the user's **raw E.164 phone number** as `userPhone` — the backend hashes it internally with the per-tenant salt to look up an active session.
+The tenant is derived from the JWT. Pass the user's **raw phone number** as `userPhone` — the backend normalises it, then hashes it internally with the per-tenant salt to look up an active session. A local form such as `08012345678` works, which matters because that is often what a handset reports.
 
 | Query | Type | Required | Description |
 |-------|------|----------|-------------|
-| userPhone | string | yes | The user's phone in raw E.164, e.g. `+2348012340001` |
+| userPhone | string | yes | The user's Nigerian mobile number, in any accepted form. A non-Nigerian number is a `422 number-not-supported` |
 
 **Request**
 

@@ -35,7 +35,19 @@ func startMaskingSession(agent: String, customer: String, orderId: String) async
 }
 ```
 
-The full parameter list is `create(agentPhone:customerPhone:metadata:gracePeriodMinutes:directionMode:recordingEnabled:consentPrompt:)`. Every parameter except the two phone numbers has a default (`metadata: nil`, `gracePeriodMinutes: 15`, `directionMode: .bidirectional`, `recordingEnabled: false`, `consentPrompt: .none`), so this is equally valid:
+The full parameter list is `create(agentPhone:customerPhone:metadata:gracePeriodMinutes:directionMode:recordingEnabled:consentPrompt:)`.
+
+:::info Supported numbers
+Relavoi connects **Nigerian mobile numbers** today: `+234` followed by 10
+digits starting 7, 8 or 9. You can pass `+2348012345678`, `2348012345678`,
+`08012345678` or `8012345678` and the backend normalises it, so there is no
+need to reformat what a user typed.
+
+Anything else comes back as `422` with type `number-not-supported`, and the
+message never contains the number that was sent. Both people in a session must
+have numbers from the same country.
+:::
+ Every parameter except the two phone numbers has a default (`metadata: nil`, `gracePeriodMinutes: 15`, `directionMode: .bidirectional`, `recordingEnabled: false`, `consentPrompt: .none`), so this is equally valid:
 
 ```swift
 let session = try await Relavoi.shared.sessions.create(
