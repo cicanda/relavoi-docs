@@ -1,6 +1,6 @@
 # Relavoi Documentation
 
-The public docs site for [Relavoi](https://relavoi.com) — covers the platform overview, API reference, SDK guides for Android + iOS, integration guides, and the canonical design language reference.
+The public docs site for [Relavoi](https://relavoi.com). It covers the platform overview, API reference, SDK guides for Android + iOS, integration guides, and the canonical design language reference.
 
 Built with [Docusaurus 3](https://docusaurus.io/) (TypeScript template).
 
@@ -20,7 +20,7 @@ npm run build     # generates ./build/
 npx serve build   # quick preview
 ```
 
-The build is a pure static site — drop it on any CDN.
+The build is a pure static site. Drop it on any CDN.
 
 ## Content layout
 
@@ -65,9 +65,9 @@ GitHub Actions (`.github/workflows/ci.yml`) runs `npm run build` on every PR. `d
 
 ## Related Repositories
 
-- [relavoi-backend](https://github.com/cicanda/relavoi-backend) — API server
-- [relavoi-dashboard](https://github.com/cicanda/relavoi-dashboard) — Tenant web dashboard
-- [relavoi-admin](https://github.com/cicanda/relavoi-admin) — Operator console
-- [relavoi-android-sdk](https://github.com/cicanda/relavoi-android-sdk) — Android SDK
-- [relavoi-ios-sdk](https://github.com/cicanda/relavoi-ios-sdk) — iOS SDK
-- [relavoi-infra](https://github.com/cicanda/relavoi-infra) — Terraform infrastructure
+- [relavoi-backend](https://github.com/cicanda/relavoi-backend): API server
+- [relavoi-dashboard](https://github.com/cicanda/relavoi-dashboard): Tenant web dashboard
+- [relavoi-admin](https://github.com/cicanda/relavoi-admin): Operator console
+- [relavoi-android-sdk](https://github.com/cicanda/relavoi-android-sdk): Android SDK
+- [relavoi-ios-sdk](https://github.com/cicanda/relavoi-ios-sdk): iOS SDK
+- [relavoi-infra](https://github.com/cicanda/relavoi-infra): Terraform infrastructure

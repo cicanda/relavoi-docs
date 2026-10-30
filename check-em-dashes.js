@@ -15,8 +15,8 @@
 // En dashes (U+2013) in numeric ranges such as "10-20" are correct and are
 // never flagged. Only U+2014 is.
 //
-// README.md is intentionally out of scope: it is contributor documentation on
-// GitHub, not a page on the docs site.
+// README.md is covered too. It is contributor documentation rather than a page
+// on the docs site, but the house style applies to it all the same.
 //
 // Run locally:  node check-em-dashes.js
 // Exit codes:   0 = clean, 1 = em dash found, 2 = the check itself failed
@@ -36,6 +36,7 @@ const COVERED_GLOBS = [
   'src/components/**/*.tsx',
   'docusaurus.config.ts', // title, tagline, navbar and footer labels
   'sidebars.ts',          // sidebar labels
+  'README.md',            // contributor documentation, same house style
 ];
 // ---------------------------------------------------------------------------
 
