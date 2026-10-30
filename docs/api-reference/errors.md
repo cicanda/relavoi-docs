@@ -40,6 +40,7 @@ Every error `type` resolves to a human-readable description page at `https://api
 | `number-not-supported` | 422 | A phone number is not one Relavoi can connect. See [Supported numbers](#supported-numbers) |
 | `cross-border-not-supported` | 422 | Both numbers are valid, but they are in different countries |
 | `country-not-enabled` | 422 | The country is not enabled for your workspace |
+| `feature-not-available` | 422 | The feature is not available yet. See [Call recording](#call-recording) |
 | `internal` | 500 | Server-side error; transient — retry with backoff |
 
 ## Worked examples
@@ -56,17 +57,17 @@ Every error `type` resolves to a human-readable description page at `https://api
 }
 ```
 
-### 422 validation (recording invariant)
+### 422 feature-not-available
+
+Returned when you ask for something the platform is not offering yet. Today
+that is call recording, on `POST /v1/sessions` and on `PATCH /v1/config`.
 
 ```json
 {
-  "type": "https://api.relavoi.com/errors/validation",
+  "type": "https://api.relavoi.com/errors/feature-not-available",
   "title": "Unprocessable Entity",
   "status": 422,
-  "detail": "consentPrompt cannot be NONE when recordingEnabled is true",
-  "errors": [
-    { "field": "consentPrompt", "issue": "invalid_combination" }
-  ]
+  "detail": "Call recording is not available yet."
 }
 ```
 
@@ -176,3 +177,16 @@ this one.
 ```
 
 Nigeria is the country supported today.
+
+## Call recording
+
+Call recording is not available yet. `recordingEnabled: true` is refused with
+`feature-not-available` on both `POST /v1/sessions` and `PATCH /v1/config`, and
+no call is recorded or stored anywhere.
+
+`recordingEnabled: false`, and leaving the field out, both work as before.
+
+When recording does arrive, a call will only be recorded after a consent
+message that the person on the call hears first. That is a requirement of
+Nigeria's data protection law, not a setting, so there will be no way to record
+without it.

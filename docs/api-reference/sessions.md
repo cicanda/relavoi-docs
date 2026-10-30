@@ -36,8 +36,8 @@ Auth: Bearer JWT (tenant).
 | gracePeriodMinutes | integer | no | Default 15 |
 | directionMode | string | no | `BIDIRECTIONAL` (default), `A_TO_B_ONLY`, `B_TO_A_ONLY` |
 | maxDurationMinutes | integer | no | Hard timeout, default 120 |
-| recordingEnabled | boolean | no | Default false |
-| consentPrompt | string | no | `DEFAULT`, `CUSTOM`, `NONE`. Must not be `NONE` if recording is enabled |
+| recordingEnabled | boolean | no | Default false. **Coming soon:** `true` is refused with `feature-not-available`, see [Call recording](./errors.md#call-recording) |
+| consentPrompt | string | no | `DEFAULT`, `CUSTOM`, `NONE`. Has no effect while recording is unavailable |
 
 **Request**
 
@@ -83,7 +83,8 @@ curl -X POST https://api.relavoi.com/v1/sessions \
 
 | Status | Code | When |
 |--------|------|------|
-| 400 | validation | Invalid enum, or an invalid recording/consent combination |
+| 400 | validation | Invalid enum or a malformed field |
+| 422 | feature-not-available | `recordingEnabled: true`, which is not available yet |
 | 422 | number-not-supported | A number is not a Nigerian mobile. The detail never echoes the number |
 | 422 | cross-border-not-supported | Both numbers are valid but in different countries |
 | 429 | tier-session-limit | Tier concurrent-session quota exceeded |
