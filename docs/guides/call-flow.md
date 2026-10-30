@@ -17,7 +17,7 @@ sequenceDiagram
   participant Agent as Agent (Driver app)
   participant SDK as Relavoi SDK
   participant Dialer as Native dialer
-  participant AT as Telephony Provider
+  participant Carrier as Telephony Provider
   participant WH as Webhook Handler
   participant CR as Call Router
   participant Redis
@@ -25,43 +25,61 @@ sequenceDiagram
 
   Agent->>SDK: tap "Call customer"
   SDK->>Dialer: open tel://+2348000000001
-  Dialer->>AT: PSTN call to proxy
-  AT->>WH: POST /v1/webhooks/cpaas/voice (HMAC signed)
+  Dialer->>Carrier: PSTN call to proxy
+  Carrier->>WH: POST /v1/webhooks/cpaas/voice (HMAC signed)
   WH->>WH: verify signature + dedupe event_id
   WH->>CR: route(proxy, caller)
   CR->>Redis: HGET session:proxy:+2348000000001
   Redis-->>CR: session sess_a1b2c3d4 (state=ACTIVE)
   CR->>CR: caller matches party_a -> forward to party_b
   CR-->>WH: <Dial>+2348087654321</Dial>
-  WH-->>AT: 200 OK + dial XML
-  AT->>Customer: ring with caller ID +2348000000001
-  Customer-->>AT: answer
-  AT->>WH: call.answered event
+  WH-->>Carrier: 200 OK + dial XML
+  Carrier->>Customer: ring with caller ID +2348000000001
+  Customer-->>Carrier: answer
+  Carrier->>WH: call.answered event
   WH->>Redis: SET session.activated_at
 ```
 
-## Recording consent flow
+## Recording consent flow (coming soon)
 
-When `recordingEnabled = true`, the Call Router prepends a `<Say>` or `<Play>` action before the `<Dial>`. The bridge does not happen until the consent prompt finishes.
+:::note Recording is not available yet
+
+Nothing on this page's recording path runs today. `recordingEnabled: true` is
+refused by the API with a `feature-not-available` problem, no `<Dial>` we send
+carries a `record` attribute, no consent announcement is played, and no call
+audio is stored anywhere. See [Call recording](../api-reference/errors.md#call-recording).
+
+The flow below is the intended design for when recording launches, kept here
+because the consent requirement shapes it: a call will only ever be recorded
+after an announcement the person on the call hears first. That is a requirement
+of Nigeria's data protection law, not a setting, so there will be no way to
+record without it.
+
+:::
+
+When recording becomes available and `recordingEnabled = true`, the Call Router
+will prepend a `<Say>` or `<Play>` action before the `<Dial>`, and the bridge
+will not happen until the consent prompt finishes.
 
 ```mermaid
 sequenceDiagram
-  participant AT as Telephony Provider
+  participant Carrier as Telephony Provider
   participant WH as Webhook Handler
   participant CR as Call Router
   participant Customer as Customer phone
 
-  AT->>WH: POST incoming call
+  Carrier->>WH: POST incoming call
   WH->>CR: route(proxy, caller)
   CR->>CR: recording_enabled=true, consent_prompt=DEFAULT
   CR-->>WH: <Say>This call may be recorded...</Say><Dial>+2348087654321</Dial><Record/>
-  WH-->>AT: 200 OK
-  AT->>AT: play consent text-to-speech
-  AT->>Customer: ring
-  Customer-->>AT: answer (recording begins)
+  WH-->>Carrier: 200 OK
+  Carrier->>Carrier: play consent text-to-speech
+  Carrier->>Customer: ring
+  Customer-->>Carrier: answer (recording begins)
 ```
 
-If `consentPrompt = CUSTOM`, the router emits `<Play>https://cdn.tenant.com/consent.mp3</Play>` instead.
+With `consentPrompt = CUSTOM` the router would emit
+`<Play>https://cdn.tenant.com/consent.mp3</Play>` instead. Again, not today.
 
 ## Latency budget
 

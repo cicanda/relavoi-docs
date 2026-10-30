@@ -14,18 +14,18 @@ Every Relavoi session is dual-channel: the same proxy number that carries voice 
 sequenceDiagram
   participant Agent
   participant Telco as Nigerian PSTN
-  participant AT as Telephony Provider
+  participant Carrier as Telephony Provider
   participant WH as Webhook Handler
   participant Router as SMS Router
   participant Customer
 
   Agent->>Telco: SMS to +2348000000001
-  Telco->>AT: deliver SMS
-  AT->>WH: POST inbound_sms webhook
+  Telco->>Carrier: deliver SMS
+  Carrier->>WH: POST inbound_sms webhook
   WH->>Router: lookup(proxy, sender)
   Router->>Router: session matched, A_TO_B allowed
-  Router->>AT: send SMS from +2348000000001 to customer
-  AT->>Telco: deliver
+  Router->>Carrier: send SMS from +2348000000001 to customer
+  Carrier->>Telco: deliver
   Telco->>Customer: SMS arrives
 ```
 
