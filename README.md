@@ -65,9 +65,9 @@ GitHub Actions (`.github/workflows/ci.yml`) runs `npm run build` on every PR. `d
 
 ## Related Repositories
 
-- [relavoi-backend](https://github.com/cicanda/relavoi-backend): API server
-- [relavoi-dashboard](https://github.com/cicanda/relavoi-dashboard): Tenant web dashboard
-- [relavoi-admin](https://github.com/cicanda/relavoi-admin): Operator console
+- relavoi-backend (private): API server
+- relavoi-dashboard (private): Tenant web dashboard
+- relavoi-admin (private): Operator console
 - [relavoi-android-sdk](https://github.com/cicanda/relavoi-android-sdk): Android SDK
 - [relavoi-ios-sdk](https://github.com/cicanda/relavoi-ios-sdk): iOS SDK
-- [relavoi-infra](https://github.com/cicanda/relavoi-infra): Terraform infrastructure
+- relavoi-infra (private): Terraform infrastructure
