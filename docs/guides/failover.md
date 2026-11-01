@@ -1,12 +1,26 @@
 ---
 title: High availability & failover
 sidebar_label: Failover
-description: How Relavoi keeps voice and SMS flowing during upstream telephony incidents using an automatic circuit-breaker failover between primary and backup providers.
+description: The circuit breaker that watches the telephony provider, what each state means, and how to read it from the health endpoint.
 ---
 
 # High availability & failover
 
-Relavoi routes Nigerian voice and SMS over a primary telephony provider, with an automatic failover to a backup provider. The handoff between them is automated via a circuit breaker, so traffic keeps flowing during an upstream incident without any action on your side.
+Relavoi routes Nigerian voice over one licensed telephony provider. A circuit
+breaker watches it: repeated call-setup failures trip the breaker, which stops
+new sessions being allocated against a provider that is not answering, and
+probes it until it recovers.
+
+:::info There is one provider today
+A second provider to fail over **to** does not exist yet. No numbers are
+provisioned on a backup carrier, so while the breaker is `OPEN` new session
+creation is refused rather than rerouted. The breaker is still worth having:
+it turns a slow, half-broken provider into a clear error instead of a queue of
+calls that never connect, and it is what the recovery probing hangs off.
+
+A secondary pool is on the roadmap. Until it exists, read `OPEN` as "the
+carrier is in trouble", not as "we have moved your traffic".
+:::
 
 ## Circuit breaker states
 
@@ -23,8 +37,8 @@ CLOSED ---------------------------> OPEN
 | State | Routing behavior |
 |-------|------------------|
 | `CLOSED` | All new sessions allocated on the primary provider |
-| `OPEN` | All new sessions allocated on the failover provider; existing sessions continue until natural expiry |
-| `HALF_OPEN` | A small share of new sessions probe the primary provider; the rest stay on the failover |
+| `OPEN` | New session creation is refused; existing sessions continue until natural expiry, and calls in flight are unaffected |
+| `HALF_OPEN` | A small share of new sessions probe the provider; the rest are still refused |
 
 ## Trip thresholds
 
@@ -57,6 +71,9 @@ The current state is exposed at `GET /v1/health/cpaas`:
 
 Each provider entry reports its circuit breaker `state` (`CLOSED`, `OPEN`, or `HALF_OPEN`), the `openedAt` timestamp (non-null only while the breaker is `OPEN`), and the `lastError` that most recently tripped it.
 
-## What the SDK does during failover
+## What your app sees while the breaker is open
 
-Nothing visible. Sessions created in `OPEN` state are allocated a failover proxy number transparently. The SDK and your app see the same session object shape. Calls in flight complete normally until their session expires.
+`POST /v1/sessions` fails. Calls already bridged are unaffected, and existing
+sessions keep working until they expire, because the breaker sits on allocation
+rather than on routing. Retry session creation with backoff; `GET
+/v1/health/cpaas` tells you whether it is worth retrying yet.

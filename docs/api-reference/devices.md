@@ -1,12 +1,14 @@
 ---
 title: Device Tokens & Presence API
 sidebar_label: Devices
-description: Register push tokens and report device presence so masked-call notifications reach the right handset.
+description: Register device tokens and report device presence from the Relavoi SDK.
 ---
 
 # Device Tokens & Presence API
 
-These endpoints are used by the Relavoi SDK to register APNs/FCM push tokens and to report device presence (app foreground state / reachability). The Push Notification Service uses this data to deliver branded call notifications to the correct device.
+These endpoints are used by the Relavoi SDK to register APNs/FCM device tokens and to report device presence (app foreground state / reachability).
+
+Registration works and the tokens are stored against the user and tenant. Nothing sends a notification to them yet: see [Not built yet](../introduction#not-built-yet). Calling these is harmless and means a push integration has one less step when it ships.
 
 Auth: Bearer JWT, either a tenant SDK token (`POST /auth/token`) or a dashboard user token.
 

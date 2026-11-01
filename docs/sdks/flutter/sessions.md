@@ -65,16 +65,9 @@ Future<Session> create({
 });
 ```
 
-:::note Call recording is coming soon
-
 `recordingEnabled: true` is refused by the API with a `feature-not-available`
-problem and the detail "Call recording is not available yet." Nothing is
-recorded today and no call audio is stored.
-
-Leave it `false`, or leave it out. When recording arrives, a call will only be
-recorded after a consent message that the person on the call hears first.
-
-:::
+problem. Leave it `false`, or leave it out. See
+[Not built yet](../../introduction#not-built-yet).
 
 Because the two phone numbers are the only required arguments, this is equally valid:
 

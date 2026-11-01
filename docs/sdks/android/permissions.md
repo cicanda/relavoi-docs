@@ -33,7 +33,9 @@ Suggested moment to ask: the first time the user enters a screen that displays t
 
 ## POST_NOTIFICATIONS (API 33+)
 
-Required to display incoming-call push notifications.
+Required to display a notification. Nothing sends one yet, so this is only
+worth asking for if your own app notifies the user: see
+[Not built yet](../../introduction#not-built-yet).
 
 ```kotlin
 private val notifPermLauncher = registerForActivityResult(
@@ -45,7 +47,7 @@ if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
 }
 ```
 
-Suggested moment: immediately before calling `Relavoi.push.registerToken(...)`.
+Suggested moment: immediately before your own app first needs to notify the user.
 
 ## SYSTEM_ALERT_WINDOW (overlay)
 

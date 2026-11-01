@@ -40,47 +40,6 @@ sequenceDiagram
   WH->>Redis: SET session.activated_at
 ```
 
-## Recording consent flow (coming soon)
-
-:::note Recording is not available yet
-
-Nothing on this page's recording path runs today. `recordingEnabled: true` is
-refused by the API with a `feature-not-available` problem, no `<Dial>` we send
-carries a `record` attribute, no consent announcement is played, and no call
-audio is stored anywhere. See [Call recording](../api-reference/errors.md#call-recording).
-
-The flow below is the intended design for when recording launches, kept here
-because the consent requirement shapes it: a call will only ever be recorded
-after an announcement the person on the call hears first. That is a requirement
-of Nigeria's data protection law, not a setting, so there will be no way to
-record without it.
-
-:::
-
-When recording becomes available and `recordingEnabled = true`, the Call Router
-will prepend a `<Say>` or `<Play>` action before the `<Dial>`, and the bridge
-will not happen until the consent prompt finishes.
-
-```mermaid
-sequenceDiagram
-  participant Carrier as Telephony Provider
-  participant WH as Webhook Handler
-  participant CR as Call Router
-  participant Customer as Customer phone
-
-  Carrier->>WH: POST incoming call
-  WH->>CR: route(proxy, caller)
-  CR->>CR: recording_enabled=true, consent_prompt=DEFAULT
-  CR-->>WH: <Say>This call may be recorded...</Say><Dial>+2348087654321</Dial><Record/>
-  WH-->>Carrier: 200 OK
-  Carrier->>Carrier: play consent text-to-speech
-  Carrier->>Customer: ring
-  Customer-->>Carrier: answer (recording begins)
-```
-
-With `consentPrompt = CUSTOM` the router would emit
-`<Play>https://cdn.tenant.com/consent.mp3</Play>` instead. Again, not today.
-
 ## Latency budget
 
 Our routing SLO is `p99 < 500 ms` from webhook receipt to dial response. The budget breakdown:

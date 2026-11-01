@@ -1,12 +1,12 @@
 ---
 title: Tenant Config API
 sidebar_label: Config
-description: Read and update your tenant configuration, covering webhook URL, grace period, expired-call behavior, and recording settings.
+description: Read and update your tenant configuration, covering webhook URL, grace period, expired-call behavior and support routing.
 ---
 
 # Tenant Config API
 
-These endpoints expose your tenant's configuration: default session behavior, expired-call handling, support routing, push settings, and call-recording policy.
+These endpoints expose your tenant's configuration: default session behavior, expired-call handling and support routing.
 
 Auth: Bearer JWT. Reads work with any tenant token; `PATCH /config` requires a dashboard user token with an `OWNER` or `ADMIN` role.
 
@@ -58,7 +58,7 @@ curl https://api.relavoi.com/v1/config \
 |-------|------|-------------|
 | id | string | Tenant UUID |
 | name | string | Tenant display name |
-| tier | string | `STARTER`, `GROWTH`, or `ENTERPRISE` |
+| tier | string | `STARTER`, `GROWTH`, `SCALE`, or `ENTERPRISE` |
 | status | string | Tenant status, e.g. `ACTIVE` |
 | webhookUrl | string \| null | Registered client webhook URL |
 | defaultGracePeriod | integer | Default grace period (minutes) for new sessions |
@@ -89,8 +89,13 @@ Updates one or more configuration fields. Only the fields you send are changed. 
 | recordingConsentAudioUrl | string | URL of custom consent audio |
 | pushConfig | object | Push notification config |
 
-:::warning Recording consent is enforced
-If `recordingEnabled` is `true`, `recordingConsentMode` cannot be `NONE`. This is an NDPR compliance requirement: a consent announcement must play before calls are bridged. A request that would leave recording enabled with consent disabled is rejected with `400`.
+:::note Recording is not available
+The four recording fields are returned by `GET /config`, because they exist on
+your tenant row, and they are listed above so this reference matches what you
+will actually see. Setting `recordingEnabled` to `true` is refused with `422
+feature-not-available`. `pushConfig` is returned and writable for the same
+reason, and nothing reads it yet. See
+[Not built yet](../introduction#not-built-yet).
 :::
 
 **Request**
@@ -102,9 +107,7 @@ curl -X PATCH https://api.relavoi.com/v1/config \
   -d '{
     "webhookUrl": "https://client.example.com/hook",
     "expiredCallBehavior": "REDIRECT_SUPPORT",
-    "supportPhone": "+2348000000001",
-    "recordingEnabled": true,
-    "recordingConsentMode": "DEFAULT"
+    "supportPhone": "+2348000000001"
   }'
 ```
 
@@ -122,7 +125,7 @@ Returns the full, updated config object (same shape as `GET /config`).
   "defaultGracePeriod": 15,
   "expiredCallBehavior": "REDIRECT_SUPPORT",
   "supportPhone": "+2348000000001",
-  "recordingEnabled": true,
+  "recordingEnabled": false,
   "recordingConsentMode": "DEFAULT",
   "recordingConsentAudioUrl": null,
   "pushConfig": {},
@@ -135,7 +138,8 @@ Returns the full, updated config object (same shape as `GET /config`).
 
 | Status | Code | When |
 |--------|------|------|
-| 400 | validation-error | Invalid enum, or `recordingEnabled=true` with `recordingConsentMode=NONE` |
+| 400 | validation-error | Invalid enum, or a field outside its allowed range |
+| 422 | feature-not-available | `recordingEnabled=true`. Recording is not available |
 | 401 | unauthorized | Missing or invalid JWT |
 | 403 | forbidden | Not an OWNER/ADMIN dashboard token |
 

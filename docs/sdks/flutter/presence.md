@@ -42,7 +42,7 @@ On sign-out, stop reporting:
 Relavoi.instance.presence.stop();
 ```
 
-This detaches the lifecycle observer and halts heartbeats. Pair it with the sign-out steps for the other modules ([`push.deactivateToken()`](./push) and [`events.disconnect()`](./events)) so the device goes fully quiet.
+This detaches the lifecycle observer and halts heartbeats. Pair it with the sign-out steps for the other modules (`push.deactivateToken()` and [`events.disconnect()`](./events)) so the device goes fully quiet.
 
 ## Typical wiring
 

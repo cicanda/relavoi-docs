@@ -6,7 +6,7 @@ description: Add the Relavoi Flutter plugin to your pubspec, set the platform mi
 
 # Flutter SDK installation
 
-The Relavoi Flutter SDK ships as `relavoi_flutter`, a hybrid plugin: it is pure Dart for HTTP, WebSocket, and push, and drops to platform channels only for native call detection (iOS/Android) and the Android overlay permission. One dependency covers both platforms.
+The Relavoi Flutter SDK ships as `relavoi_flutter`, a hybrid plugin: it is pure Dart for HTTP, WebSocket, and device-token registration, and drops to platform channels only for native call detection (iOS/Android) and the Android overlay permission. One dependency covers both platforms.
 
 ## Requirements
 
@@ -42,7 +42,7 @@ dependencies:
       ref: main
 ```
 
-`firebase_messaging` is pulled in transitively for the push module, so you do not add it yourself. See [Push notifications](./push) for the Firebase project setup that push additionally requires.
+`firebase_messaging` is pulled in transitively, so you do not add it yourself. It is only used to obtain a device token; nothing sends a notification to that token yet, so no Firebase project setup is needed to use the SDK. See [Not built yet](../../introduction#not-built-yet).
 
 ## Android configuration
 

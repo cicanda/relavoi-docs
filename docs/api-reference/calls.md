@@ -1,7 +1,7 @@
 ---
 title: Calls API
 sidebar_label: Calls
-description: List call records globally with filters, fetch a single call, or list calls scoped to a session, with full duration, status, and recording metadata.
+description: List call records globally with filters, fetch a single call, or list calls scoped to a session, with duration and status.
 ---
 
 # Calls API
@@ -130,7 +130,7 @@ The 404 body follows RFC 7807:
 
 Auth: Bearer JWT (tenant).
 
-List the call records belonging to a single session. This session-scoped variant additionally includes `recordingConsentPlayed`.
+List the call records belonging to a single session. This session-scoped variant additionally includes `recordingConsentPlayed`, which is always `false`, and `recordingUrl`, which is always `null`: recording is [not built yet](../introduction#not-built-yet).
 
 | Path param | Type | Required | Description |
 |------------|------|----------|-------------|
@@ -159,8 +159,8 @@ curl https://api.relavoi.com/v1/sessions/5661962a-d7ad-4aea-88a0-210388e1285b/ca
       "status": "COMPLETED",
       "direction": "A_TO_B",
       "durationSeconds": 142,
-      "recordingUrl": "https://recordings.relavoi.com/.../call_88ee2af1.mp3?sig=...",
-      "recordingConsentPlayed": true,
+      "recordingUrl": null,
+      "recordingConsentPlayed": false,
       "initiatedAt": "2026-07-15T12:31:00.000Z",
       "answeredAt": "2026-07-15T12:31:02.000Z",
       "endedAt": "2026-07-15T12:33:24.000Z"

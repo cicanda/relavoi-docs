@@ -1,7 +1,7 @@
 ---
 title: Core concepts
 sidebar_label: Concepts
-description: Sessions, proxy numbers, direction modes, grace periods, and consent. These are the five primitives every Relavoi integrator needs to internalise.
+description: Sessions, proxy numbers, direction modes and grace periods. These are the primitives every Relavoi integrator needs to internalise.
 ---
 
 # Core concepts
@@ -76,18 +76,3 @@ Two independent timers govern session lifetime:
 
 Pick `gracePeriodMinutes` based on your customer-callback window. Pick `maxDurationMinutes` based on your worst-case order fulfilment time.
 
-## Recording and consent invariant
-
-Call recording is opt-in per session via `recordingEnabled`. The companion field `consentPrompt` selects which audio plays before the call bridges:
-
-| consentPrompt | Behavior |
-|---------------|----------|
-| DEFAULT | Plays the built-in NDPR statement: "This call may be recorded for quality and safety purposes." |
-| CUSTOM | Plays your tenant-configured audio URL |
-| NONE | No prompt. **Only valid when `recordingEnabled = false`** |
-
-:::warning Hard invariant
-The API rejects any session with `recordingEnabled: true` and `consentPrompt: "NONE"` with a `422` and error type `https://api.relavoi.com/errors/validation`. This is enforced for NDPR compliance and cannot be overridden.
-:::
-
-Read [Call recording](../guides/call-recording) for the full NDPR primer and the [Sessions API reference](../api-reference/sessions) for the request schema.

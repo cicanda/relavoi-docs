@@ -57,8 +57,9 @@ That is the entire surface: no transitive imports required. The SPM product and 
 
 Open your target's **Signing & Capabilities** tab and confirm:
 
-- **Push Notifications** capability is enabled (required if you use push)
-- **Background Modes** -> "Remote notifications" (optional, for high-priority push)
+- **Push Notifications** capability, only if your own app sends notifications.
+  The SDK registers a device token; nothing sends to it yet, so the SDK itself
+  does not need this. See [Not built yet](../../introduction#not-built-yet)
 
 The SDK persists its short-lived JWT in the device-local Keychain automatically. No **Keychain Sharing** capability is required (see [Initialization](./initialization)).
 

@@ -26,8 +26,6 @@ curl -X POST https://api.relavoi.com/v1/webhooks \
       "call.answered",
       "call.ended",
       "call.failed",
-      "sms.sent",
-      "sms.received"
     ]
   }'
 ```
@@ -55,8 +53,6 @@ Store the `secret` (prefixed `whsec_`) somewhere safe: you need it for signature
 | `call.answered` | Customer or agent picks up |
 | `call.ended` | Either party hangs up |
 | `call.failed` | Call routing failed (busy, no answer, network) |
-| `sms.received` | Inbound SMS arrives on the proxy |
-| `sms.sent` | Outbound SMS leaves on the proxy |
 
 Every delivered request body is a JSON envelope with three fields:
 

@@ -20,7 +20,6 @@ A session binds two real phone numbers to a proxy MSISDN for a bounded period. S
 | POST | `/v1/sessions/:id/end` | End a session (enters GRACE_PERIOD) |
 | GET | `/v1/sessions/verify` | SDK call-verification lookup |
 | GET | `/v1/sessions/:id/calls` | List call records for one session |
-| GET | `/v1/sessions/:id/sms` | List SMS records for one session |
 
 ---
 
@@ -36,8 +35,8 @@ Auth: Bearer JWT (tenant).
 | gracePeriodMinutes | integer | no | Default 15 |
 | directionMode | string | no | `BIDIRECTIONAL` (default), `A_TO_B_ONLY`, `B_TO_A_ONLY` |
 | maxDurationMinutes | integer | no | Hard timeout, default 120 |
-| recordingEnabled | boolean | no | Default false. **Coming soon:** `true` is refused with `feature-not-available`, see [Call recording](./errors.md#call-recording) |
-| consentPrompt | string | no | `DEFAULT`, `CUSTOM`, `NONE`. Has no effect while recording is unavailable |
+| recordingEnabled | boolean | no | Default false. `true` is refused with `feature-not-available`; see [Not built yet](../introduction#not-built-yet) |
+| consentPrompt | string | no | `DEFAULT`, `CUSTOM`, `NONE`. Stored, and has no effect |
 
 **Request**
 
@@ -84,7 +83,7 @@ curl -X POST https://api.relavoi.com/v1/sessions \
 | Status | Code | When |
 |--------|------|------|
 | 400 | validation | Invalid enum or a malformed field |
-| 422 | feature-not-available | `recordingEnabled: true`, which is not available yet |
+| 422 | feature-not-available | `recordingEnabled: true`, which is not available |
 | 422 | number-not-supported | A number is not a Nigerian mobile. The detail never echoes the number |
 | 422 | cross-border-not-supported | Both numbers are valid but in different countries |
 | 429 | tier-session-limit | Tier concurrent-session quota exceeded |
@@ -360,44 +359,6 @@ List the call records belonging to a single session. Returns the standard pagina
 
 ```bash
 curl https://api.relavoi.com/v1/sessions/5661962a-d7ad-4aea-88a0-210388e1285b/calls \
-  -H "Authorization: Bearer $RELAVOI_JWT"
-```
-
-**Response**
-
-```json
-{
-  "data": [],
-  "pagination": {
-    "count": 0,
-    "after": null
-  }
-}
-```
-
-**Errors**
-
-| Status | Code | When |
-|--------|------|------|
-| 404 | not-found | Unknown session |
-
----
-
-### GET /v1/sessions/:id/sms
-
-Auth: Bearer JWT (tenant).
-
-List the SMS records belonging to a single session. Same pagination envelope as the calls endpoint.
-
-| Query | Type | Required | Description |
-|-------|------|----------|-------------|
-| limit | integer | no | Default 50, max 200 |
-| after | string | no | Cursor from the previous page's `pagination.after` |
-
-**Request**
-
-```bash
-curl https://api.relavoi.com/v1/sessions/5661962a-d7ad-4aea-88a0-210388e1285b/sms \
   -H "Authorization: Bearer $RELAVOI_JWT"
 ```
 

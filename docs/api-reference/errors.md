@@ -40,7 +40,7 @@ Every error `type` resolves to a human-readable description page at `https://api
 | `number-not-supported` | 422 | A phone number is not one Relavoi can connect. See [Supported numbers](#supported-numbers) |
 | `cross-border-not-supported` | 422 | Both numbers are valid, but they are in different countries |
 | `country-not-enabled` | 422 | The country is not enabled for your workspace |
-| `feature-not-available` | 422 | The feature is not available yet. See [Call recording](#call-recording) |
+| `feature-not-available` | 422 | The feature is not available. See [Call recording](#call-recording) |
 | `internal` | 500 | Server-side error; transient, so retry with backoff |
 
 ## Worked examples
@@ -186,7 +186,5 @@ no call is recorded or stored anywhere.
 
 `recordingEnabled: false`, and leaving the field out, both work as before.
 
-When recording does arrive, a call will only be recorded after a consent
-message that the person on the call hears first. That is a requirement of
-Nigeria's data protection law, not a setting, so there will be no way to record
-without it.
+It is listed with the other unbuilt features under
+[Not built yet](../introduction#not-built-yet).

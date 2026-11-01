@@ -6,15 +6,13 @@ description: Encryption at rest and in transit, phone number handling, API key m
 
 # Security model
 
-This page is the canonical reference for how Relavoi protects credentials, phone numbers, recordings, and tenant data.
+This page is the canonical reference for how Relavoi protects credentials, phone numbers and tenant data.
 
 ## Encryption at rest
 
 All sensitive fields are encrypted with **AES-256-GCM**:
 
 - Phone numbers (`partyA`, `partyB`) in `sessions.party_a_phone_enc` / `party_b_phone_enc`
-- SMS bodies in `sms_records.message_text_enc`
-- Call recordings in object storage
 
 Key hierarchy:
 
@@ -60,12 +58,11 @@ SDKs trade the key+secret for a short-lived **JWT (15 min TTL)** at startup and 
 
 Relavoi is built around the Nigeria Data Protection Regulation 2019 (and the NDPA 2023):
 
-- **Consent for recording**: enforced at API layer (see [Call recording](./call-recording))
 - **Data minimization**: phone numbers encrypted at rest, hashed for lookup, never logged
 - **Retention limits**: default 90 days for call data, configurable down to 30
 - **Breach notification**: 72-hour notification SLA via `security@relavoi.com`
 - **Data Processing Agreements** with our telephony sub-processors cover sub-processor obligations
-- **Right to erasure**: tenant-initiated deletion endpoint scrubs all session, call, and recording data within 30 days
+- **Right to erasure**: no self-service deletion endpoint exists yet. Ask us and we will remove a tenant's session and call data by hand
 
 For a copy of the NDPR DPA template or our SOC 2 Type II report, contact your account manager.
 

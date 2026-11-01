@@ -9,7 +9,7 @@ description: Configure the single tenant webhook URL, send a test event, review 
 There are two distinct webhook flows:
 
 - **Tenant webhooks** (outbound, us → you): you configure **one** webhook URL for your tenant and a list of event types. We POST events to that URL and sign each delivery with your webhook secret. See [Webhook integration](../guides/webhook-integration).
-- **Carrier callbacks** (inbound, provider → us): the telephony provider posts call and SMS events to Relavoi. You do **not** call these endpoints; they are documented under [Carrier callbacks (inbound)](#carrier-callbacks-inbound) so you understand the full picture.
+- **Carrier callbacks** (inbound, provider → us): the telephony provider posts call events to Relavoi. You do **not** call these endpoints; they are documented under [Carrier callbacks (inbound)](#carrier-callbacks-inbound) so you understand the full picture.
 
 :::info Single webhook URL per tenant
 Relavoi stores **one** webhook URL per tenant, not a collection of webhook subscriptions. Registering again overwrites the previous URL, event list, and secret. There are no per-webhook ids and no `409 conflict` on duplicate URLs.
@@ -24,7 +24,6 @@ Relavoi stores **one** webhook URL per tenant, not a collection of webhook subsc
 | POST | `/v1/webhooks/test` | Enqueue a synthetic `session.created` delivery |
 | GET | `/v1/webhooks/logs` | Paginated delivery logs |
 | POST | `/v1/webhooks/cpaas/voice` | Inbound carrier voice callback (returns XML) |
-| POST | `/v1/webhooks/cpaas/sms` | Inbound carrier SMS callback |
 
 Tenant endpoints require a Bearer JWT. Errors follow RFC 7807 Problem Details.
 
@@ -41,8 +40,6 @@ The events you may subscribe to (the values the backend actually emits):
 | `call.answered` | A bridged call is answered |
 | `call.ended` | A call completes |
 | `call.failed` | A call attempt fails |
-| `sms.sent` | An outbound (forwarded) SMS is sent |
-| `sms.received` | An inbound SMS arrives on a proxy |
 
 ---
 
@@ -203,17 +200,8 @@ The telephony provider posts inbound call events here (form-encoded). Relavoi ma
 <Response><Say voice="woman">This number is no longer in service</Say><Hangup/></Response>
 ```
 
-An active session with recording enabled returns a consent `<Say>`/`<Play>` followed by a `<Dial>` to the other party. If signature verification fails (non-sandbox), the endpoint responds `403` with an empty voice response.
+If signature verification fails (non-sandbox), the endpoint responds `403` with an empty voice response.
 
-### POST /v1/webhooks/cpaas/sms
-
-The telephony provider posts inbound SMS here (form-encoded). Relavoi matches the message to an active session and forwards it to the other party. The endpoint returns a small JSON acknowledgement:
-
-```json
-{ "ok": true }
-```
-
----
 
 **Errors (tenant endpoints)**
 

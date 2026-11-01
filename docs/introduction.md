@@ -1,7 +1,7 @@
 ---
 title: Introduction to Relavoi
 sidebar_label: Introduction
-description: Relavoi is a B2B phone-masking SaaS purpose-built for the Nigerian market, covering voice and SMS privacy across the Nigerian telephony network.
+description: Relavoi is a B2B phone-masking SaaS purpose-built for the Nigerian market, keeping personal numbers private across the Nigerian telephony network.
 ---
 
 # Introduction to Relavoi
@@ -13,12 +13,36 @@ Unlike consumer privacy apps (Burner, Hushed) which target individual users, Rel
 ## What you get
 
 - A REST API for creating and managing masking sessions
-- iOS (Swift) and Android (Kotlin) SDKs for in-app integration
-- Push notifications branded for your tenant
-- Real-time call verification banners
-- Webhook delivery for every session and call event
-- Built-in NDPR-compliant call recording with consent prompts
-- Automatic multi-provider failover for high availability
+- iOS (Swift), Android (Kotlin) and Flutter (Dart) SDKs for in-app integration
+- Real-time call verification, so your customer can tell a genuine call from a
+  spoofed one
+- Webhook delivery for every session and call event, HMAC-signed
+- WebSocket event streaming for live dashboards
+- Usage metering against your plan's included minutes
+
+Sessions connect Nigerian mobile numbers, and both parties must be in the same
+country. Session length is configurable up to 24 hours, with a default cap of
+120 minutes and a default grace period of 15.
+
+## Not built yet
+
+Three things appear in the data model, and in some cases in an API field, but
+are not available to use. They are listed here once rather than labelled across
+the reference:
+
+- **SMS masking.** `POST /v1/sessions` accepts a session you could text
+  through, but no message has ever been sent through the platform and the
+  endpoint is not documented.
+- **Call recording with a consent prompt.** `recordingEnabled` is a real field
+  on a session and on your tenant config. Setting it to `true` is refused with
+  `feature-not-available`. The consent announcement, retention and deletion
+  path, encrypted storage and the carrier agreement all have to exist first.
+- **Push notifications before a call.** The SDKs register device tokens today,
+  which is the half that works. Nothing sends a notification yet.
+
+Automatic failover between carriers is also not live: the circuit breaker is
+real and monitors health, but there is no secondary pool to fail over to. See
+[Failover](./guides/failover).
 
 ## Five-layer architecture
 
@@ -31,7 +55,7 @@ Unlike consumer privacy apps (Burner, Hushed) which target individual users, Rel
                 v
 +--------------------------------------+
 | Layer 2: Relavoi SDK                 |   Embedded in your app. Handles auth,
-| (Kotlin / Swift)                     |   call verification, push tokens.
+| (Kotlin / Swift / Dart)              |   call verification, device tokens.
 +--------------------------------------+
                 |
                 v
@@ -42,13 +66,13 @@ Unlike consumer privacy apps (Burner, Hushed) which target individual users, Rel
                 |
                 v
 +--------------------------------------+
-| Layer 4: Telephony Provider          |   A resilient telephony layer with
-| (telephony infrastructure)           |   automatic failover terminates calls.
+| Layer 4: Telephony Provider          |   A licensed telephony layer
+| (telephony infrastructure)           |   terminates the calls.
 +--------------------------------------+
                 |
                 v
 +--------------------------------------+
-| Layer 5: Telco Infrastructure        |   Nigerian mobile networks — the
+| Layer 5: Telco Infrastructure        |   Nigerian mobile networks: the
 | (Nigerian PSTN + mobile networks)    |   end user just answers their phone.
 +--------------------------------------+
 ```
@@ -59,7 +83,7 @@ Your existing mobile and web products. You decide when to start a masking sessio
 
 ### Layer 2: Relavoi SDK
 
-A lightweight Kotlin or Swift library. It handles short-lived JWT refresh, listens for active calls on the device, displays branded verification banners, and forwards push tokens to our backend.
+A lightweight Kotlin, Swift or Dart library. It handles short-lived JWT refresh, listens for active calls on the device, displays branded verification banners, and registers device tokens with our backend.
 
 ### Layer 3: Relavoi Platform
 
@@ -67,7 +91,7 @@ The control plane. Allocates proxy numbers atomically, routes calls in under 500
 
 ### Layer 4: Telephony Provider
 
-We route Nigerian voice and SMS over a licensed telephony provider optimized for in-region pricing and PSTN routing, with an automatic failover provider on standby for high availability.
+We route Nigerian voice over a licensed telephony provider optimized for in-region pricing and PSTN routing. Its health is monitored by a circuit breaker; a second provider to fail over to is on the roadmap rather than in place.
 
 ### Layer 5: Telco Infrastructure
 

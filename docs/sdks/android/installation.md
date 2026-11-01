@@ -59,7 +59,7 @@ The SDK declares these permissions automatically via manifest merger:
 <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 ```
 
-If you use push notifications, add `POST_NOTIFICATIONS` to your own app's manifest, since the SDK does not declare it for you:
+If your own app posts notifications, add `POST_NOTIFICATIONS` to its manifest, since the SDK does not declare it for you:
 
 ```xml
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />

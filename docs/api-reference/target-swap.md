@@ -90,7 +90,6 @@ Swapping to the number that is already the target returns `200` with the unchang
 
 **Call records are preserved.** Swapping rewrites nothing historical. A session with three swaps and ten calls still has ten call records. Each one carries `partyBPhoneHash`, the hashed target in force when that call was routed, so you can attribute every call to the recipient it actually reached without storing a number against it.
 
-**SMS follows the current target.** After a swap, a message from the agent to the proxy goes to the new customer. A message from the previous customer no longer matches the session and is dropped.
 
 **Direction mode is unaffected.** `A_TO_B_ONLY` keeps letting the agent call out to each new target while none of them can call back. `BIDIRECTIONAL` lets the current target call in. `B_TO_A_ONLY` changes which single person can reach the agent.
 

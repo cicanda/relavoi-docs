@@ -43,7 +43,6 @@ Future<void> startEventStream() async {
 | `callAnswered` | `call.answered` |
 | `callEnded` | `call.ended` |
 | `callFailed` | `call.failed` |
-| `smsSent` | `sms.sent` |
 | `unknown` | (forward-compat fallback for unrecognized types) |
 
 ## RelavoiEvent

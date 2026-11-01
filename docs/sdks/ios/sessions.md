@@ -37,16 +37,9 @@ func startMaskingSession(agent: String, customer: String, orderId: String) async
 
 The full parameter list is `create(agentPhone:customerPhone:metadata:gracePeriodMinutes:directionMode:recordingEnabled:consentPrompt:)`.
 
-:::note Call recording is coming soon
-
 `recordingEnabled: true` is refused by the API with a `feature-not-available`
-problem and the detail "Call recording is not available yet." Nothing is
-recorded today and no call audio is stored.
-
-Leave it `false`, or leave it out. When recording arrives, a call will only be
-recorded after a consent message that the person on the call hears first.
-
-:::
+problem. Leave it `false`, or leave it out. See
+[Not built yet](../../introduction#not-built-yet).
 
 
 :::info Supported numbers
