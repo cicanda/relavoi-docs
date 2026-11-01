@@ -1,0 +1,1635 @@
+# Relavoi public API, OpenAPI 3.1.
+#
+# This file is the source of truth for the published reference, the Postman
+# collection and the environment file. It is hand-written rather than generated,
+# because the routes validate with zod at the top of each handler rather than
+# with Fastify JSON schemas, so there is nothing for a generator to read.
+#
+# What stops it drifting is test/integration/openapi-contract.test.ts: it builds
+# the real app, walks Fastify's route table, and fails if this file describes a
+# path the app does not serve, or if the app serves a tenant-facing path this
+# file does not describe. The exclusion list in that test is the only place a
+# route may be left out, and every entry there has a reason.
+#
+# Scope: the tenant-facing API. Deliberately absent, with reasons:
+#   /v1/admin/**              operator console, not a customer surface
+#   /v1/webhooks/cpaas/**     carrier callbacks, inbound. The path carries a
+#                             secret token, so publishing the shape would
+#                             publish where to aim at it
+#   /v1/webhooks/payments     payment provider callback, inbound
+#   /v1/csp-report            browser violation reporting, not an API
+#   /v1/sessions/{id}/sms     SMS masking is not available
+#
+# Regenerate the collection after editing:  npm run openapi:postman
+openapi: 3.1.0
+info:
+  title: Relavoi API
+  version: "1.0.0"
+  summary: Phone number masking for Nigerian platforms.
+  description: |
+    Relavoi connects two people by phone without either seeing the other's
+    number. You create a session for a pair of Nigerian mobile numbers, we
+    allocate a proxy number, and each party dials that proxy instead.
+
+    ## Authentication
+
+    Every endpoint except `/health` and `/auth/*` takes a bearer JWT.
+
+    There are two kinds, and they are not interchangeable:
+
+    - An **SDK token**, from `POST /auth/token` with your API key and secret.
+      This is what a mobile app or your backend uses to create sessions.
+    - A **dashboard token**, from `POST /auth/dashboard/login`. Some endpoints
+      are dashboard-only, and some are restricted further by the user's role.
+
+    Tokens last 15 minutes. Mint a new one rather than trying to refresh.
+
+    ## Conventions
+
+    - Timestamps are ISO 8601 with a `Z` offset.
+    - Phone numbers are Nigerian mobile numbers. `+2348012345678`,
+      `08012345678` and `8012345678` are all accepted and normalised to E.164.
+      Anything else is refused with `422 number-not-supported`.
+    - Money is an object: integer `kobo`, a formatted `display`, and `naira`.
+    - Lists are cursor-paginated. Pass `pagination.after` back as `after`.
+    - Errors are RFC 7807 `application/problem+json`.
+  contact:
+    name: Relavoi support
+    email: support@relavoi.com
+  license:
+    name: Proprietary
+    identifier: LicenseRef-Proprietary
+servers:
+  - url: https://api.relavoi.com/v1
+    description: Production
+security:
+  - bearerAuth: []
+tags:
+  - name: Health
+    description: Liveness, and the state of the carrier circuit breaker.
+  - name: Authentication
+    description: Exchanging credentials for a token, and managing API keys.
+  - name: Sessions
+    description: The core object. A masked connection between two numbers.
+  - name: Calls
+    description: What happened on a session.
+  - name: Numbers
+    description: The proxy number pool.
+  - name: Webhooks
+    description: Where we send events, and what we got back.
+  - name: Devices
+    description: Device tokens and presence, used by the SDKs.
+  - name: Analytics
+    description: Aggregates over sessions and calls.
+  - name: Billing
+    description: Usage, the prepaid wallet, and invoices.
+  - name: Configuration
+    description: Your tenant's settings.
+  - name: Verification
+    description: Business verification, needed before going live.
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        `Authorization: Bearer <token>`. An SDK token from `POST /auth/token`
+        or a dashboard token from `POST /auth/dashboard/login`.
+  schemas:
+    Problem:
+      type: object
+      description: RFC 7807 problem details. Served as `application/problem+json`.
+      properties:
+        type:
+          type: string
+          format: uri
+          examples: ["https://api.relavoi.com/errors/validation"]
+        title: { type: string, examples: ["Bad Request"] }
+        status: { type: integer, examples: [400] }
+        detail:
+          type: string
+          description: |
+            Safe to show a user. It never contains a value the caller sent: a
+            phone number in a rejected field is described, not echoed.
+          examples: ["agentPhone: is not valid"]
+      required: [type, title, status]
+    Money:
+      type: object
+      properties:
+        kobo:
+          type: string
+          description: Integer kobo, as a string because it can exceed 2^53.
+          examples: ["5000000"]
+        display: { type: string, examples: ["NGN 50,000.00"] }
+        naira: { type: string, examples: ["50000.00"] }
+      required: [kobo, display, naira]
+    Pagination:
+      type: object
+      properties:
+        count: { type: integer }
+        after:
+          type: [string, "null"]
+          description: Cursor for the next page, or null at the end.
+      required: [count, after]
+    SessionState:
+      type: string
+      enum: [PENDING, ACTIVE, GRACE_PERIOD, EXPIRED, FAILED]
+    DirectionMode:
+      type: string
+      enum: [BIDIRECTIONAL, A_TO_B_ONLY, B_TO_A_ONLY]
+      description: |
+        Which way a call may travel. `A_TO_B_ONLY` lets the agent reach the
+        customer and refuses the reverse.
+    Session:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tenantId: { type: string, format: uuid }
+        proxyNumber:
+          type: string
+          description: The number both parties dial. E.164.
+          examples: ["+2342017001428"]
+        agentPhoneMasked:
+          type: string
+          description: |
+            Masked for display. The real number is never returned by this API,
+            to anyone, including you.
+          examples: ["+234 803 ••• 4421"]
+        customerPhoneMasked: { type: string, examples: ["+234 909 ••• 1192"] }
+        state: { $ref: "#/components/schemas/SessionState" }
+        directionMode: { $ref: "#/components/schemas/DirectionMode" }
+        metadata:
+          type: object
+          additionalProperties: true
+          description: Whatever you attached. Returned verbatim.
+        gracePeriodMinutes: { type: integer, examples: [15] }
+        maxDurationMinutes: { type: integer, examples: [120] }
+        recordingEnabled:
+          type: boolean
+          description: Always false. Recording is not available.
+        consentPrompt: { type: string, enum: [DEFAULT, CUSTOM, NONE] }
+        mode: { type: string, enum: [sandbox, live] }
+        expiresAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+        activatedAt: { type: [string, "null"], format: date-time }
+        endedAt: { type: [string, "null"], format: date-time }
+        expiredAt: { type: [string, "null"], format: date-time }
+        callCount: { type: integer }
+        lastCallAt: { type: [string, "null"], format: date-time }
+      required: [id, tenantId, proxyNumber, state, expiresAt, createdAt]
+    Call:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        sessionId: { type: string, format: uuid }
+        status:
+          type: string
+          enum: [RINGING, ANSWERED, COMPLETED, MISSED, FAILED]
+        direction: { type: string, enum: [A_TO_B, B_TO_A] }
+        durationSeconds: { type: [integer, "null"] }
+        initiatedAt: { type: string, format: date-time }
+        answeredAt: { type: [string, "null"], format: date-time }
+        endedAt: { type: [string, "null"], format: date-time }
+        recordingUrl:
+          type: [string, "null"]
+          description: Always null. Recording is not available.
+      required: [id, sessionId, status, direction, initiatedAt]
+    Tenant:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        tier: { type: string, enum: [STARTER, GROWTH, SCALE, ENTERPRISE] }
+        status: { type: string, examples: ["ACTIVE"] }
+        webhookUrl: { type: [string, "null"], format: uri }
+        defaultGracePeriod: { type: integer }
+        expiredCallBehavior:
+          type: string
+          enum: [DEAD_LINE, REDIRECT_SUPPORT, PLAY_MESSAGE]
+        supportPhone:
+          type: [string, "null"]
+          description: |
+            Dialled by the carrier for `REDIRECT_SUPPORT`. A Nigerian mobile or
+            landline, since a support line often is not a mobile.
+        recordingEnabled: { type: boolean, description: Recording is not available. }
+        recordingConsentMode: { type: string, enum: [DEFAULT, CUSTOM, NONE] }
+        recordingConsentAudioUrl: { type: [string, "null"], format: uri }
+        pushConfig:
+          type: object
+          additionalProperties: true
+          description: Stored and writable. Nothing reads it yet.
+        workspaceSlug: { type: [string, "null"] }
+        country: { type: [string, "null"], examples: ["NG"] }
+        industry: { type: [string, "null"] }
+        requestedPoolSize: { type: [integer, "null"] }
+        defaultSessionTtlMin: { type: [integer, "null"] }
+        cooldownMin: { type: [integer, "null"] }
+        mode: { type: string, enum: [sandbox, live] }
+        hasSandboxKeys: { type: boolean }
+        hasLiveKeys: { type: boolean }
+        hasApiCredentials: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+      required: [id, name, tier, status, mode]
+    TokenResponse:
+      type: object
+      properties:
+        accessToken: { type: string, description: JWT, 15 minute lifetime. }
+        expiresIn: { type: integer, examples: [900] }
+        tokenType: { type: string, examples: ["Bearer"] }
+      required: [accessToken]
+    VerificationResult:
+      type: object
+      description: |
+        Whether a call this device is on really came through one of your
+        sessions. The SDKs turn this into the green or red banner.
+      properties:
+        verified: { type: boolean }
+        context:
+          type: [string, "null"]
+          description: A line to show the user, when verified.
+          examples: ["Your courier is calling"]
+      required: [verified]
+    WebhookConfig:
+      type: object
+      description: |
+        One destination per tenant, not a list of subscriptions. The secret is
+        never returned; `hasSecret` says whether one is set.
+      properties:
+        url: { type: [string, "null"], format: uri }
+        events:
+          type: array
+          items: { type: string }
+          examples: [["session.created", "call.answered", "call.ended"]]
+        hasSecret: { type: boolean }
+        recentDeliveries:
+          type: array
+          items: { $ref: "#/components/schemas/DeliveryLog" }
+      required: [url, events, hasSecret]
+    DeliveryLog:
+      type: object
+      description: One attempt to deliver one event to your endpoint.
+      properties:
+        id: { type: string, format: uuid }
+        event: { type: string, examples: ["call.answered"] }
+        url: { type: string, format: uri }
+        success: { type: boolean }
+        outcome:
+          type: string
+          description: |
+            Why it ended. `delivered`, `refused`, `timeout` or `blocked`;
+            `blocked` means the destination failed the SSRF guard.
+        statusCode:
+          type: [integer, "null"]
+          description: |
+            What your endpoint answered. Null means we never got a response,
+            which is a different fact from a 502.
+        attemptCount: { type: integer }
+        requestedAt: { type: string, format: date-time }
+        completedAt: { type: [string, "null"], format: date-time }
+      required: [id, event, url, success, attemptCount]
+    WalletOverview:
+      type: object
+      properties:
+        mode: { type: string, enum: [sandbox, live] }
+        plan:
+          type: [object, "null"]
+          properties:
+            tier: { type: string }
+            monthly: { $ref: "#/components/schemas/Money" }
+            includedMinutes: { type: integer }
+            overagePerMinute: { $ref: "#/components/schemas/Money" }
+        includedMinutes:
+          type: object
+          properties:
+            total: { type: integer }
+            used: { type: integer }
+            left: { type: integer }
+            percentUsed: { type: number }
+        balance: { $ref: "#/components/schemas/Money" }
+        status:
+          type: string
+          description: The server's judgement on whether you can place calls.
+    UsageSummary:
+      type: object
+      properties:
+        tenantId: { type: string, format: uuid }
+        periodStart: { type: string, format: date-time }
+        periodEnd: { type: string, format: date-time }
+        metrics:
+          type: object
+          description: |
+            Counters for the window. `sms_sent`, `sms_received` and
+            `recording_minute` are always zero: neither feature is available.
+          additionalProperties: { type: integer }
+        totalEvents: { type: integer }
+    PoolStatus:
+      type: object
+      properties:
+        region: { type: string, examples: ["lagos"] }
+        total: { type: integer }
+        available: { type: integer }
+        inUse: { type: integer }
+        cooldown: { type: integer }
+        quarantined: { type: integer }
+  responses:
+    Unauthorized:
+      description: Missing, malformed or expired token.
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    Forbidden:
+      description: Authenticated, but not allowed to do this.
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    NotFound:
+      description: No such object, or not yours.
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    Validation:
+      description: The request body or query failed validation.
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+    RateLimited:
+      description: Too many requests. `retry-after` says when to come back.
+      content:
+        application/problem+json:
+          schema: { $ref: "#/components/schemas/Problem" }
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      schema: { type: integer, minimum: 1 }
+      description: Page size.
+    After:
+      name: after
+      in: query
+      schema: { type: string }
+      description: Cursor from the previous page's `pagination.after`.
+    PeriodStart:
+      name: periodStart
+      in: query
+      required: true
+      schema: { type: string, format: date-time }
+    PeriodEnd:
+      name: periodEnd
+      in: query
+      required: true
+      schema: { type: string, format: date-time }
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Liveness
+      description: No auth. Reports whether Postgres and Redis are reachable, and the commit the running image was built from.
+      security: []
+      responses:
+        "200":
+          description: Healthy, or healthy enough to answer.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, examples: ["healthy"] }
+                  checks:
+                    type: object
+                    properties:
+                      postgres: { type: string, enum: [ok, down] }
+                      redis: { type: string, enum: [ok, down] }
+                  sha: { type: string, examples: ["bd058e9"] }
+                  timestamp: { type: string, format: date-time }
+  /health/cpaas:
+    get:
+      tags: [Health]
+      summary: Carrier circuit breaker state
+      description: |
+        `CLOSED` is normal. `OPEN` means the carrier is failing and new session
+        creation is refused; there is one provider, so nothing is rerouted.
+      security: []
+      responses:
+        "200":
+          description: Breaker state per provider.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  providers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name: { type: string }
+                        state: { type: string, enum: [CLOSED, OPEN, HALF_OPEN, UNKNOWN] }
+                        openedAt: { type: [string, "null"], format: date-time }
+                        lastError: { type: [string, "null"] }
+                  timestamp: { type: string, format: date-time }
+  /auth/token:
+    post:
+      tags: [Authentication]
+      summary: Exchange an API key and secret for an SDK token
+      description: |
+        The one endpoint your backend calls with the secret. The key prefix
+        decides the mode: `rk_live_` gives a live token, `rk_test_` a sandbox
+        one. Rate limited per address.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                apiKey: { type: string, examples: ["rk_live_..."] }
+                apiSecret: { type: string, examples: ["rs_..."] }
+              required: [apiKey, apiSecret]
+      responses:
+        "200":
+          description: A token.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/TokenResponse" }
+        "400": { $ref: "#/components/responses/Validation" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /auth/signup:
+    post:
+      tags: [Authentication]
+      summary: Create a workspace
+      description: Self-service signup. Returns a dashboard token for the new owner. No API credentials are minted; ask for them from the dashboard.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                companyName: { type: string, maxLength: 255 }
+                email: { type: string, format: email }
+                password: { type: string, minLength: 12, maxLength: 128 }
+                name: { type: string, maxLength: 255 }
+                workspaceSlug: { type: string, maxLength: 100 }
+                country: { type: string, minLength: 2, maxLength: 2, examples: ["NG"] }
+                industry: { type: string, maxLength: 50 }
+                requestedPoolSize: { type: integer, minimum: 1 }
+                defaultSessionTtlMin: { type: integer, minimum: 1 }
+                cooldownMin: { type: integer, minimum: 0 }
+              required: [companyName, email, password, name]
+      responses:
+        "201":
+          description: Workspace created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken: { type: string }
+                  tenant: { $ref: "#/components/schemas/Tenant" }
+                  user:
+                    type: object
+                    properties:
+                      id: { type: string, format: uuid }
+                      email: { type: string, format: email }
+                      name: { type: string }
+                      role: { type: string, examples: ["OWNER"] }
+        "400": { $ref: "#/components/responses/Validation" }
+        "409":
+          description: That email already has a workspace.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+  /auth/dashboard/login:
+    post:
+      tags: [Authentication]
+      summary: Dashboard sign-in
+      description: For a human in the console, not for an app. Rate limited to 10 attempts per 15 minutes per address.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+              required: [email, password]
+      responses:
+        "200":
+          description: A dashboard token, the user and the tenant.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken: { type: string }
+                  user: { type: object }
+                  tenant: { $ref: "#/components/schemas/Tenant" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+  /auth/dashboard/invite:
+    post:
+      tags: [Authentication]
+      summary: Invite a teammate
+      description: Dashboard token, OWNER or ADMIN.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email }
+                role: { type: string, enum: [OWNER, ADMIN, DEVELOPER, VIEWER] }
+              required: [email, role]
+      responses:
+        "201": { description: Invited. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /auth/dashboard/change-password:
+    post:
+      tags: [Authentication]
+      summary: Change your own password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                currentPassword: { type: string }
+                newPassword: { type: string, minLength: 8, maxLength: 128 }
+              required: [currentPassword, newPassword]
+      responses:
+        "200": { description: Changed. Existing tokens stop working. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /auth/rotate-key:
+    post:
+      tags: [Authentication]
+      summary: Rotate the API secret
+      description: Dashboard token, OWNER. Returns the new secret once; it is stored hashed and cannot be shown again.
+      responses:
+        "200":
+          description: The new key and secret.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  apiKey: { type: string }
+                  apiSecret: { type: string, description: Shown once. }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /auth/keys/generate:
+    post:
+      tags: [Authentication]
+      summary: Issue API credentials for a mode
+      description: Dashboard token, OWNER. Live credentials are refused until business verification is approved; see `/auth/keys/requirements`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mode: { type: string, enum: [sandbox, live] }
+              required: [mode]
+      responses:
+        "200":
+          description: The key and secret, secret shown once.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  apiKey: { type: string }
+                  apiSecret: { type: string }
+                  mode: { type: string }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409":
+          description: Requirements for live are not met.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+  /auth/keys/activate-live:
+    post:
+      tags: [Authentication]
+      summary: Switch the workspace to live
+      description: Dashboard token, OWNER. Refused with the unmet items until every requirement passes.
+      responses:
+        "200": { description: Now live. }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "409":
+          description: Unmet requirements, listed in the body.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+  /auth/keys/requirements:
+    get:
+      tags: [Authentication]
+      summary: What is still needed to go live
+      responses:
+        "200":
+          description: Each requirement and whether it is met.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  requirements:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        key: { type: string, examples: ["kyb_approved"] }
+                        met: { type: boolean }
+                        detail: { type: string }
+  /tenants/me:
+    get:
+      tags: [Configuration]
+      summary: Who this token belongs to
+      responses:
+        "200":
+          description: The tenant, and the user if the token is a dashboard one.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tenant: { $ref: "#/components/schemas/Tenant" }
+                  user: { type: object }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /config:
+    get:
+      tags: [Configuration]
+      summary: Read your configuration
+      responses:
+        "200":
+          description: The full tenant object.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Tenant" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    patch:
+      tags: [Configuration]
+      summary: Update your configuration
+      description: |
+        Dashboard token, OWNER or ADMIN. Only the fields you send change.
+        `recordingEnabled: true` is refused with `422 feature-not-available`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                webhookUrl: { type: string, format: uri }
+                defaultGracePeriod: { type: integer }
+                expiredCallBehavior:
+                  type: string
+                  enum: [DEAD_LINE, REDIRECT_SUPPORT, PLAY_MESSAGE]
+                supportPhone: { type: string }
+                pushConfig: { type: object, additionalProperties: true }
+      responses:
+        "200":
+          description: The updated tenant.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Tenant" }
+        "400": { $ref: "#/components/responses/Validation" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422":
+          description: A field exists but the feature behind it does not.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+  /sessions:
+    post:
+      tags: [Sessions]
+      summary: Open a masked session
+      description: |
+        Allocates a proxy number for this pair and returns it. Both numbers must
+        be Nigerian mobile numbers in the same country.
+
+        The allocator guarantees no participant overlap: a number is never
+        serving two live sessions that share a party, which is what stops a
+        callback reaching the wrong person.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agentPhone: { type: string, examples: ["+2348031234421"] }
+                customerPhone: { type: string, examples: ["+2349091231192"] }
+                metadata:
+                  type: object
+                  additionalProperties: true
+                  examples: [{ "orderId": "ORD-9281" }]
+                gracePeriodMinutes:
+                  type: integer
+                  minimum: 0
+                  maximum: 1440
+                  description: Follow-up window after the session ends. Default 15.
+                maxDurationMinutes:
+                  type: integer
+                  minimum: 1
+                  maximum: 1440
+                  description: Hard cap. Default 120, maximum 24 hours.
+                directionMode: { $ref: "#/components/schemas/DirectionMode" }
+                recordingEnabled:
+                  type: boolean
+                  description: Must be false or omitted. `true` is refused.
+                consentPrompt: { type: string, enum: [DEFAULT, CUSTOM, NONE] }
+              required: [agentPhone, customerPhone]
+      responses:
+        "201":
+          description: Session created and a proxy allocated.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+        "400": { $ref: "#/components/responses/Validation" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+        "422":
+          description: |
+            A number is not a Nigerian mobile, the two parties are in different
+            countries, or `recordingEnabled: true` was sent.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+        "429": { $ref: "#/components/responses/RateLimited" }
+        "503":
+          description: No number available, or the carrier breaker is open.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+    get:
+      tags: [Sessions]
+      summary: List sessions
+      parameters:
+        - name: state
+          in: query
+          schema: { $ref: "#/components/schemas/SessionState" }
+        - { $ref: "#/components/parameters/Limit" }
+        - { $ref: "#/components/parameters/After" }
+      responses:
+        "200":
+          description: A page of sessions, newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Session" }
+                  pagination: { $ref: "#/components/schemas/Pagination" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /sessions/verify:
+    get:
+      tags: [Verification]
+      summary: Is this call really ours
+      description: |
+        Called by the SDK when the device is on a call. Answers whether that
+        call arrived through one of your live sessions in the last 60 seconds.
+      parameters:
+        - name: userPhone
+          in: query
+          required: true
+          schema: { type: string }
+        - name: tenantId
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: The verdict.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/VerificationResult" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "422":
+          description: Not a Nigerian mobile number.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+    post:
+      tags: [Verification]
+      summary: Is this call really ours, as a POST
+      description: Same answer as the GET. Exists so the number can go in a body rather than a query string, which keeps it out of access logs and Referer headers.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userPhone: { type: string }
+                tenantId: { type: string, format: uuid }
+              required: [userPhone]
+      responses:
+        "200":
+          description: The verdict.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/VerificationResult" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /sessions/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Sessions]
+      summary: Fetch one session
+      responses:
+        "200":
+          description: The session.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+        "404": { $ref: "#/components/responses/NotFound" }
+    patch:
+      tags: [Sessions]
+      summary: Update metadata or the grace period
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                metadata: { type: object, additionalProperties: true }
+                gracePeriodMinutes: { type: integer, minimum: 0, maximum: 1440 }
+      responses:
+        "200":
+          description: The updated session.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+        "400": { $ref: "#/components/responses/Validation" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /sessions/{id}/end:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      tags: [Sessions]
+      summary: End a session
+      description: |
+        Moves it to `GRACE_PERIOD`, so a follow-up call still connects. Send
+        `gracePeriodMinutes: 0` to cut contact off immediately.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                gracePeriodMinutes: { type: integer, minimum: 0, maximum: 1440 }
+      responses:
+        "200":
+          description: The session, now ending.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /sessions/{id}/target:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      tags: [Sessions]
+      summary: Point the session at a different customer
+      description: |
+        Keeps the proxy number and swaps party B, for a reassigned order. The
+        previous customer stops reaching anyone on that number.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              properties:
+                customerPhone: { type: string }
+              required: [customerPhone]
+      responses:
+        "200":
+          description: The session with the new target.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Session" }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "422":
+          description: Not a Nigerian mobile, or it would collide on the proxy.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+  /sessions/{id}/calls:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Calls]
+      summary: Calls on one session
+      parameters:
+        - { $ref: "#/components/parameters/Limit" }
+        - { $ref: "#/components/parameters/After" }
+      responses:
+        "200":
+          description: A page of calls.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Call" }
+                  pagination: { $ref: "#/components/schemas/Pagination" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /calls:
+    get:
+      tags: [Calls]
+      summary: List calls
+      parameters:
+        - name: sessionId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: status
+          in: query
+          schema: { type: string, enum: [RINGING, ANSWERED, COMPLETED, MISSED, FAILED] }
+        - name: direction
+          in: query
+          schema: { type: string, enum: [A_TO_B, B_TO_A] }
+        - name: periodStart
+          in: query
+          schema: { type: string, format: date-time }
+        - name: periodEnd
+          in: query
+          schema: { type: string, format: date-time }
+        - { $ref: "#/components/parameters/Limit" }
+        - { $ref: "#/components/parameters/After" }
+      responses:
+        "200":
+          description: A page of calls.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/Call" }
+                  pagination: { $ref: "#/components/schemas/Pagination" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /calls/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Calls]
+      summary: Fetch one call
+      responses:
+        "200":
+          description: The call.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Call" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /numbers/pool:
+    get:
+      tags: [Numbers]
+      summary: Pool status by region
+      responses:
+        "200":
+          description: One entry per region.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pools:
+                    type: array
+                    items: { $ref: "#/components/schemas/PoolStatus" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /numbers/provision:
+    post:
+      tags: [Numbers]
+      summary: Ask for more numbers
+      description: |
+        Dashboard token, OWNER. Provisioning is a manual process today, so this
+        answers `501` and records the request. Ask us and we will size a pool.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                region: { type: string, examples: ["lagos"] }
+                count: { type: integer, minimum: 1, maximum: 100 }
+                provider: { type: string, enum: [AFRICASTALKING, TWILIO, PLIVO] }
+              required: [region, count]
+      responses:
+        "501":
+          description: Not implemented. Provisioning is manual.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+        "403": { $ref: "#/components/responses/Forbidden" }
+  /webhooks:
+    get:
+      tags: [Webhooks]
+      summary: Your webhook destination
+      responses:
+        "200":
+          description: The destination, the events, and recent deliveries.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WebhookConfig" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+    post:
+      tags: [Webhooks]
+      summary: Register where events go
+      description: |
+        The URL must be public: a private, loopback or link-local address is
+        refused, and so is a redirect that lands on one. Deliveries are signed
+        with `X-Relavoi-Signature`, an HMAC of `timestamp.body`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url: { type: string, format: uri, examples: ["https://client.example.com/hook"] }
+                events:
+                  type: array
+                  minItems: 1
+                  items: { type: string }
+                  examples: [["session.created", "call.answered", "call.ended", "session.expired"]]
+              required: [url, events]
+      responses:
+        "200":
+          description: Registered. The secret is returned once if newly created.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string, format: uri }
+                  events: { type: array, items: { type: string } }
+                  secret: { type: string, description: Shown once, on first registration. }
+        "400": { $ref: "#/components/responses/Validation" }
+        "422":
+          description: The destination failed the SSRF guard.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+  /webhooks/test:
+    post:
+      tags: [Webhooks]
+      summary: Send yourself a test delivery
+      description: Delivers a synthetic `session.created` to your registered URL, signed the same way a real one is, and reports what came back.
+      responses:
+        "200":
+          description: The attempt and its outcome.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/DeliveryLog" }
+        "409":
+          description: No destination registered yet.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+  /webhooks/logs:
+    get:
+      tags: [Webhooks]
+      summary: Delivery history
+      description: |
+        Every attempt, with the status code your endpoint returned. The response
+        body and the error text are not included: they are operator-only.
+      parameters:
+        - { $ref: "#/components/parameters/Limit" }
+        - { $ref: "#/components/parameters/After" }
+      responses:
+        "200":
+          description: A page of attempts, newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items: { $ref: "#/components/schemas/DeliveryLog" }
+                  pagination: { $ref: "#/components/schemas/Pagination" }
+  /devices/token:
+    post:
+      tags: [Devices]
+      summary: Register a device token
+      description: |
+        Stores an APNs or FCM token against a user and this tenant. Registration
+        works; nothing sends a notification to it yet.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userPhone: { type: string }
+                token: { type: string }
+                platform: { type: string, enum: [ios, android] }
+                appBundleId: { type: string }
+              required: [userPhone, token, platform]
+      responses:
+        "200": { description: Registered, or already known. }
+        "400": { $ref: "#/components/responses/Validation" }
+        "422":
+          description: Not a Nigerian mobile number.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+    delete:
+      tags: [Devices]
+      summary: Deactivate a device token
+      description: Call this on sign-out, or when the OS reports the token is stale.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token: { type: string }
+              required: [token]
+      responses:
+        "200": { description: Deactivated. }
+  /devices/presence:
+    post:
+      tags: [Devices]
+      summary: Report device reachability
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userPhone: { type: string }
+                status: { type: string, enum: [online, background, offline] }
+                platform: { type: string, enum: [ios, android] }
+              required: [userPhone, status, platform]
+      responses:
+        "200": { description: Recorded. }
+    get:
+      tags: [Devices]
+      summary: Read a user's presence
+      parameters:
+        - name: userPhone
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Last known state.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, enum: [online, background, offline, unknown] }
+                  platform: { type: [string, "null"] }
+                  updatedAt: { type: [string, "null"], format: date-time }
+  /analytics/usage:
+    get:
+      tags: [Analytics]
+      summary: Usage for a window
+      parameters:
+        - { $ref: "#/components/parameters/PeriodStart" }
+        - { $ref: "#/components/parameters/PeriodEnd" }
+      responses:
+        "200":
+          description: Counters for the window.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UsageSummary" }
+        "400": { $ref: "#/components/responses/Validation" }
+  /analytics/sessions-over-time:
+    get:
+      tags: [Analytics]
+      summary: Sessions bucketed over time
+      parameters:
+        - { $ref: "#/components/parameters/PeriodStart" }
+        - { $ref: "#/components/parameters/PeriodEnd" }
+      responses:
+        "200":
+          description: One row per bucket.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        ts: { type: string, format: date-time }
+                      additionalProperties: true
+  /analytics/call-success-rate:
+    get:
+      tags: [Analytics]
+      summary: Answered against attempted
+      parameters:
+        - { $ref: "#/components/parameters/PeriodStart" }
+        - { $ref: "#/components/parameters/PeriodEnd" }
+      responses:
+        "200":
+          description: Rates for the window.
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+  /analytics/calls:
+    get:
+      tags: [Analytics]
+      summary: Call analytics
+      parameters:
+        - { $ref: "#/components/parameters/PeriodStart" }
+        - { $ref: "#/components/parameters/PeriodEnd" }
+      responses:
+        "200":
+          description: Aggregates over calls in the window.
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+  /billing/usage:
+    get:
+      tags: [Billing]
+      summary: Metered usage for a window
+      parameters:
+        - { $ref: "#/components/parameters/PeriodStart" }
+        - { $ref: "#/components/parameters/PeriodEnd" }
+      responses:
+        "200":
+          description: The counters your invoice is built from.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/UsageSummary" }
+  /billing/events:
+    get:
+      tags: [Billing]
+      summary: Individual billable events
+      parameters:
+        - { $ref: "#/components/parameters/Limit" }
+        - { $ref: "#/components/parameters/After" }
+      responses:
+        "200":
+          description: A page of usage records.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { type: object, additionalProperties: true } }
+                  pagination: { $ref: "#/components/schemas/Pagination" }
+  /billing/periods:
+    get:
+      tags: [Billing]
+      summary: Billing periods
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 24 }
+        - name: after
+          in: query
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: A page of periods, newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { type: object, additionalProperties: true } }
+                  pagination: { $ref: "#/components/schemas/Pagination" }
+  /billing/pricing:
+    get:
+      tags: [Billing]
+      summary: The rates on your plan
+      responses:
+        "200":
+          description: Per-metric rates and allowances.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tiers:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        tier: { type: string }
+                        metric: { type: string }
+                        unitPrice: { type: number }
+                        includedQuantity: { type: number }
+                        currency: { type: string, examples: ["NGN"] }
+  /billing/wallet:
+    get:
+      tags: [Billing]
+      summary: Plan, allowance and balance
+      description: |
+        Billing is prepaid. `plan` is null only if your tier has no plan row,
+        which should not happen; if you see it, tell us rather than guessing a
+        price.
+      responses:
+        "200":
+          description: The wallet overview the dashboard renders.
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/WalletOverview" }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /billing/wallet/ledger:
+    get:
+      tags: [Billing]
+      summary: Wallet movements
+      parameters:
+        - { $ref: "#/components/parameters/Limit" }
+        - { $ref: "#/components/parameters/After" }
+      responses:
+        "200":
+          description: A page of ledger entries, newest first.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data: { type: array, items: { type: object, additionalProperties: true } }
+                  pagination: { $ref: "#/components/schemas/Pagination" }
+  /billing/wallet/settings:
+    put:
+      tags: [Billing]
+      summary: Set the low balance alert
+      description: Zero turns the alert off.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                lowBalanceThresholdNaira:
+                  type: integer
+                  minimum: 0
+                  maximum: 50000000
+              required: [lowBalanceThresholdNaira]
+      responses:
+        "200":
+          description: The threshold now in force.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lowBalanceThreshold: { $ref: "#/components/schemas/Money" }
+  /billing/wallet/topups:
+    post:
+      tags: [Billing]
+      summary: Start a top-up
+      description: |
+        Opens a payment with the provider and returns where to send the payer.
+        Whole naira only. Confirm with the verify endpoint, or wait for the
+        provider callback, whichever arrives first; both are idempotent.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amountNaira: { type: integer, minimum: 1, maximum: 50000000 }
+              required: [amountNaira]
+      responses:
+        "200":
+          description: Where to send the payer, and the reference to verify.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reference: { type: string }
+                  authorizationUrl: { type: string, format: uri }
+                  amount: { $ref: "#/components/schemas/Money" }
+        "400": { $ref: "#/components/responses/Validation" }
+        "503":
+          description: Payments are not configured for this mode.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+  /billing/wallet/topups/quote:
+    get:
+      tags: [Billing]
+      summary: What a top-up will cost
+      description: The provider fee is passed on, so the payer sees it before paying. VAT-exclusive.
+      parameters:
+        - name: amountNaira
+          in: query
+          required: true
+          schema: { type: integer, minimum: 1 }
+      responses:
+        "200":
+          description: The breakdown.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  amount: { $ref: "#/components/schemas/Money" }
+                  fee: { $ref: "#/components/schemas/Money" }
+                  total: { $ref: "#/components/schemas/Money" }
+  /billing/wallet/topups/{reference}/verify:
+    parameters:
+      - name: reference
+        in: path
+        required: true
+        schema: { type: string }
+    post:
+      tags: [Billing]
+      summary: Confirm a top-up
+      description: Idempotent. Safe to call from the payer's return URL.
+      responses:
+        "200":
+          description: The outcome and the new balance.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, examples: ["success"] }
+                  balance: { $ref: "#/components/schemas/Money" }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /billing/invoices:
+    get:
+      tags: [Billing]
+      summary: List invoices
+      parameters:
+        - { $ref: "#/components/parameters/Limit" }
+        - { $ref: "#/components/parameters/After" }
+      responses:
+        "200":
+          description: A page of invoices.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  invoices: { type: array, items: { type: object, additionalProperties: true } }
+  /billing/invoices/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Billing]
+      summary: One invoice, with its lines
+      responses:
+        "200":
+          description: The invoice.
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /billing/invoices/{id}/print:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      tags: [Billing]
+      summary: A printable invoice
+      responses:
+        "200":
+          description: Self-contained HTML, for printing or saving as PDF.
+          content:
+            text/html:
+              schema: { type: string }
+        "404": { $ref: "#/components/responses/NotFound" }
+  /kyb:
+    get:
+      tags: [Verification]
+      summary: Business verification status
+      responses:
+        "200":
+          description: Status, what has been supplied, and what is missing.
+          content:
+            application/json:
+              schema: { type: object, additionalProperties: true }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+  /kyb/prompt/dismiss:
+    post:
+      tags: [Verification]
+      summary: Stop prompting about verification
+      responses:
+        "200": { description: Dismissed. }
+  /kyb/details:
+    put:
+      tags: [Verification]
+      summary: Supply business details
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                registrationType: { type: string, enum: [COMPANY, BUSINESS_NAME, OTHER] }
+                registeredName: { type: string }
+                registrationNumber: { type: string }
+                registeredAddress: { type: string }
+              additionalProperties: true
+      responses:
+        "200": { description: Saved. }
+        "400": { $ref: "#/components/responses/Validation" }
+  /kyb/documents:
+    post:
+      tags: [Verification]
+      summary: Upload a document
+      description: |
+        `multipart/form-data`, one file per request, with `kind` naming which
+        document it is. Stored encrypted; the operator console reads it through
+        a short-lived signed URL.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                kind: { type: string, examples: ["CAC_CERTIFICATE"] }
+                issuedOn: { type: string, format: date }
+                file: { type: string, format: binary }
+              required: [kind, file]
+      responses:
+        "201": { description: Stored. }
+        "400": { $ref: "#/components/responses/Validation" }
+        "413":
+          description: File too large.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+  /kyb/documents/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    delete:
+      tags: [Verification]
+      summary: Remove a document
+      description: Only before submission.
+      responses:
+        "200": { description: Removed. }
+        "404": { $ref: "#/components/responses/NotFound" }
+        "409":
+          description: Already submitted, so it cannot be removed.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
+  /kyb/submit:
+    post:
+      tags: [Verification]
+      summary: Submit for review
+      description: Refused with the missing items if anything required is absent.
+      responses:
+        "200": { description: Submitted, now pending review. }
+        "409":
+          description: Something required is missing.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }

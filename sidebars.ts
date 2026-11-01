@@ -42,6 +42,7 @@ const sidebars: SidebarsConfig = {
         'api-reference/health',
         'api-reference/errors',
         'api-reference/rate-limits',
+        'api-reference/tools',
       ],
     },
   ],

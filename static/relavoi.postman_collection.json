@@ -1,0 +1,1840 @@
+{
+  "info": {
+    "name": "Relavoi API v1.0.0",
+    "description": "Generated from openapi.yaml by scripts/openapi-to-postman.py. Do not edit by hand.\n\nImport the environment file beside this one, call Authentication > \"Exchange an API key and secret for an SDK token\", and paste the accessToken into the environment's accessToken variable. Every other request sends it as a bearer token.\n\nRelavoi connects two people by phone without either seeing the other's\nnumber. You create a session for a pair of Nigerian mobile numbers, we\nallocate a proxy number, and each party dials that proxy instead.\n\n## Authentication\n\nEvery endpoint except `/health` and `/auth/*` takes a bearer JWT.\n\nThere are two kinds, and they are not interchangeable:\n\n- An **SDK token**, from `POST /auth/token` with your API key and secret.\n  This is what a mobile app or your backend uses to create sessions.\n- A **dashboard token**, from `POST /auth/dashboard/login`. Some endpoints\n  are dashboard-only, and some are restricted further by the user's role.\n\nTokens last 15 minutes. Mint a new one rather than trying to refresh.\n\n## Conventions\n\n- Timestamps are ISO 8601 with a `Z` offset.\n- Phone numbers are Nigerian mobile numbers. `+2348012345678`,\n  `08012345678` and `8012345678` are all accepted and normalised to E.164.\n  Anything else is refused with `422 number-not-supported`.\n- Money is an object: integer `kobo`, a formatted `display`, and `naira`.\n- Lists are cursor-paginated. Pass `pagination.after` back as `after`.\n- Errors are RFC 7807 `application/problem+json`.\n",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health",
+      "description": "Liveness, and the state of the carrier circuit breaker.",
+      "item": [
+        {
+          "name": "Liveness",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "No auth. Reports whether Postgres and Redis are reachable, and the commit the running image was built from.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Carrier circuit breaker state",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health/cpaas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health",
+                "cpaas"
+              ]
+            },
+            "description": "`CLOSED` is normal. `OPEN` means the carrier is failing and new session\ncreation is refused; there is one provider, so nothing is rerouted.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "description": "Exchanging credentials for a token, and managing API keys.",
+      "item": [
+        {
+          "name": "Exchange an API key and secret for an SDK token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "token"
+              ]
+            },
+            "description": "The one endpoint your backend calls with the secret. The key prefix\ndecides the mode: `rk_live_` gives a live token, `rk_test_` a sandbox\none. Rate limited per address.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apiKey\": \"rk_live_...\",\n  \"apiSecret\": \"rs_...\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create a workspace",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "signup"
+              ]
+            },
+            "description": "Self-service signup. Returns a dashboard token for the new owner. No API credentials are minted; ask for them from the dashboard.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"companyName\": \"\",\n  \"email\": \"you@example.com\",\n  \"password\": \"\",\n  \"name\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Dashboard sign-in",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/dashboard/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "dashboard",
+                "login"
+              ]
+            },
+            "description": "For a human in the console, not for an app. Rate limited to 10 attempts per 15 minutes per address.",
+            "auth": {
+              "type": "noauth"
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"you@example.com\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Invite a teammate",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/dashboard/invite",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "dashboard",
+                "invite"
+              ]
+            },
+            "description": "Dashboard token, OWNER or ADMIN.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"you@example.com\",\n  \"role\": \"OWNER\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Change your own password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/dashboard/change-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "dashboard",
+                "change-password"
+              ]
+            },
+            "description": "Change your own password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"\",\n  \"newPassword\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rotate the API secret",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/rotate-key",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "rotate-key"
+              ]
+            },
+            "description": "Dashboard token, OWNER. Returns the new secret once; it is stored hashed and cannot be shown again."
+          },
+          "response": []
+        },
+        {
+          "name": "Issue API credentials for a mode",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/keys/generate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "keys",
+                "generate"
+              ]
+            },
+            "description": "Dashboard token, OWNER. Live credentials are refused until business verification is approved; see `/auth/keys/requirements`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"mode\": \"sandbox\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Switch the workspace to live",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/keys/activate-live",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "keys",
+                "activate-live"
+              ]
+            },
+            "description": "Dashboard token, OWNER. Refused with the unmet items until every requirement passes."
+          },
+          "response": []
+        },
+        {
+          "name": "What is still needed to go live",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/keys/requirements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "keys",
+                "requirements"
+              ]
+            },
+            "description": "What is still needed to go live"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Sessions",
+      "description": "The core object. A masked connection between two numbers.",
+      "item": [
+        {
+          "name": "List sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessions"
+              ],
+              "query": [
+                {
+                  "key": "state",
+                  "value": "PENDING",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "0",
+                  "description": "Page size.",
+                  "disabled": true
+                },
+                {
+                  "key": "after",
+                  "value": "",
+                  "description": "Cursor from the previous page's `pagination.after`.",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List sessions"
+          },
+          "response": []
+        },
+        {
+          "name": "Open a masked session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sessions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessions"
+              ]
+            },
+            "description": "Allocates a proxy number for this pair and returns it. Both numbers must\nbe Nigerian mobile numbers in the same country.\n\nThe allocator guarantees no participant overlap: a number is never\nserving two live sessions that share a party, which is what stops a\ncallback reaching the wrong person.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"agentPhone\": \"+2348031234421\",\n  \"customerPhone\": \"+2349091231192\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Fetch one session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessions/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessions",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Fetch one session"
+          },
+          "response": []
+        },
+        {
+          "name": "Update metadata or the grace period",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sessions/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessions",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Update metadata or the grace period",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"metadata\": {},\n  \"gracePeriodMinutes\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "End a session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sessions/:id/end",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessions",
+                ":id",
+                "end"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Moves it to `GRACE_PERIOD`, so a follow-up call still connects. Send\n`gracePeriodMinutes: 0` to cut contact off immediately.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"gracePeriodMinutes\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Point the session at a different customer",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sessions/:id/target",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessions",
+                ":id",
+                "target"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Keeps the proxy number and swaps party B, for a reassigned order. The\nprevious customer stops reaching anyone on that number.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customerPhone\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Calls",
+      "description": "What happened on a session.",
+      "item": [
+        {
+          "name": "Calls on one session",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessions/:id/calls",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessions",
+                ":id",
+                "calls"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "0",
+                  "description": "Page size.",
+                  "disabled": true
+                },
+                {
+                  "key": "after",
+                  "value": "",
+                  "description": "Cursor from the previous page's `pagination.after`.",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Calls on one session"
+          },
+          "response": []
+        },
+        {
+          "name": "List calls",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/calls",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "calls"
+              ],
+              "query": [
+                {
+                  "key": "sessionId",
+                  "value": "00000000-0000-0000-0000-000000000000",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "status",
+                  "value": "RINGING",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "direction",
+                  "value": "A_TO_B",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "periodStart",
+                  "value": "2026-11-01T00:00:00.000Z",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "periodEnd",
+                  "value": "2026-11-01T00:00:00.000Z",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "0",
+                  "description": "Page size.",
+                  "disabled": true
+                },
+                {
+                  "key": "after",
+                  "value": "",
+                  "description": "Cursor from the previous page's `pagination.after`.",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List calls"
+          },
+          "response": []
+        },
+        {
+          "name": "Fetch one call",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/calls/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "calls",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Fetch one call"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Numbers",
+      "description": "The proxy number pool.",
+      "item": [
+        {
+          "name": "Pool status by region",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/numbers/pool",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "numbers",
+                "pool"
+              ]
+            },
+            "description": "Pool status by region"
+          },
+          "response": []
+        },
+        {
+          "name": "Ask for more numbers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/numbers/provision",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "numbers",
+                "provision"
+              ]
+            },
+            "description": "Dashboard token, OWNER. Provisioning is a manual process today, so this\nanswers `501` and records the request. Ask us and we will size a pool.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"region\": \"lagos\",\n  \"count\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "description": "Where we send events, and what we got back.",
+      "item": [
+        {
+          "name": "Your webhook destination",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/webhooks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhooks"
+              ]
+            },
+            "description": "Your webhook destination"
+          },
+          "response": []
+        },
+        {
+          "name": "Register where events go",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/webhooks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhooks"
+              ]
+            },
+            "description": "The URL must be public: a private, loopback or link-local address is\nrefused, and so is a redirect that lands on one. Deliveries are signed\nwith `X-Relavoi-Signature`, an HMAC of `timestamp.body`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://client.example.com/hook\",\n  \"events\": [\n    \"session.created\",\n    \"call.answered\",\n    \"call.ended\",\n    \"session.expired\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send yourself a test delivery",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/webhooks/test",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhooks",
+                "test"
+              ]
+            },
+            "description": "Delivers a synthetic `session.created` to your registered URL, signed the same way a real one is, and reports what came back."
+          },
+          "response": []
+        },
+        {
+          "name": "Delivery history",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/webhooks/logs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "webhooks",
+                "logs"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "0",
+                  "description": "Page size.",
+                  "disabled": true
+                },
+                {
+                  "key": "after",
+                  "value": "",
+                  "description": "Cursor from the previous page's `pagination.after`.",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Every attempt, with the status code your endpoint returned. The response\nbody and the error text are not included: they are operator-only."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Devices",
+      "description": "Device tokens and presence, used by the SDKs.",
+      "item": [
+        {
+          "name": "Register a device token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/devices/token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "devices",
+                "token"
+              ]
+            },
+            "description": "Stores an APNs or FCM token against a user and this tenant. Registration\nworks; nothing sends a notification to it yet.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userPhone\": \"\",\n  \"token\": \"\",\n  \"platform\": \"ios\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Deactivate a device token",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/devices/token",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "devices",
+                "token"
+              ]
+            },
+            "description": "Call this on sign-out, or when the OS reports the token is stale.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Read a user's presence",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/devices/presence?userPhone=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "devices",
+                "presence"
+              ],
+              "query": [
+                {
+                  "key": "userPhone",
+                  "value": "",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Read a user's presence"
+          },
+          "response": []
+        },
+        {
+          "name": "Report device reachability",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/devices/presence",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "devices",
+                "presence"
+              ]
+            },
+            "description": "Report device reachability",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userPhone\": \"\",\n  \"status\": \"online\",\n  \"platform\": \"ios\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "description": "Aggregates over sessions and calls.",
+      "item": [
+        {
+          "name": "Usage for a window",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/usage?periodStart=&periodEnd=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analytics",
+                "usage"
+              ],
+              "query": [
+                {
+                  "key": "periodStart",
+                  "value": "2026-11-01T00:00:00.000Z",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "periodEnd",
+                  "value": "2026-11-01T00:00:00.000Z",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Usage for a window"
+          },
+          "response": []
+        },
+        {
+          "name": "Sessions bucketed over time",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/sessions-over-time?periodStart=&periodEnd=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analytics",
+                "sessions-over-time"
+              ],
+              "query": [
+                {
+                  "key": "periodStart",
+                  "value": "2026-11-01T00:00:00.000Z",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "periodEnd",
+                  "value": "2026-11-01T00:00:00.000Z",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Sessions bucketed over time"
+          },
+          "response": []
+        },
+        {
+          "name": "Answered against attempted",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/call-success-rate?periodStart=&periodEnd=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analytics",
+                "call-success-rate"
+              ],
+              "query": [
+                {
+                  "key": "periodStart",
+                  "value": "2026-11-01T00:00:00.000Z",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "periodEnd",
+                  "value": "2026-11-01T00:00:00.000Z",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Answered against attempted"
+          },
+          "response": []
+        },
+        {
+          "name": "Call analytics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/calls?periodStart=&periodEnd=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analytics",
+                "calls"
+              ],
+              "query": [
+                {
+                  "key": "periodStart",
+                  "value": "2026-11-01T00:00:00.000Z",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "periodEnd",
+                  "value": "2026-11-01T00:00:00.000Z",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Call analytics"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Billing",
+      "description": "Usage, the prepaid wallet, and invoices.",
+      "item": [
+        {
+          "name": "Metered usage for a window",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/usage?periodStart=&periodEnd=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "usage"
+              ],
+              "query": [
+                {
+                  "key": "periodStart",
+                  "value": "2026-11-01T00:00:00.000Z",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "periodEnd",
+                  "value": "2026-11-01T00:00:00.000Z",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Metered usage for a window"
+          },
+          "response": []
+        },
+        {
+          "name": "Individual billable events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "events"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "0",
+                  "description": "Page size.",
+                  "disabled": true
+                },
+                {
+                  "key": "after",
+                  "value": "",
+                  "description": "Cursor from the previous page's `pagination.after`.",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Individual billable events"
+          },
+          "response": []
+        },
+        {
+          "name": "Billing periods",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/periods",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "periods"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "0",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "after",
+                  "value": "00000000-0000-0000-0000-000000000000",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Billing periods"
+          },
+          "response": []
+        },
+        {
+          "name": "The rates on your plan",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/pricing",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "pricing"
+              ]
+            },
+            "description": "The rates on your plan"
+          },
+          "response": []
+        },
+        {
+          "name": "Plan, allowance and balance",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/wallet",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "wallet"
+              ]
+            },
+            "description": "Billing is prepaid. `plan` is null only if your tier has no plan row,\nwhich should not happen; if you see it, tell us rather than guessing a\nprice."
+          },
+          "response": []
+        },
+        {
+          "name": "Wallet movements",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/wallet/ledger",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "wallet",
+                "ledger"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "0",
+                  "description": "Page size.",
+                  "disabled": true
+                },
+                {
+                  "key": "after",
+                  "value": "",
+                  "description": "Cursor from the previous page's `pagination.after`.",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Wallet movements"
+          },
+          "response": []
+        },
+        {
+          "name": "Set the low balance alert",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/wallet/settings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "wallet",
+                "settings"
+              ]
+            },
+            "description": "Zero turns the alert off.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"lowBalanceThresholdNaira\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Start a top-up",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/billing/wallet/topups",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "wallet",
+                "topups"
+              ]
+            },
+            "description": "Opens a payment with the provider and returns where to send the payer.\nWhole naira only. Confirm with the verify endpoint, or wait for the\nprovider callback, whichever arrives first; both are idempotent.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amountNaira\": 0\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "What a top-up will cost",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/wallet/topups/quote?amountNaira=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "wallet",
+                "topups",
+                "quote"
+              ],
+              "query": [
+                {
+                  "key": "amountNaira",
+                  "value": "0",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "The provider fee is passed on, so the payer sees it before paying. VAT-exclusive."
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm a top-up",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/wallet/topups/:reference/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "wallet",
+                "topups",
+                ":reference",
+                "verify"
+              ],
+              "variable": [
+                {
+                  "key": "reference",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Idempotent. Safe to call from the payer's return URL."
+          },
+          "response": []
+        },
+        {
+          "name": "List invoices",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "invoices"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "0",
+                  "description": "Page size.",
+                  "disabled": true
+                },
+                {
+                  "key": "after",
+                  "value": "",
+                  "description": "Cursor from the previous page's `pagination.after`.",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List invoices"
+          },
+          "response": []
+        },
+        {
+          "name": "One invoice, with its lines",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "invoices",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "One invoice, with its lines"
+          },
+          "response": []
+        },
+        {
+          "name": "A printable invoice",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/billing/invoices/:id/print",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "billing",
+                "invoices",
+                ":id",
+                "print"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "A printable invoice"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Configuration",
+      "description": "Your tenant's settings.",
+      "item": [
+        {
+          "name": "Who this token belongs to",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/tenants/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "tenants",
+                "me"
+              ]
+            },
+            "description": "Who this token belongs to"
+          },
+          "response": []
+        },
+        {
+          "name": "Read your configuration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/config",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "config"
+              ]
+            },
+            "description": "Read your configuration"
+          },
+          "response": []
+        },
+        {
+          "name": "Update your configuration",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/config",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "config"
+              ]
+            },
+            "description": "Dashboard token, OWNER or ADMIN. Only the fields you send change.\n`recordingEnabled: true` is refused with `422 feature-not-available`.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"\",\n  \"webhookUrl\": \"https://example.com\",\n  \"defaultGracePeriod\": 0,\n  \"expiredCallBehavior\": \"DEAD_LINE\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Verification",
+      "description": "Business verification, needed before going live.",
+      "item": [
+        {
+          "name": "Is this call really ours",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sessions/verify?userPhone=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessions",
+                "verify"
+              ],
+              "query": [
+                {
+                  "key": "userPhone",
+                  "value": "",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "tenantId",
+                  "value": "00000000-0000-0000-0000-000000000000",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Called by the SDK when the device is on a call. Answers whether that\ncall arrived through one of your live sessions in the last 60 seconds."
+          },
+          "response": []
+        },
+        {
+          "name": "Is this call really ours, as a POST",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/sessions/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sessions",
+                "verify"
+              ]
+            },
+            "description": "Same answer as the GET. Exists so the number can go in a body rather than a query string, which keeps it out of access logs and Referer headers.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userPhone\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Business verification status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kyb",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "kyb"
+              ]
+            },
+            "description": "Business verification status"
+          },
+          "response": []
+        },
+        {
+          "name": "Stop prompting about verification",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kyb/prompt/dismiss",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "kyb",
+                "prompt",
+                "dismiss"
+              ]
+            },
+            "description": "Stop prompting about verification"
+          },
+          "response": []
+        },
+        {
+          "name": "Supply business details",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/kyb/details",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "kyb",
+                "details"
+              ]
+            },
+            "description": "Supply business details",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"registrationType\": \"COMPANY\",\n  \"registeredName\": \"\",\n  \"registrationNumber\": \"\",\n  \"registeredAddress\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Upload a document",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kyb/documents",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "kyb",
+                "documents"
+              ]
+            },
+            "description": "`multipart/form-data`, one file per request, with `kind` naming which\ndocument it is. Stored encrypted; the operator console reads it through\na short-lived signed URL.",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "kind",
+                  "type": "text",
+                  "value": "CAC_CERTIFICATE"
+                },
+                {
+                  "key": "issuedOn",
+                  "type": "text",
+                  "value": "2026-11-01"
+                },
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove a document",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kyb/documents/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "kyb",
+                "documents",
+                ":id"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Only before submission."
+          },
+          "response": []
+        },
+        {
+          "name": "Submit for review",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kyb/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "kyb",
+                "submit"
+              ]
+            },
+            "description": "Refused with the missing items if anything required is absent."
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://api.relavoi.com/v1",
+      "type": "string"
+    }
+  ]
+}
