@@ -18,6 +18,7 @@ The two JWT types cannot be used interchangeably. Endpoints documented under "AP
 | Method | Path | Summary |
 |--------|------|---------|
 | POST | `/v1/auth/token` | Exchange API key + secret for a JWT |
+| POST | `/v1/auth/sdk-token` | Mint a short-lived, scoped token for one user's device |
 | POST | `/v1/auth/signup` | Programmatically create a new tenant |
 | POST | `/v1/auth/dashboard/login` | Dashboard user login (email + password) |
 | POST | `/v1/auth/rotate-key` | Rotate API key + secret pair |
@@ -61,6 +62,80 @@ curl -X POST https://api.relavoi.com/v1/auth/token \
 | 400 | validation | Missing or malformed fields |
 | 401 | unauthorized | Wrong key or secret |
 | 429 | rate-limit | More than 10 token requests per minute per key |
+
+---
+
+### POST /v1/auth/sdk-token
+
+Auth: a tenant JWT from `/v1/auth/token`, or a dashboard token. A device token
+cannot mint another.
+
+Call this from **your own backend**. It returns a token for one user, carrying
+only the scopes you ask for, which is what you hand your mobile app. The API
+secret stays on your server: anything compiled into a published app can be read
+back out of it, and a live pair lets anyone create sessions billed to you and
+list every session and call on your workspace.
+
+**Request**
+
+```bash
+curl -X POST https://api.relavoi.com/v1/auth/sdk-token \
+  -H "Authorization: Bearer $RELAVOI_JWT" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "userPhone": "+2348012345678",
+    "scope": ["sessions:verify", "sessions:read", "devices:write"]
+  }'
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| userPhone | string | yes | The user this token is for. A Nigerian mobile number |
+| scope | string[] | yes | One or more of `sessions:verify`, `sessions:read`, `devices:write` |
+| ttlSeconds | integer | no | Default 900. Clamped into 60..900 rather than refused |
+
+**Response**
+
+```json
+{
+  "accessToken": "eyJ...",
+  "expiresIn": 900,
+  "tokenType": "Bearer",
+  "scope": ["devices:write", "sessions:read", "sessions:verify"],
+  "subject": "+234******5678"
+}
+```
+
+The number is never returned whole, and the token carries a hash of it rather
+than the number itself.
+
+**Scopes**
+
+| Scope | Reaches |
+|-------|---------|
+| `sessions:verify` | `GET` and `POST /v1/sessions/verify` |
+| `sessions:read` | `GET /v1/sessions/{id}`, and only sessions this user is a party to |
+| `devices:write` | `POST` and `DELETE /v1/devices/token`, `POST /v1/devices/presence` |
+
+Everything else answers `403 scope-not-permitted`, whatever scopes the token
+holds: creating, ending or retargeting a session, listing the workspace's
+sessions or calls, and anything under `/config`, `/billing`, `/webhooks`,
+`/numbers` or `/auth/keys`. The WebSocket stream refuses device tokens too.
+
+Reading a session the user is not a party to answers `404`, the same as a
+session that does not exist, so a handset cannot enumerate a workspace.
+
+**Errors**
+
+| Status | Code | When |
+|--------|------|------|
+| 400 | validation-error | Unknown scope, or a malformed body |
+| 401 | unauthorized | Missing or invalid JWT |
+| 403 | scope-not-permitted | A device token tried to mint another |
+| 422 | number-not-supported | `userPhone` is not a Nigerian mobile number |
+
+See [SDK tokens](../guides/sdk-tokens) for the whole picture, including the
+`tokenProvider` form of `initialize()` in each SDK.
 
 ---
 

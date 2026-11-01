@@ -8,6 +8,16 @@ description: Initialize the Relavoi Flutter SDK once at app startup, configure R
 
 The SDK is a process-wide singleton. Initialize it exactly once, before `runApp`, and await the call. `initialize` is `static` and asynchronous.
 
+:::warning Do not compile a live secret into the app
+A `--dart-define` constant ends up in the built binary, so anything put there
+can be read back out. From 0.3.0 the SDK takes a token provider instead: your
+backend holds the secret and mints a short-lived token for one user. See
+[SDK tokens](../../guides/sdk-tokens).
+
+The `apiKey` and `apiSecret` parameters still work and are deprecated. Use them
+with a **sandbox** key while developing.
+:::
+
 ## Basic initialization
 
 ```dart
@@ -18,33 +28,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Relavoi.initialize(
-    apiKey: const String.fromEnvironment('RELAVOI_API_KEY'),
-    apiSecret: const String.fromEnvironment('RELAVOI_API_SECRET'),
-    tenantId: const String.fromEnvironment('RELAVOI_TENANT_ID'),
-  );
-
-  runApp(const MyApp());
-}
-```
-
-`apiKey`, `apiSecret`, and `tenantId` are required. `config` is optional; omit it to use production defaults.
-
-:::tip Keep secrets out of source
-Pass secrets via `--dart-define` (as shown above with `String.fromEnvironment`) or a `--dart-define-from-file` JSON, sourced from your CI secret manager. Do not commit your API secret.
-:::
-
-## With a custom config
-
-```dart
-await Relavoi.initialize(
-  apiKey: apiKey,
-  apiSecret: apiSecret,
-  tenantId: tenantId,
-  config: const RelavoiConfig(
-    enableLogging: true,
-    // baseUrl defaults to production (https://api.relavoi.com/v1).
-    // Override it only for staging/testing.
-  ),
+  tenantId: 'your-tenant-uuid',
+  // Asks YOUR backend, which holds the API secret and calls
+  // POST /v1/auth/sdk-token. Nothing secret is compiled into this app.
+  tokenProvider: () async => myBackend.relavoiToken(),
 );
 ```
 
@@ -63,15 +50,14 @@ await Relavoi.initialize(
 | `autoReconnectWebSocket` | `bool` | `true` | Reconnect the [event stream](./events) automatically on transport failure |
 | `maxWebSocketReconnectAttempts` | `int` | `10` | Cap on consecutive reconnect attempts before giving up |
 
-`apiKey`, `apiSecret`, and `tenantId` are also fields on `RelavoiConfig`, but you supply them through `initialize()` rather than in the config object.
+`tenantId` is also a field on `RelavoiConfig`, but you supply it through `initialize()` rather than in the config object.
 
 Example overriding the hosts for staging:
 
 ```dart
 await Relavoi.initialize(
-  apiKey: apiKey,
-  apiSecret: apiSecret,
   tenantId: tenantId,
+  tokenProvider: () async => myBackend.relavoiToken(),
   config: const RelavoiConfig(
     baseUrl: 'https://staging.api.relavoi.com/v1',
     wsUrl: 'wss://staging.api.relavoi.com/ws',
@@ -121,9 +107,8 @@ Every SDK call throws a subclass of `RelavoiException` on failure. Catch the bas
 ```dart
 try {
   await Relavoi.initialize(
-    apiKey: apiKey,
-    apiSecret: apiSecret,
     tenantId: tenantId,
+    tokenProvider: () async => myBackend.relavoiToken(),
   );
 } on AuthenticationException catch (e) {
   debugPrint('Bad credentials: $e');

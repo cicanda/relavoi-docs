@@ -1,7 +1,7 @@
 ---
 title: Android SDK initialization
 sidebar_label: Initialization
-description: Initialize the Relavoi Kotlin SDK once in your Application class, configure logging, and inject secrets via BuildConfig.
+description: Initialize the Relavoi Kotlin SDK once in your Application class, with a token provider so no secret ships inside the app.
 ---
 
 # Android SDK initialization
@@ -9,6 +9,17 @@ description: Initialize the Relavoi Kotlin SDK once in your Application class, c
 The SDK is a process-wide singleton. Initialize it exactly once in `Application.onCreate()`.
 
 ## Basic initialization
+
+:::warning Do not compile a live secret into the app
+`BuildConfig` constants land in `classes.dex` as string literals, so anything
+put there can be read out of the APK with `unzip` and `strings`. From 0.3.0 the
+SDK takes a token provider instead: your backend holds the secret and mints a
+short-lived token for one user. See [SDK tokens](../../guides/sdk-tokens).
+
+The `apiKey` and `apiSecret` form still works and is deprecated. Use it with a
+**sandbox** key while developing.
+:::
+
 
 ```kotlin
 import android.app.Application
@@ -21,9 +32,10 @@ class MyApp : Application() {
 
     Relavoi.initialize(
       context = this,
-      apiKey = BuildConfig.RELAVOI_API_KEY,
-      apiSecret = BuildConfig.RELAVOI_API_SECRET,
       tenantId = BuildConfig.RELAVOI_TENANT_ID,
+      // Asks YOUR backend, which holds the API secret and calls
+      // POST /v1/auth/sdk-token. Nothing secret is compiled into this app.
+      tokenProvider = { myBackend.relavoiToken() },
       config = RelavoiConfig(
         enableLogging = BuildConfig.DEBUG
         // baseUrl defaults to production (https://api.relavoi.com/v1).

@@ -28,9 +28,15 @@ Hash lookups use a separate **SHA-256 + per-tenant salt** column (`party_a_phone
 
 ## Encryption in transit
 
-- **External**: TLS 1.3 only. TLS 1.2 was deprecated in 2025. HSTS preload with `max-age=31536000; includeSubDomains; preload`.
-- **Internal**: mTLS between every Kubernetes service. Certificates rotated every 24 hours via cert-manager + SPIFFE identities.
-- **WebSocket**: WSS with the same TLS 1.3 ciphers; JWT presented on handshake.
+- **External**: TLS from Let's Encrypt, terminated at the edge, with HSTS
+  `max-age=63072000; includeSubDomains` on every host. Not preloaded: that is a
+  submission to a browser list which is slow to undo.
+- **Internal**: the database and cache sit on a Docker network with no gateway,
+  so neither has a route off the host: not to the internet, not to the instance
+  metadata service. The API reaches them by service name and nothing reaches
+  them from outside.
+- **WebSocket**: WSS, with the JWT presented on the handshake. Device tokens
+  are refused on this path.
 
 ## Phone numbers never logged in plaintext
 
@@ -52,16 +58,40 @@ Tenants authenticate with an `apiKey` + `apiSecret` pair. The key is prefixed `r
 
 The credentials never appear in dashboard URLs, logs, or webhook payloads.
 
-SDKs trade the key+secret for a short-lived **JWT (15 min TTL)** at startup and refresh transparently. The JWT carries `tenantId`, `tier`, and `scopes`. Tenant-user (dashboard) JWTs carry a different `typ` discriminator so they cannot be used against SDK endpoints.
+SDKs trade the key and secret for a short-lived **JWT (15 min TTL)** at startup
+and refresh transparently. The JWT carries `tenantId` and `tier`. Tenant-user
+(dashboard) JWTs carry a different `type` discriminator, and operator tokens a
+third, so none of them is accepted where another belongs.
+
+### Device tokens
+
+A key and secret must not ship inside a mobile app: anything compiled into one
+can be read back out of it. `POST /v1/auth/sdk-token`, called from your own
+backend, mints a token for **one user** carrying only the scopes you ask for,
+for fifteen minutes.
+
+- The subject is a hash of the number, never the number.
+- A route accepts a device token only if it has opted in by name, so the
+  default for everything is refusal.
+- Reading a session the user is not a party to answers `404`, the same as one
+  that does not exist, so a handset cannot enumerate a workspace.
+- They answer to the same revocation as any other token: suspension, and key
+  rotation.
+
+See [SDK tokens](./sdk-tokens).
 
 ## NDPR compliance
 
 Relavoi is built around the Nigeria Data Protection Regulation 2019 (and the NDPA 2023):
 
 - **Data minimization**: phone numbers encrypted at rest, hashed for lookup, never logged
-- **Retention limits**: default 90 days for call data, configurable down to 30
-- **Breach notification**: 72-hour notification SLA via `security@relavoi.com`
-- **Data Processing Agreements** with our telephony sub-processors cover sub-processor obligations
+- **Retention limits**: 90 days is the intended default for call data. The
+  deletion job that enforces it is not built yet, so today data stays until it
+  is removed by hand on request.
+- **Breach notification**: reports go to `security@relavoi.com`. No contractual
+  notification window is in place yet.
+- **Data Processing Agreements**: not yet signed with the telephony provider.
+  In progress.
 - **Right to erasure**: no self-service deletion endpoint exists yet. Ask us and we will remove a tenant's session and call data by hand
 
 For a copy of the NDPR DPA template or our SOC 2 Type II report, contact your account manager.

@@ -8,6 +8,16 @@ description: Initialize the Relavoi Swift SDK in App.init or AppDelegate, config
 
 The SDK is a process-wide singleton accessed via `Relavoi.shared`. Initialize it once during app launch.
 
+:::warning Do not compile a live secret into the app
+An IPA is an archive and `Info.plist` is a file inside it, so anything put
+there can be read back out. From 0.3.0 the SDK takes a token provider instead:
+your backend holds the secret and mints a short-lived token for one user. See
+[SDK tokens](../../guides/sdk-tokens).
+
+The `apiKey:apiSecret:` form still works and is deprecated. Use it with a
+**sandbox** key while developing.
+:::
+
 ## SwiftUI app
 
 ```swift
@@ -17,11 +27,9 @@ import RelavoiSDK
 @main
 struct MyApp: App {
   init() {
-    Relavoi.initialize(
-      apiKey: Secrets.relavoiApiKey,
-      apiSecret: Secrets.relavoiApiSecret,
-      tenantId: Secrets.relavoiTenantId
-    )
+    Relavoi.initialize(tenantId: Secrets.relavoiTenantId) {
+      try await MyBackend.relavoiToken()
+    }
   }
 
   var body: some Scene {
@@ -43,11 +51,11 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
   ) -> Bool {
     Relavoi.initialize(
-      apiKey: Secrets.relavoiApiKey,
-      apiSecret: Secrets.relavoiApiSecret,
       tenantId: Secrets.relavoiTenantId,
       config: RelavoiConfig(enableLogging: true)
-    )
+    ) {
+      try await MyBackend.relavoiToken()
+    }
     return true
   }
 }
@@ -89,14 +97,14 @@ Example overriding the base URL for staging:
 
 ```swift
 Relavoi.initialize(
-  apiKey: Secrets.relavoiApiKey,
-  apiSecret: Secrets.relavoiApiSecret,
   tenantId: Secrets.relavoiTenantId,
   config: RelavoiConfig(
     baseURL: URL(string: "https://staging.api.relavoi.com/v1")!,
     enableLogging: true
   )
-)
+) {
+  try await MyBackend.relavoiToken()
+}
 ```
 
 :::warning Initialize first

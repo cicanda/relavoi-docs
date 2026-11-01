@@ -546,6 +546,49 @@
           "accessToken"
         ]
       },
+      "SdkTokenResponse": {
+        "type": "object",
+        "properties": {
+          "accessToken": {
+            "type": "string"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "examples": [
+              900
+            ]
+          },
+          "tokenType": {
+            "type": "string",
+            "examples": [
+              "Bearer"
+            ]
+          },
+          "scope": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "sessions:verify",
+                "sessions:read",
+                "devices:write"
+              ]
+            }
+          },
+          "subject": {
+            "type": "string",
+            "description": "The number, masked. Never returned whole.",
+            "examples": [
+              "+234******1192"
+            ]
+          }
+        },
+        "required": [
+          "accessToken",
+          "expiresIn",
+          "scope"
+        ]
+      },
       "VerificationResult": {
         "type": "object",
         "description": "Whether a call this device is on really came through one of your\nsessions. The SDKs turn this into the green or red banner.\n",
@@ -1039,6 +1082,95 @@
           },
           "429": {
             "$ref": "#/components/responses/RateLimited"
+          }
+        }
+      }
+    },
+    "/auth/sdk-token": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Mint a short-lived token for one user's device",
+        "description": "Call this from your own backend, with a token from `/auth/token`. It\nreturns a token for one user, carrying only the scopes you ask for, and\nit is what you hand your mobile app.\n\n**Why this exists.** Every SDK's `initialize()` also accepts your API\nkey and secret, and anything compiled into a published app can be read\nback out of it. A leaked live pair can create sessions billed to you\nand list every session and call on your workspace. A device token can\ndo neither.\n\n## Scopes\n\n| Scope | Reaches |\n|---|---|\n| `sessions:verify` | `GET` and `POST /sessions/verify` |\n| `sessions:read` | `GET /sessions/{id}`, and only sessions this user is a party to |\n| `devices:write` | `POST` and `DELETE /devices/token`, `POST /devices/presence` |\n\nEverything else refuses a device token with `403 scope-not-permitted`,\nincluding creating, ending or retargeting a session, listing the\nworkspace's sessions or calls, and anything under `/config`,\n`/billing`, `/webhooks`, `/numbers` or `/auth/keys`. A device token\nalso cannot mint another.\n\nThe WebSocket stream refuses device tokens: it fans out a whole\nworkspace's events, and narrowing it to one user is not built, so there\nis no scope for it to grant.\n\n## Lifetime\n\nFifteen minutes, and a floor of one minute. `ttlSeconds` outside that\nis clamped rather than refused. Device tokens answer to the same\nrevocation as any other: suspending the workspace or rotating its API\nkey stops them on the next request.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "userPhone": {
+                    "type": "string",
+                    "description": "The user this token is for. A Nigerian mobile number.",
+                    "examples": [
+                      "+2349091231192"
+                    ]
+                  },
+                  "scope": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "sessions:verify",
+                        "sessions:read",
+                        "devices:write"
+                      ]
+                    }
+                  },
+                  "ttlSeconds": {
+                    "type": "integer",
+                    "minimum": 60,
+                    "maximum": 900,
+                    "description": "Clamped into the window, never refused for being outside it."
+                  }
+                },
+                "required": [
+                  "userPhone",
+                  "scope"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A device token.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SdkTokenResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Validation"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "description": "A device token tried to mint another.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Not a Nigerian mobile number.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
           }
         }
       }

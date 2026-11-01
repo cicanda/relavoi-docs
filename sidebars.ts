@@ -17,6 +17,7 @@ const sidebars: SidebarsConfig = {
       label: 'Guides',
       items: [
         'guides/call-flow',
+        'guides/sdk-tokens',
         'guides/webhook-integration',
         'guides/failover',
         'guides/security',
