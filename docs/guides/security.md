@@ -35,19 +35,38 @@ A number exists in plaintext in two places: the request that creates the
 session, and the routing path at the moment of dialling, where the Call Router
 decrypts it to tell the carrier where to connect the call.
 
-### The lookup hashes are not a privacy control
+### The lookup hashes
 
-`party_a_phone_hash` and `party_b_phone_hash` are **HMAC-SHA256 keyed by the
-tenant id**. They let the routing layer match an incoming caller without
-decrypting anything, which is their purpose, and they keep numbers out of
-indexes and logs.
+`party_a_phone_hash_v2` and `party_b_phone_hash_v2` are **HMAC-SHA256 keyed by
+a secret held only by the platform**, separate from the encryption keyring.
+They let the routing layer match an incoming caller without decrypting
+anything, which is their purpose, and they keep numbers out of indexes and
+logs.
 
-They are not secret-keyed. A tenant id appears in API responses, dashboard URLs
-and JWT claims, so anyone holding both a tenant id and this column can test
-candidate numbers against it, and the Nigerian mobile range is small enough to
-walk. Treat these columns as pseudonyms, not as protection. Replacing them with
-a hash keyed by a separate secret is on our list; the blind hash used elsewhere
-in the platform already works that way.
+Being secret-keyed is what makes them a real pseudonym rather than a
+reformatted number. The same subscriber hashes to the same value in every
+workspace, which is deliberate: it is how the number pool can tell that one
+person already holds a candidate number under some other tenant, and the pool
+is shared across all of them. It also means nobody who obtains the column can
+test a guessed number against it without the key.
+
+The key is independent of the encryption keyring on purpose, so rotating an
+encryption key never moves a hash the routing path matches on.
+
+:::note What used to be here
+Until 2 November 2026 there was a second pair of columns,
+`party_a_phone_hash` and `party_b_phone_hash`, keyed by the **tenant id**. A
+tenant id is not secret: it appears in API responses, dashboard URLs and JWT
+claims, so anyone holding those columns and a workspace id could test candidate
+numbers against them, and the Nigerian mobile range is small enough to walk.
+They were an index that kept numbers out of logs, and this page described them
+as more than that.
+
+They are gone. Nothing reads them, nothing writes them, and the columns have
+been dropped, along with the copy of the routing index that was kept under
+them and the per-tenant hash that used to travel inside an SDK token issued to
+a handset.
+:::
 
 ## Encryption in transit
 
@@ -109,7 +128,10 @@ can be read back out of it. `POST /v1/auth/sdk-token`, called from your own
 backend, mints a token for **one user** carrying only the scopes you ask for,
 for fifteen minutes.
 
-- The subject is a hash of the number, never the number.
+- The subject is a hash of the number, never the number, and it is the
+  secret-keyed one described above. It used to be the per-tenant hash, which
+  anyone holding the token and a workspace id could have tested a guess
+  against.
 - A route accepts a device token only if it has opted in by name, so the
   default for everything is refusal.
 - Reading a session the user is not a party to answers `404`, the same as one
