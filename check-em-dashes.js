@@ -22,6 +22,8 @@
 // Exit codes:   0 = clean, 1 = em dash found, 2 = the check itself failed
 //
 
+'use strict';
+
 // --- The files this check guards -------------------------------------------
 // Keep this list current. If you add a docs page or a React page, it is
 // covered by these globs already.
@@ -39,8 +41,6 @@ const COVERED_GLOBS = [
   'README.md',            // contributor documentation, same house style
 ];
 // ---------------------------------------------------------------------------
-
-'use strict';
 
 const fs = require('fs');
 const path = require('path');
