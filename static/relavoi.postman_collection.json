@@ -299,6 +299,126 @@
           "response": []
         },
         {
+          "name": "Send yourself a new email verification link",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-email/send",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "verify-email",
+                "send"
+              ]
+            },
+            "description": "Dashboard token, any role. Sends a single-use link to the address on your own account. Answers `204` if the address is already verified, since asking twice is not an error."
+          },
+          "response": []
+        },
+        {
+          "name": "Confirm an email address",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-email",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "verify-email"
+              ]
+            },
+            "description": "No authentication: the link is clicked from a mail client. The token is single-use and lasts 24 hours. A token that is unknown, already used or expired gives the same `400`, deliberately, so the response cannot be used to learn whether one ever existed.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Ask for a password reset link",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/password-reset/request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "password-reset",
+                "request"
+              ]
+            },
+            "description": "No authentication. Always answers `202`, whether or not the address belongs to an account: anything else would turn this into a way to ask whether somebody has a Relavoi account.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"you@example.com\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Set a new password from a reset link",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/password-reset",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "password-reset"
+              ]
+            },
+            "description": "No authentication; the token is the credential. Single-use and lasts one hour. On success every existing session for that user ends, every other outstanding link for them is retired, and a notice goes to the address on the account.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"\",\n  \"password\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
           "name": "Rotate the API secret",
           "request": {
             "method": "POST",

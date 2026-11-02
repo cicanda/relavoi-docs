@@ -1527,11 +1527,168 @@
           }
         },
         "responses": {
-          "200": {
+          "204": {
             "description": "Changed. Existing tokens stop working."
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/auth/verify-email/send": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Send yourself a new email verification link",
+        "description": "Dashboard token, any role. Sends a single-use link to the address on your own account. Answers `204` if the address is already verified, since asking twice is not an error.\n",
+        "responses": {
+          "202": {
+            "description": "A link is on its way.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sent": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "204": {
+            "description": "Already verified. Nothing was sent."
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "429": {
+            "description": "Too many requests for this account."
+          }
+        }
+      }
+    },
+    "/auth/verify-email": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Confirm an email address",
+        "description": "No authentication: the link is clicked from a mail client. The token is single-use and lasts 24 hours. A token that is unknown, already used or expired gives the same `400`, deliberately, so the response cannot be used to learn whether one ever existed.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "token"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Verified."
+          },
+          "400": {
+            "description": "The link is not valid any more."
+          }
+        }
+      }
+    },
+    "/auth/password-reset/request": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Ask for a password reset link",
+        "description": "No authentication. Always answers `202`, whether or not the address belongs to an account: anything else would turn this into a way to ask whether somebody has a Relavoi account.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted. A link is sent only if the address has an active account.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "sent": {
+                      "type": "boolean"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/password-reset": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Set a new password from a reset link",
+        "description": "No authentication; the token is the credential. Single-use and lasts one hour. On success every existing session for that user ends, every other outstanding link for them is retired, and a notice goes to the address on the account.\n",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 12,
+                    "maxLength": 128
+                  }
+                },
+                "required": [
+                  "token",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "The password is set and all sessions have ended."
+          },
+          "400": {
+            "description": "The link is not valid any more",
+            "or the password is too short.": null
           }
         }
       }
