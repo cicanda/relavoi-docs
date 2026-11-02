@@ -66,6 +66,12 @@ They are gone. Nothing reads them, nothing writes them, and the columns have
 been dropped, along with the copy of the routing index that was kept under
 them and the per-tenant hash that used to travel inside an SDK token issued to
 a handset.
+
+`device_tokens.user_phone_hash` was the same family in the table that resolves
+a push notification to a handset, and it went the same way on the same day.
+Device registration, the push lookup and the presence key are all keyed by the
+platform secret now. Nothing in the service computes a per-tenant hash any
+more.
 :::
 
 ## Encryption in transit
