@@ -23,7 +23,7 @@ In Xcode: **File -> Add Package Dependencies**, then paste:
 https://github.com/cicanda/relavoi-ios-sdk
 ```
 
-Select **Up to Next Major** from `0.3.1`, the current release.
+Select **Up to Next Major** from `0.3.2`, the current release.
 
 Or, if you maintain a `Package.swift`:
 
@@ -32,7 +32,7 @@ let package = Package(
   name: "MyApp",
   platforms: [.iOS(.v15)],
   dependencies: [
-    .package(url: "https://github.com/cicanda/relavoi-ios-sdk", from: "0.3.1"),
+    .package(url: "https://github.com/cicanda/relavoi-ios-sdk", from: "0.3.2"),
   ],
   targets: [
     .target(
