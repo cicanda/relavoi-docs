@@ -35,6 +35,13 @@ A number exists in plaintext in two places: the request that creates the
 session, and the routing path at the moment of dialling, where the Call Router
 decrypts it to tell the carrier where to connect the call.
 
+There is a third place it is held, and it is not plaintext. A carrier retries a
+callback it thinks failed, so the routing answer is cached for 60 seconds and
+replayed rather than recomputed, which is what stops one incoming call becoming
+two outgoing ones. That cached answer names the number to dial, so it is sealed
+with the same key that encrypts the number in the database and opened only when
+a retry replays it.
+
 ### The lookup hashes
 
 `party_a_phone_hash_v2` and `party_b_phone_hash_v2` are **HMAC-SHA256 keyed by
