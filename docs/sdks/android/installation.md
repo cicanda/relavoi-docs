@@ -1,12 +1,13 @@
 ---
 title: Android SDK installation
 sidebar_label: Installation
-description: Add the Relavoi Android SDK from Maven Central, set the minimum SDK, and declare the required Android permissions.
+description: Add the Relavoi Android SDK from JitPack, set the minimum SDK, and declare the required Android permissions.
 ---
 
 # Android SDK installation
 
-The Relavoi Android SDK ships as a single Kotlin artifact from Maven Central.
+The Relavoi Android SDK ships as a single Kotlin artifact, built from the public
+repository by JitPack at a release tag.
 
 ## Requirements
 
@@ -18,7 +19,8 @@ The Relavoi Android SDK ships as a single Kotlin artifact from Maven Central.
 
 ## Gradle setup
 
-In your project-level `settings.gradle.kts`, confirm Maven Central is in your repositories:
+Add JitPack to your project-level `settings.gradle.kts`, alongside the two
+repositories an Android project already has:
 
 ```kotlin
 dependencyResolutionManagement {
@@ -26,15 +28,21 @@ dependencyResolutionManagement {
   repositories {
     google()
     mavenCentral()
+    maven("https://jitpack.io")
   }
 }
 ```
+
+`google()` is required here, not optional. The SDK's POM imports
+`firebase-bom` and depends on `firebase-messaging-ktx`, and Google's repository
+is the only one that serves them, so without it the dependency fails to
+resolve rather than failing later.
 
 Add the dependency in your app module's `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-  implementation("com.relavoi:sdk:0.1.0")
+  implementation("com.github.cicanda:relavoi-android-sdk:v0.3.1")
 }
 
 android {
@@ -46,7 +54,22 @@ android {
 }
 ```
 
-Sync Gradle. The SDK pulls in `kotlinx-coroutines-android`, `okhttp` 4.x, and `kotlinx-serialization-json` transitively.
+The version is the git tag, `v` and all: that is how JitPack names what it
+builds. Pin a tag rather than using `main-SNAPSHOT`, which moves under you.
+
+Sync Gradle. The SDK brings in `kotlin-stdlib`, `kotlinx-coroutines-android`,
+`kotlinx-serialization-json`, `okhttp` 4.12, `androidx.core:core-ktx`,
+`androidx.lifecycle` (`process` and `runtime-ktx`),
+`androidx.security:security-crypto` and `firebase-messaging-ktx` transitively.
+
+:::note Why JitPack
+Maven Central publishing is held until the first integration customer, so the
+coordinates above are the supported way to install today. JitPack builds the
+public repository on demand at a tag, which means the first build of a new tag
+can take a few minutes; later resolutions are served from its cache. Moving to
+Maven Central will change the coordinates and nothing else: the package names,
+the imports and the API stay as they are.
+:::
 
 ## Manifest permissions
 

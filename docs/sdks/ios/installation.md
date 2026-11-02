@@ -20,10 +20,10 @@ The Relavoi iOS SDK is distributed as a Swift package with no external dependenc
 In Xcode: **File -> Add Package Dependencies**, then paste:
 
 ```text
-https://github.com/relavoi/relavoi-ios-sdk
+https://github.com/cicanda/relavoi-ios-sdk
 ```
 
-Select the latest version (use **Up to Next Major** from `0.1.0`).
+Select **Up to Next Major** from `0.3.1`, the current release.
 
 Or, if you maintain a `Package.swift`:
 
@@ -32,7 +32,7 @@ let package = Package(
   name: "MyApp",
   platforms: [.iOS(.v15)],
   dependencies: [
-    .package(url: "https://github.com/relavoi/relavoi-ios-sdk", from: "0.1.0"),
+    .package(url: "https://github.com/cicanda/relavoi-ios-sdk", from: "0.3.1"),
   ],
   targets: [
     .target(

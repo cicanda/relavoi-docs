@@ -37,7 +37,7 @@ const config: Config = {
         docs: {
           routeBasePath: '/',
           sidebarPath: './sidebars.ts',
-          editUrl: 'https://github.com/relavoi/relavoi-docs/edit/main/',
+          editUrl: 'https://github.com/cicanda/relavoi-docs/edit/main/',
         },
         blog: false,
         theme: {
@@ -60,7 +60,7 @@ const config: Config = {
         { type: 'docSidebar', sidebarId: 'docs', position: 'left', label: 'Docs' },
         { type: 'docSidebar', sidebarId: 'api', position: 'left', label: 'API Reference' },
         { type: 'docSidebar', sidebarId: 'sdks', position: 'left', label: 'SDKs' },
-        { href: 'https://github.com/relavoi', label: 'GitHub', position: 'right' },
+        { href: 'https://github.com/cicanda', label: 'GitHub', position: 'right' },
       ],
     },
     footer: {
@@ -91,7 +91,7 @@ const config: Config = {
           title: 'Company',
           items: [
             { label: 'Status', href: 'https://status.relavoi.com' },
-            { label: 'GitHub', href: 'https://github.com/relavoi' },
+            { label: 'GitHub', href: 'https://github.com/cicanda' },
           ],
         },
       ],

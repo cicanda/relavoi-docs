@@ -17,11 +17,15 @@ The Relavoi Flutter SDK ships as `relavoi_flutter`, a hybrid plugin: it is pure 
 
 ## Add the dependency
 
-The published package is the simplest path. In your app's `pubspec.yaml`:
+The SDK is not on pub.dev yet, so depend on the repository at a release tag. In
+your app's `pubspec.yaml`:
 
 ```yaml
 dependencies:
-  relavoi_flutter: ^0.1.0
+  relavoi_flutter:
+    git:
+      url: https://github.com/cicanda/relavoi-flutter-sdk.git
+      ref: v0.3.1
 ```
 
 Then fetch it:
@@ -30,17 +34,17 @@ Then fetch it:
 flutter pub get
 ```
 
-### Git dependency
+Pin the tag, not `main`. A git dependency on a branch moves under you: `pub get`
+resolves it to whatever the branch points at that day, so two machines can
+build different code from the same `pubspec.yaml`, and `pubspec.lock` is the
+only record of which. A tag is immutable.
 
-To track the SDK ahead of a pub.dev release, or to pin to an internal branch, use the Git form instead:
-
-```yaml
-dependencies:
-  relavoi_flutter:
-    git:
-      url: https://github.com/cicanda/relavoi-flutter-sdk.git
-      ref: main
-```
+:::note Why not pub.dev
+Publishing is held until the first integration customer, so the version you
+would depend on would be one nobody has used yet. The tag above is the same
+code, resolved the same way, and the move to pub.dev will not change the
+import or the API.
+:::
 
 `firebase_messaging` is pulled in transitively, so you do not add it yourself. It is only used to obtain a device token; nothing sends a notification to that token yet, so no Firebase project setup is needed to use the SDK. See [Not built yet](../../introduction#not-built-yet).
 
