@@ -29,17 +29,29 @@ Tenant endpoints require a Bearer JWT. Errors follow RFC 7807 Problem Details.
 
 ## Event types
 
-The events you may subscribe to (the values the backend actually emits):
+The events you may subscribe to. This table has been checked against the event
+bus rather than written from a design note: it used to list
+`session.activated`, which nothing emits, and to leave out five that do fire.
 
 | Event | Fires when |
 |-------|-----------|
 | `session.created` | A masking session is created |
-| `session.activated` | A session transitions to `ACTIVE` |
-| `session.expired` | A session expires (grace period ends or hard timeout) |
-| `call.incoming` | An inbound call arrives on a proxy for an active session |
+| `session.ended` | You ended a session. It may still be inside its grace period |
+| `session.expired` | A session expires (grace period ends, or hard timeout) |
+| `session.target_swapped` | The session was repointed at a new customer |
+| `call.incoming` | An inbound call arrives on a proxy for a live session |
 | `call.answered` | A bridged call is answered |
-| `call.ended` | A call completes |
-| `call.failed` | A call attempt fails |
+| `call.ended` | An answered call finishes |
+| `call.missed` | The call rang out and nobody answered |
+| `call.failed` | The call could not be placed, or was refused |
+| `sms.received` | An SMS arrived on a proxy number for a live session |
+| `sms.sent` | An SMS was forwarded on to the other party |
+
+`call.missed` and `call.failed` are the two most worth handling and were the
+longest missing from this page. A courier who does not pick up produces
+`call.missed`, and a call refused because the session only allows the other
+direction produces `call.failed`: both are the moments your dispatch logic
+wants, and neither arrives as `call.ended`.
 
 ---
 

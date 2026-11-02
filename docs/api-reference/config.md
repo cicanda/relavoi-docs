@@ -63,6 +63,7 @@ curl https://api.relavoi.com/v1/config \
 | webhookUrl | string \| null | Registered client webhook URL |
 | defaultGracePeriod | integer | Default grace period (minutes) for new sessions |
 | expiredCallBehavior | string | `DEAD_LINE`, `REDIRECT_SUPPORT`, or `PLAY_MESSAGE` |
+| expiredMessage | string \| null | What a caller hears under `PLAY_MESSAGE`. Plain text, up to 300 characters |
 | supportPhone | string \| null | Support number (used by `REDIRECT_SUPPORT`) |
 | recordingEnabled | boolean | Whether call recording is enabled |
 | recordingConsentMode | string | `DEFAULT`, `CUSTOM`, or `NONE` |
@@ -83,6 +84,7 @@ Updates one or more configuration fields. Only the fields you send are changed. 
 | webhookUrl | string | Client webhook URL |
 | defaultGracePeriod | integer | Default grace period (minutes) |
 | expiredCallBehavior | string | `DEAD_LINE`, `REDIRECT_SUPPORT`, or `PLAY_MESSAGE` |
+| expiredMessage | string \| null | The line spoken to a caller when the behaviour is `PLAY_MESSAGE`. Plain text, 300 characters, no angle brackets. **Required for `PLAY_MESSAGE`:** that behaviour with no message is refused with `422 expired-message-required`, because the caller would otherwise hear the standard out-of-service line while your config said otherwise |
 | supportPhone | string | Support number. A Nigerian **mobile or landline**, since a support line often is not a mobile. Normalised to E.164; anything else is a `422 number-not-supported`. This number is dialled by the carrier, so a foreign number is refused here |
 | recordingEnabled | boolean | Enable/disable call recording |
 | recordingConsentMode | string | `DEFAULT`, `CUSTOM`, or `NONE` |
@@ -90,11 +92,37 @@ Updates one or more configuration fields. Only the fields you send are changed. 
 | pushConfig | object | Push notification config |
 
 :::note Recording is not available
-The four recording fields are returned by `GET /config`, because they exist on
-your tenant row, and they are listed above so this reference matches what you
-will actually see. Setting `recordingEnabled` to `true` is refused with `422
-feature-not-available`. `pushConfig` is returned and writable for the same
-reason, and nothing reads it yet. See
+The recording fields are returned by `GET /config`, because they exist on your
+tenant row, and they are listed above so this reference matches what you will
+actually see. Setting `recordingEnabled` to `true` is refused with `422
+feature-not-available`. See [Not built yet](../introduction#not-built-yet).
+:::
+
+### `pushConfig`
+
+The wording of the notification sent to a customer before a call, and whether
+to send one at all.
+
+| Key | Type | Effect |
+|-----|------|--------|
+| `push_enabled` | boolean | `false` stops notifications for the workspace. Defaults to on |
+| `push_title_template` | string | Notification title |
+| `push_body_template` | string | Notification body |
+
+`{tenant_name}` and `{order_id}` are filled in, the second from the reference
+your app put in the session's `metadata` (`orderId`, `order_id` or
+`reference`). A placeholder we cannot fill is replaced with nothing, so do not
+invent your own.
+
+:::caution Nothing is delivered yet
+These three keys are read and applied, which they were not until recently: the
+dashboard wrote them under these names while the service looked for `title`
+and `body`, so every notification used the built-in wording and the enabled
+switch did nothing. Both spellings now work.
+
+What still does not work is delivery. No push credentials are configured in
+production, so no notification reaches a device however this is set. Device
+token registration is the half that works. See
 [Not built yet](../introduction#not-built-yet).
 :::
 

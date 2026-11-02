@@ -245,6 +245,26 @@
           "response": []
         },
         {
+          "name": "List the people in your workspace",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auth/dashboard/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "dashboard",
+                "users"
+              ]
+            },
+            "description": "Dashboard token, any role. `lastLoginAt` is null for someone who has\nbeen invited but has not signed in yet."
+          },
+          "response": []
+        },
+        {
           "name": "Change your own password",
           "request": {
             "method": "POST",
@@ -775,7 +795,7 @@
                 "provision"
               ]
             },
-            "description": "Dashboard token, OWNER. Provisioning is a manual process today, so this\nanswers `501` and records the request. Ask us and we will size a pool.",
+            "description": "Dashboard token, OWNER. Provisioning is a manual process today, so this\nanswers `501` and records the request: it is logged against your\nworkspace and raises an alert with us, so asking here is how you ask.\nWhich carrier your numbers come from is ours to choose.",
             "body": {
               "mode": "raw",
               "raw": "{\n  \"region\": \"lagos\",\n  \"count\": 0\n}",
@@ -1765,7 +1785,7 @@
             "description": "Supply business details",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"registrationType\": \"COMPANY\",\n  \"registeredName\": \"\",\n  \"registrationNumber\": \"\",\n  \"registeredAddress\": \"\"\n}",
+              "raw": "{\n  \"registrationType\": \"COMPANY\",\n  \"legalName\": \"\",\n  \"registrationNumber\": \"\",\n  \"registeredAddress\": \"\",\n  \"state\": \"\",\n  \"contactName\": \"\",\n  \"contactPhone\": \"\"\n}",
               "options": {
                 "raw": {
                   "language": "json"

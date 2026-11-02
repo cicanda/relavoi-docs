@@ -30,9 +30,12 @@ Three things appear in the data model, and in some cases in an API field, but
 are not available to use. They are listed here once rather than labelled across
 the reference:
 
-- **SMS masking.** `POST /v1/sessions` accepts a session you could text
-  through, but no message has ever been sent through the platform and the
-  endpoint is not documented.
+- **SMS masking.** The forwarding path is built: a text to a proxy number is
+  matched to its session and passed on to the other party, and `sms.received`
+  and `sms.sent` both fire. What is missing is the half you would call, an
+  endpoint for sending a message yourself, and no SMS has gone through the
+  platform in production yet. So treat it as untried rather than absent, and
+  tell us if you want it.
 - **Call recording with a consent prompt.** `recordingEnabled` is a real field
   on a session and on your tenant config. Setting it to `true` is refused with
   `feature-not-available`. The consent announcement, retention and deletion

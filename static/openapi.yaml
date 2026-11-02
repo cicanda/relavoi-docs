@@ -207,6 +207,12 @@ components:
         expiredCallBehavior:
           type: string
           enum: [DEAD_LINE, REDIRECT_SUPPORT, PLAY_MESSAGE]
+        expiredMessage:
+          type: [string, "null"]
+          maxLength: 300
+          description: |
+            Spoken to a caller who rings a closed session, when
+            `expiredCallBehavior` is `PLAY_MESSAGE`. Plain text.
         supportPhone:
           type: [string, "null"]
           description: |
@@ -647,6 +653,37 @@ paths:
         "201": { description: Invited. }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
+  /auth/dashboard/users:
+    get:
+      tags: [Authentication]
+      summary: List the people in your workspace
+      description: |
+        Dashboard token, any role. `lastLoginAt` is null for someone who has
+        been invited but has not signed in yet.
+      responses:
+        "200":
+          description: The workspace's members.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string, format: uuid }
+                        email: { type: string, format: email }
+                        name: { type: string }
+                        role:
+                          { type: string, enum: [OWNER, ADMIN, DEVELOPER, VIEWER] }
+                        isActive: { type: boolean }
+                        lastLoginAt: { type: [string, "null"], format: date-time }
+                        createdAt: { type: string, format: date-time }
+                        isYou: { type: boolean }
+        "401": { $ref: "#/components/responses/Unauthorized" }
+        "403": { $ref: "#/components/responses/Forbidden" }
   /auth/dashboard/change-password:
     post:
       tags: [Authentication]
@@ -790,6 +827,16 @@ paths:
                 expiredCallBehavior:
                   type: string
                   enum: [DEAD_LINE, REDIRECT_SUPPORT, PLAY_MESSAGE]
+                expiredMessage:
+                  type: [string, "null"]
+                  maxLength: 300
+                  description: |
+                    Plain text, no angle brackets, spoken to callers of a
+                    closed session. Required when `expiredCallBehavior` is
+                    `PLAY_MESSAGE`: that pairing without a message is refused
+                    with 422, because the caller would otherwise hear the
+                    stock out-of-service line and the setting would look
+                    applied when it was not.
                 supportPhone: { type: string }
                 pushConfig: { type: object, additionalProperties: true }
       responses:
@@ -1134,7 +1181,9 @@ paths:
       summary: Ask for more numbers
       description: |
         Dashboard token, OWNER. Provisioning is a manual process today, so this
-        answers `501` and records the request. Ask us and we will size a pool.
+        answers `501` and records the request: it is logged against your
+        workspace and raises an alert with us, so asking here is how you ask.
+        Which carrier your numbers come from is ours to choose.
       requestBody:
         required: true
         content:
@@ -1144,7 +1193,6 @@ paths:
               properties:
                 region: { type: string, examples: ["lagos"] }
                 count: { type: integer, minimum: 1, maximum: 100 }
-                provider: { type: string, enum: [AFRICASTALKING, TWILIO, PLIVO] }
               required: [region, count]
       responses:
         "501":
@@ -1662,15 +1710,45 @@ paths:
           application/json:
             schema:
               type: object
+              required:
+                [
+                  registrationType,
+                  legalName,
+                  registrationNumber,
+                  registeredAddress,
+                  state,
+                  contactName,
+                  contactPhone,
+                ]
               properties:
                 registrationType: { type: string, enum: [COMPANY, BUSINESS_NAME, OTHER] }
-                registeredName: { type: string }
-                registrationNumber: { type: string }
-                registeredAddress: { type: string }
-              additionalProperties: true
+                legalName: { type: string, maxLength: 255, description: As printed on the certificate. }
+                registrationNumber: { type: string, maxLength: 50 }
+                registeredAddress: { type: string, maxLength: 500 }
+                city: { type: string, maxLength: 100, nullable: true }
+                state: { type: string, maxLength: 100 }
+                contactName: { type: string, maxLength: 255 }
+                contactPhone:
+                  { type: string, example: "+2348012345678", description: E.164. }
+                website:
+                  type: string
+                  format: uri
+                  maxLength: 500
+                  nullable: true
+                  description: Must start with `https://`. Validated for format only; never fetched.
+                socialLinks:
+                  type: array
+                  maxItems: 25
+                  items: { type: string, format: uri, maxLength: 500 }
+                  description: |
+                    Any number of profile links, each starting with `https://`.
+                    Duplicates are collapsed. Validated for format only; never
+                    fetched.
+              additionalProperties: false
       responses:
         "200": { description: Saved. }
         "400": { $ref: "#/components/responses/Validation" }
+        "409": { description: Under review or already approved, so no longer editable. }
   /kyb/documents:
     post:
       tags: [Verification]
