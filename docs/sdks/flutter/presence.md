@@ -6,7 +6,13 @@ description: Report device reachability and app foreground state to Relavoi auto
 
 # Presence reporting
 
-The presence module reports device reachability to Relavoi so the backend knows whether a user is online, backgrounded, or offline. That state feeds routing and push decisions, for example whether to lean on a push notification because the app is not in the foreground.
+The presence module reports device reachability to Relavoi so the backend knows whether a user is online, backgrounded, or offline.
+
+:::note What presence does today
+It is recorded, and you can read it back with `GET /v1/devices/presence`. Nothing on our side acts on it yet: the call router does not consult it when deciding where to send a call, and the push service does not consult it either. This page used to say the state fed routing and push decisions, which was not true of either.
+
+Report it anyway if it is cheap for you to do. It is useful to you through the API now, and it is what a "call them or notify them" decision will be built on when there is one.
+:::
 
 Presence is pure Dart. Once started, it wires itself to the app lifecycle and reports transitions automatically; you do not send heartbeats by hand.
 

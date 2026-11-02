@@ -96,7 +96,23 @@ For production builds, source the same values from your CI secret manager.
 | `baseUrl` | String | `"https://api.relavoi.com/v1"` | REST API host. Override for staging/testing |
 | `webSocketUrl` | String? | `null` | Override the event-stream WebSocket URL. When `null`, it is derived from `baseUrl` (scheme swapped to `ws`/`wss`, `/ws` appended) |
 | `enableLogging` | Boolean | `false` | Verbose Logcat output. Phone numbers always redacted |
-| `offlineQueueMaxSize` | Int | `100` | Max actions buffered in the offline queue before the oldest are dropped |
+| `offlineQueueMaxSize` | Int | `100` | Max actions buffered in the offline queue before the oldest are dropped. **The queue is manual, see below** |
+
+:::caution The offline queue is yours to drive
+`OfflineQueue` is not wired into `ApiClient`. A request that fails because the
+device has no network throws `RelavoiException.Network`, and nothing is queued
+for you.
+
+That is worth knowing before you design around it, because the name and this
+option both suggest otherwise. To use it, catch `RelavoiException.Network`,
+`enqueue` the action yourself, and `dequeue` when connectivity returns.
+`offlineQueueMaxSize` caps what the queue holds once you are using it.
+
+Automatic retry needs idempotency keys on the API first, so that a replayed
+session creation cannot produce a second session and a second number. Until
+that exists, a queue that replayed on its own would be a worse bug than the
+failed request it was trying to paper over.
+:::
 
 ## Token storage
 

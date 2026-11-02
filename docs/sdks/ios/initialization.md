@@ -91,7 +91,22 @@ The SDK persists the short-lived JWT in the iOS Keychain as a device-local gener
 | `baseURL` | `URL` | `https://api.relavoi.com/v1` | REST base URL. Override for staging |
 | `webSocketURL` | `URL?` | `nil` | Explicit WebSocket URL. When `nil`, it is derived from `baseURL` (scheme swapped to `ws`/`wss`, path set to `/ws`) |
 | `enableLogging` | `Bool` | `false` | Verbose `os_log` output. Phone numbers always redacted |
-| `offlineQueueMaxSize` | `Int` | `100` | Maximum offline-queue length; oldest entries drop when exceeded |
+| `offlineQueueMaxSize` | `Int` | `100` | Maximum offline-queue length; oldest entries drop when exceeded. **The queue is manual, see below** |
+
+:::caution The offline queue is yours to drive
+`OfflineQueue` is not wired into the SDK's HTTP client. A request that fails
+because the device has no network throws, and nothing is queued for you.
+
+That is worth knowing before you design around it, because the name and this
+option both suggest otherwise. To use it, catch `RelavoiError.network`,
+`enqueue` the action yourself, and `dequeue` when you see the network return.
+`offlineQueueMaxSize` caps what the queue holds once you are using it.
+
+Automatic retry needs idempotency keys on the API first, so that a replayed
+session creation cannot produce a second session and a second number. Until
+that exists, a queue that replayed on its own would be a worse bug than the
+failed request it was trying to paper over.
+:::
 
 Example overriding the base URL for staging:
 
