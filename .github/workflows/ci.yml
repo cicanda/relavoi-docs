@@ -28,6 +28,14 @@ jobs:
       - name: Type-check
         run: npx tsc --noEmit
 
+      - name: SDK install pages name the newest published tag
+        # These pages told readers to install version 0.1.0 of three SDKs from
+        # an organisation that is not ours. The organisation half cannot come
+        # back quietly; the version half can, every time an SDK is released.
+        # Reads public tag lists, needs no credential, skips rather than fails
+        # when the runner cannot reach GitHub.
+        run: npm run check:sdk-versions
+
       - name: Build
         run: npm run build
 
