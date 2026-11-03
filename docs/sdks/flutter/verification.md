@@ -83,7 +83,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
 `verify` returns a plain data object:
 
-```dart
+```dart reference
 class VerificationResult {
   final bool verified;
   final String? context;      // e.g. "Your Chowdeck rider is calling"
@@ -102,7 +102,7 @@ The backend does not always populate the `context` string, so fall back to a gen
 
 `isCallActive()` returns the current native call state as a `Future<bool>`:
 
-```dart
+```dart fragment
 if (await Relavoi.instance.verification.isCallActive()) {
   // A call is in progress — a good moment to verify.
 }
@@ -112,7 +112,7 @@ if (await Relavoi.instance.verification.isCallActive()) {
 
 On Android, `READ_PHONE_STATE` is required for the SDK to detect call state (declared in the manifest, as shown in [Installation](./installation), and requested at runtime). The verification module exposes platform-aware permission helpers:
 
-```dart
+```dart fragment
 // Android returns the real grant; iOS always returns true (no permission needed).
 final hasPhoneState =
     await Relavoi.instance.verification.hasPhoneStatePermission();
@@ -128,7 +128,7 @@ If `READ_PHONE_STATE` is denied on Android, `isCallActive()` can never become `t
 
 For an optional floating banner that draws over other apps, the SDK provides overlay-permission helpers. Both are Android-only:
 
-```dart
+```dart fragment
 // Android returns the real grant; iOS always returns false.
 final hasOverlay = await Relavoi.instance.verification.hasOverlayPermission();
 

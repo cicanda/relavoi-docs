@@ -22,7 +22,7 @@ repository by JitPack at a release tag.
 Add JitPack to your project-level `settings.gradle.kts`, alongside the two
 repositories an Android project already has:
 
-```kotlin
+```kotlin manifest
 dependencyResolutionManagement {
   repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
   repositories {
@@ -40,7 +40,7 @@ resolve rather than failing later.
 
 Add the dependency in your app module's `build.gradle.kts`:
 
-```kotlin
+```kotlin manifest
 dependencies {
   implementation("com.github.cicanda:relavoi-android-sdk:v0.3.1")
 }

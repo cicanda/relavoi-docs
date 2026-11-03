@@ -59,7 +59,7 @@ Register the Application class in `AndroidManifest.xml`:
 
 Do not commit your API secret to source. Read it from `local.properties` and surface it through Gradle:
 
-```kotlin
+```kotlin manifest
 // app/build.gradle.kts
 import java.util.Properties
 

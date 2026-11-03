@@ -12,7 +12,7 @@ Manifest declarations get you compile-time visibility. Android still requires ex
 
 Required for call-state detection (`Relavoi.verification.isCallActive()` and the call observer).
 
-```kotlin
+```kotlin fragment
 private val phonePermLauncher = registerForActivityResult(
   ActivityResultContracts.RequestPermission()
 ) { granted ->
@@ -37,7 +37,7 @@ Required to display a notification. Nothing sends one yet, so this is only
 worth asking for if your own app notifies the user: see
 [Not built yet](../../introduction#not-built-yet).
 
-```kotlin
+```kotlin fragment
 private val notifPermLauncher = registerForActivityResult(
   ActivityResultContracts.RequestPermission()
 ) { /* user decision */ }
@@ -55,7 +55,7 @@ Optional. Lets the SDK show its floating verification bubble (`FloatingBubbleSer
 
 This permission cannot be requested through the standard runtime flow. Send the user to system settings:
 
-```kotlin
+```kotlin fragment
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
@@ -81,7 +81,7 @@ If overlay permission is denied, the floating bubble cannot be shown. Render you
 
 The SDK exposes a helper for the phone-state grant; check the other two with the standard Android APIs:
 
-```kotlin
+```kotlin fragment
 import androidx.core.content.ContextCompat
 import android.content.pm.PackageManager
 import android.provider.Settings

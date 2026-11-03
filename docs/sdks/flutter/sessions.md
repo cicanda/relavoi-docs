@@ -53,7 +53,7 @@ Future<void> startMaskingSession(
 
 The full signature is:
 
-```dart
+```dart reference
 Future<Session> create({
   required String agentPhone,
   required String customerPhone,
@@ -73,7 +73,7 @@ them. See [Not built yet](../../introduction#not-built-yet).
 
 Because the two phone numbers are the only required arguments, this is equally valid:
 
-```dart
+```dart fragment
 final session = await Relavoi.instance.sessions.create(
   agentPhone: agent,
   customerPhone: customer,
@@ -86,7 +86,7 @@ The hard call-duration cap is enforced by the backend and surfaced on the return
 
 ## Fetch one
 
-```dart
+```dart fragment
 final session = await Relavoi.instance.sessions.get('sess_a1b2c3d4');
 ```
 
@@ -94,7 +94,7 @@ final session = await Relavoi.instance.sessions.get('sess_a1b2c3d4');
 
 `list` accepts an optional `state` filter and returns a `SessionListResponse`. Advance the cursor with `after`, which is `null` on the last page.
 
-```dart
+```dart fragment
 String? cursor;
 final collected = <Session>[];
 
@@ -111,7 +111,7 @@ do {
 
 `SessionListResponse` is shaped:
 
-```dart
+```dart reference
 class SessionListResponse {
   final List<Session> data;
   final int count;
@@ -123,7 +123,7 @@ Omit `state` (or pass `null`) to list sessions in every state.
 
 ## End a session
 
-```dart
+```dart fragment
 await Relavoi.instance.sessions.end('sess_a1b2c3d4');
 ```
 
@@ -145,7 +145,7 @@ Future<void> callCustomer(Session session) async {
 
 `Session` carries these fields:
 
-```dart
+```dart reference
 class Session {
   final String id;
   final String tenantId;
@@ -171,7 +171,7 @@ class Session {
 
 ## Full lifecycle example
 
-```dart
+```dart fragment
 final session = await Relavoi.instance.sessions.create(
   agentPhone: '+2348012345678',
   customerPhone: '+2348087654321',

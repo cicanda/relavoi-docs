@@ -65,7 +65,7 @@ The backend does not currently populate the `context` string, so `bannerText` re
 - `Relavoi.verification.isCallActive()` can never become `true`, so verification never auto-fires
 - Use `Relavoi.verification.hasPhoneStatePermission(context)` to check the grant and prompt the user
 
-```kotlin
+```kotlin fragment
 if (!Relavoi.verification.hasPhoneStatePermission(requireContext())) {
   // Route the user through the runtime permission request.
 }

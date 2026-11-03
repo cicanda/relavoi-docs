@@ -111,7 +111,7 @@ the `ActivityConfiguration` straight into the bundle body does not compile.
 
 `RelavoiCallAttributes` conforms to `ActivityAttributes`. Its `ContentState` is a nested type named `State`:
 
-```swift
+```swift reference
 @available(iOS 16.1, *)
 public struct RelavoiCallAttributes: ActivityAttributes {
   public typealias ContentState = State
@@ -134,7 +134,7 @@ You typically do not construct this yourself. `LiveActivityManager.start(...)` d
 
 To push a new state (e.g. an updated elapsed time), build a `RelavoiCallAttributes.State` and pass it to `update`:
 
-```swift
+```swift fragment
 await liveActivity.update(
   state: RelavoiCallAttributes.State(
     elapsedSeconds: 42,
@@ -148,7 +148,7 @@ await liveActivity.update(
 
 Call `end` when the call finishes. `dismissPolicy` defaults to `.immediate`:
 
-```swift
+```swift fragment
 // Immediate dismissal (default)
 await liveActivity.end()
 

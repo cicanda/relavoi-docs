@@ -1,0 +1,185 @@
+name: SDK samples
+
+# Compiles every SDK code sample on this site against the SDK a reader would
+# actually install.
+#
+# Why this lives here and runs on a schedule. The samples are in this
+# repository; the compilers and the SDK sources are not. Each SDK repository
+# runs the same script over its own README on every push, which covers the
+# handful of samples it holds. The twenty-odd per platform on this site are
+# only reachable from here.
+#
+# And they go stale without anyone touching this repository: an SDK renames a
+# parameter, cuts a release, and these pages are wrong from that moment. There
+# is no push to hang a check on, which is what a schedule is for.
+#
+# Each job checks the SDK out twice. The sources under test come from the
+# newest tag, because the newest tag is what the install pages tell the reader
+# to use and CI already enforces that (see check-sdk-versions.mjs); checking
+# against main would pass on unreleased API and fail on a sample that is
+# correct for every reader. The checker script and its prelude come from main,
+# because they are the harness rather than the subject, and because a tag cut
+# before the harness existed does not carry it.
+
+on:
+  schedule:
+    # Mondays, 06:00 UTC.
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+  # Also on a change to the pages themselves, so a wrong sample is caught in
+  # the pull request that wrote it rather than on the following Monday.
+  pull_request:
+    paths:
+      - "docs/sdks/**"
+      - "docs/guides/sdk-tokens.md"
+      - ".github/workflows/sdk-samples.yml"
+
+jobs:
+  ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: docs
+
+      - name: Newest iOS SDK tag
+        id: tag
+        run: |
+          set -euo pipefail
+          tag=$(git ls-remote --tags --refs https://github.com/cicanda/relavoi-ios-sdk 'v*' \
+                | awk -F/ '{print $NF}' | sort -V | tail -1)
+          if [ -z "$tag" ]; then
+            echo "::error::no vX.Y.Z tag on cicanda/relavoi-ios-sdk"
+            exit 1
+          fi
+          echo "Checking the docs against $tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: The SDK under test, at that tag
+        uses: actions/checkout@v4
+        with:
+          repository: cicanda/relavoi-ios-sdk
+          ref: ${{ steps.tag.outputs.tag }}
+          path: sdk
+
+      - name: The checker, from the SDK's main
+        uses: actions/checkout@v4
+        with:
+          repository: cicanda/relavoi-ios-sdk
+          path: tool
+
+      - name: Show toolchain
+        run: swift --version && xcodebuild -version
+
+      - name: Swift samples compile
+        working-directory: docs
+        run: |
+          python3 ../tool/scripts/check-doc-samples.py \
+            --sdk ../sdk \
+            docs/sdks/ios docs/guides/sdk-tokens.md
+
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: docs
+
+      - name: Newest Android SDK tag
+        id: tag
+        run: |
+          set -euo pipefail
+          tag=$(git ls-remote --tags --refs https://github.com/cicanda/relavoi-android-sdk 'v*' \
+                | awk -F/ '{print $NF}' | sort -V | tail -1)
+          if [ -z "$tag" ]; then
+            echo "::error::no vX.Y.Z tag on cicanda/relavoi-android-sdk"
+            exit 1
+          fi
+          echo "Checking the docs against $tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: The SDK under test, at that tag
+        uses: actions/checkout@v4
+        with:
+          repository: cicanda/relavoi-android-sdk
+          ref: ${{ steps.tag.outputs.tag }}
+          path: sdk
+
+      - name: The checker, from the SDK's main
+        uses: actions/checkout@v4
+        with:
+          repository: cicanda/relavoi-android-sdk
+          path: tool
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Generate wrapper
+        # gradle-wrapper.jar is deliberately not committed in that repository,
+        # so the wrapper has to be materialised the same way its own CI does.
+        # It is needed in the tagged checkout, which is where the script runs
+        # gradle from.
+        working-directory: sdk
+        run: gradle wrapper --gradle-version 8.7
+
+      - name: Kotlin samples compile
+        # The markdown paths are absolute because the script runs gradle from
+        # the SDK checkout, so its working directory is not this one.
+        run: |
+          python3 tool/scripts/check-doc-samples.py \
+            --sdk "$PWD/sdk" \
+            "$PWD/docs/docs/sdks/android" "$PWD/docs/docs/guides/sdk-tokens.md"
+
+  flutter:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: docs
+
+      - name: Newest Flutter SDK tag
+        id: tag
+        run: |
+          set -euo pipefail
+          tag=$(git ls-remote --tags --refs https://github.com/cicanda/relavoi-flutter-sdk 'v*' \
+                | awk -F/ '{print $NF}' | sort -V | tail -1)
+          if [ -z "$tag" ]; then
+            echo "::error::no vX.Y.Z tag on cicanda/relavoi-flutter-sdk"
+            exit 1
+          fi
+          echo "Checking the docs against $tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: The SDK under test, at that tag
+        uses: actions/checkout@v4
+        with:
+          repository: cicanda/relavoi-flutter-sdk
+          ref: ${{ steps.tag.outputs.tag }}
+          path: sdk
+
+      - name: The checker, from the SDK's main
+        uses: actions/checkout@v4
+        with:
+          repository: cicanda/relavoi-flutter-sdk
+          path: tool
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Show toolchain
+        run: flutter --version
+
+      - name: Dart samples analyze
+        run: |
+          python3 tool/scripts/check-doc-samples.py \
+            --sdk "$PWD/sdk" \
+            "$PWD/docs/docs/sdks/flutter" "$PWD/docs/docs/guides/sdk-tokens.md"

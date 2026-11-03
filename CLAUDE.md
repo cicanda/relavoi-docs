@@ -38,3 +38,44 @@ git log --all --format=%B | grep -icE '^(co-authored-by|generated with)'
 
 It answers 0 as of 2 November 2026, across every ref of every Relavoi repo,
 and no author or committer has ever been Claude or Anthropic.
+
+## SDK code samples are compiled
+
+Every ```swift, ```kotlin and ```dart fence under `docs/sdks/` and in
+`docs/guides/sdk-tokens.md` is compiled against the SDK at its newest released
+tag. `.github/workflows/sdk-samples.yml` does it weekly, and on any pull
+request that touches those pages.
+
+The compiler cannot tell a copy-pasteable sample from a reference listing, so
+the fence says which it is, in the info string after the language:
+
+| Mark | Meaning |
+|---|---|
+| (none) | A complete sample. Must compile on its own. |
+| `fragment` | A few statements out of a larger file. Compiled inside a generated wrapper. |
+| `reference` | A listing of API the SDK provides, so a reader can see the shape. Not compiled; checked instead against the SDK source, name by name and field by field. |
+| `manifest` | An excerpt of a build file: `Package.swift`, `build.gradle.kts`, `pubspec.yaml`. Not compiled. |
+| `no-compile <reason>` | Last resort. The reason is required and gets printed. |
+
+```dart fragment
+await Relavoi.instance.sessions.end(session.id);
+```
+
+Two things follow for anyone editing these pages.
+
+**An unannotated fence must compile.** Adding a Swift, Kotlin or Dart sample
+without a mark commits it to compiling, which is the point. If it is a snippet,
+mark it `fragment`.
+
+**Do not drop a mark while editing prose around it.** Removing `reference` from
+a listing of our own types turns it into a redeclaration of the SDK and fails;
+removing `fragment` from two statements fails for want of a declaration.
+
+The marks do not render: Docusaurus takes the language and ignores the rest of
+the info string, and so does GitHub. The full rules live with each checker, in
+`scripts/doc-samples/README.md` in each SDK repository.
+
+A sample may use a symbol the SDK does not provide, like `myBackend` or a
+`showAlert`. Each checker declares those once, in its prelude; if a new sample
+invents a name, the check will say so and the name needs adding there. Keep
+that deliberate: a name in the prelude is a name the reader has to supply.

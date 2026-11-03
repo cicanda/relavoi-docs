@@ -110,7 +110,7 @@ failed request it was trying to paper over.
 
 Example overriding the base URL for staging:
 
-```swift
+```swift fragment
 Relavoi.initialize(
   tenantId: Secrets.relavoiTenantId,
   config: RelavoiConfig(

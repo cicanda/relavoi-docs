@@ -49,7 +49,7 @@ Future<void> startEventStream() async {
 
 Every listener receives a `RelavoiEvent`:
 
-```dart
+```dart reference
 class RelavoiEvent {
   final EventType type;              // parsed enum
   final String rawType;              // original wire string, e.g. "call.ended"
@@ -64,7 +64,7 @@ Read fields such as `sessionId` off the untyped `payload` map. `rawType` preserv
 
 `on` binds a callback to one `EventType`:
 
-```dart
+```dart fragment
 Relavoi.instance.events.on(EventType.sessionExpired, (event) {
   debugPrint('Session ${event.payload['sessionId']} expired');
 });
@@ -74,7 +74,7 @@ Relavoi.instance.events.on(EventType.sessionExpired, (event) {
 
 `onAny` fires for every event regardless of type, which is handy for logging or a central dispatcher:
 
-```dart
+```dart fragment
 Relavoi.instance.events.onAny((event) {
   debugPrint('[${event.timestamp}] ${event.rawType}: ${event.payload}');
 });
@@ -84,7 +84,7 @@ Relavoi.instance.events.onAny((event) {
 
 The SDK reconnects automatically with backoff on transport failures, governed by the `autoReconnectWebSocket` and `maxWebSocketReconnectAttempts` fields of [`RelavoiConfig`](./initialization). Check the current state synchronously with `isConnected`:
 
-```dart
+```dart fragment
 if (!Relavoi.instance.events.isConnected) {
   await Relavoi.instance.events.connect();
 }
@@ -94,13 +94,13 @@ if (!Relavoi.instance.events.isConnected) {
 
 `removeAllListeners` clears every registered callback in one call:
 
-```dart
+```dart fragment
 Relavoi.instance.events.removeAllListeners();
 ```
 
 ## Disconnecting
 
-```dart
+```dart fragment
 Relavoi.instance.events.disconnect();
 ```
 

@@ -27,7 +27,7 @@ Select **Up to Next Major** from `0.3.3`, the current release.
 
 Or, if you maintain a `Package.swift`:
 
-```swift
+```swift manifest
 let package = Package(
   name: "MyApp",
   platforms: [.iOS(.v15)],
@@ -47,7 +47,7 @@ let package = Package(
 
 ## Import
 
-```swift
+```swift fragment
 import RelavoiSDK
 ```
 
@@ -76,7 +76,7 @@ The SDK uses no permission-protected APIs by default. CXCallObserver does **not*
 
 Confirm the module resolves by constructing a default config (this compiles only when the package is linked correctly):
 
-```swift
+```swift fragment
 import RelavoiSDK
 
 let config = RelavoiConfig()

@@ -59,6 +59,18 @@ Three sidebars in the top nav:
 
 The `/design` page is the single source of truth for the design tokens, type scale, and state-pill semantics used by every Relavoi frontend. Link to it from PR descriptions and reviews so reviewers can compare against one canonical reference.
 
+## SDK code samples
+
+Every `swift`, `kotlin` and `dart` fence under `docs/sdks/` is compiled against
+the SDK at its newest released tag, weekly and on any pull request that touches
+those pages. A fence that is a reference listing or a fragment says so in its
+info string:
+
+    ```dart fragment
+
+An unannotated fence has to compile. See CLAUDE.md for the four marks, and
+`scripts/doc-samples/README.md` in each SDK repository for the detail.
+
 ## CI / deploy
 
 GitHub Actions (`.github/workflows/ci.yml`) runs `npm run build` on every PR. `deploy.yml` is a stub: push to `main` → Vercel auto-deploys via the Git integration. Wire up `VERCEL_TOKEN` + project IDs in repo secrets if you want CI-driven manual deploys.

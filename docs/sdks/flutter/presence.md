@@ -44,7 +44,7 @@ It also emits periodic heartbeats while online. The cadence is controlled by `pr
 
 On sign-out, stop reporting:
 
-```dart
+```dart fragment
 Relavoi.instance.presence.stop();
 ```
 

@@ -53,7 +53,7 @@ class OrderViewModel : ViewModel() {
 
 The full signature is:
 
-```kotlin
+```kotlin reference
 suspend fun create(
     agentPhone: String,
     customerPhone: String,
@@ -76,13 +76,13 @@ them. See [Not built yet](../../introduction#not-built-yet).
 
 ## Fetch one
 
-```kotlin
+```kotlin fragment
 val session = Relavoi.sessions.get("sess_a1b2c3d4")
 ```
 
 All session calls throw a subclass of `RelavoiException` (a `sealed class : Exception`) on failure. Pattern-match on the subclasses for granular handling, as there is no `type` property:
 
-```kotlin
+```kotlin fragment
 import com.relavoi.sdk.RelavoiException
 
 try {
@@ -94,6 +94,8 @@ try {
     is RelavoiException.RateLimited  -> retryAfter(e.retryAfterSec)
     is RelavoiException.Network      -> showOffline()
     is RelavoiException.Validation   -> Log.e("Relavoi", e.message ?: "invalid input")
+    is RelavoiException.NumberNotSupported -> showUnsupportedNumber(e.message)
+    is RelavoiException.CrossBorderNotSupported -> showSameCountryOnly(e.message)
     is RelavoiException.NotInitialized -> error("call Relavoi.initialize first")
   }
 }
@@ -103,7 +105,7 @@ try {
 
 `list` takes a single optional `state` filter and returns a `SessionListResponse` with `data` and a `pagination` cursor.
 
-```kotlin
+```kotlin fragment
 import com.relavoi.sdk.session.SessionState
 
 val page = Relavoi.sessions.list(
@@ -119,7 +121,7 @@ page.pagination.after?.let { cursor ->
 
 ## End a session
 
-```kotlin
+```kotlin fragment
 Relavoi.sessions.end("sess_a1b2c3d4")
 ```
 
@@ -145,7 +147,7 @@ Under the hood this fires an `Intent.ACTION_DIAL` with `tel:+2348000000001`. The
 
 ## Full lifecycle example
 
-```kotlin
+```kotlin fragment
 viewModelScope.launch {
   val session = Relavoi.sessions.create(
     agentPhone = "+2348012345678",

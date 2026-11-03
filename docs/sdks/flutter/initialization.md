@@ -28,11 +28,14 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Relavoi.initialize(
-  tenantId: 'your-tenant-uuid',
-  // Asks YOUR backend, which holds the API secret and calls
-  // POST /v1/auth/sdk-token. Nothing secret is compiled into this app.
-  tokenProvider: () async => myBackend.relavoiToken(),
-);
+    tenantId: 'your-tenant-uuid',
+    // Asks YOUR backend, which holds the API secret and calls
+    // POST /v1/auth/sdk-token. Nothing secret is compiled into this app.
+    tokenProvider: () async => myBackend.relavoiToken(),
+  );
+
+  runApp(const MyApp());
+}
 ```
 
 ## RelavoiConfig options
@@ -54,7 +57,7 @@ Future<void> main() async {
 
 Example overriding the hosts for staging:
 
-```dart
+```dart fragment
 await Relavoi.initialize(
   tenantId: tenantId,
   tokenProvider: () async => myBackend.relavoiToken(),
@@ -70,7 +73,7 @@ await Relavoi.initialize(
 
 After initialization, reach every subsystem through the singleton:
 
-```dart
+```dart fragment
 Relavoi.instance.sessions;
 Relavoi.instance.verification;
 Relavoi.instance.events;
@@ -80,7 +83,7 @@ Relavoi.instance.presence;
 
 Check readiness with the static `Relavoi.isInitialized` flag:
 
-```dart
+```dart fragment
 if (Relavoi.isInitialized) {
   await Relavoi.instance.events.connect();
 }
@@ -94,7 +97,7 @@ if (Relavoi.isInitialized) {
 
 To tear the SDK down (for example on sign-out in a multi-account host app), call the static `shutdown`:
 
-```dart
+```dart fragment
 Relavoi.shutdown();
 ```
 
@@ -104,7 +107,7 @@ This releases the singleton; you must call `Relavoi.initialize(...)` again befor
 
 Every SDK call throws a subclass of `RelavoiException` on failure. Catch the base type, or match specific subclasses for granular handling:
 
-```dart
+```dart fragment
 try {
   await Relavoi.initialize(
     tenantId: tenantId,

@@ -74,7 +74,7 @@ struct BannerView: View {
 
 ## VerificationResult struct
 
-```swift
+```swift reference
 public struct VerificationResult: Decodable, Equatable {
   public let verified: Bool
   public let context: String?

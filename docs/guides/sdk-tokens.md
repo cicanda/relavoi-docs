@@ -95,7 +95,7 @@ Your backend decides who gets one. It knows which user is signed in; we cannot.
 
 ### In your app
 
-```kotlin
+```kotlin fragment
 Relavoi.initialize(
   context = applicationContext,
   tenantId = BuildConfig.RELAVOI_TENANT_ID,
@@ -103,14 +103,14 @@ Relavoi.initialize(
 )
 ```
 
-```swift
+```swift fragment
 Relavoi.initialize(tenantId: "your-tenant-uuid") {
   let t = try await MyBackend.relavoiToken()
   return RelavoiToken(accessToken: t.accessToken, expiresIn: t.expiresIn)
 }
 ```
 
-```dart
+```dart fragment
 await Relavoi.initialize(
   tenantId: 'your-tenant-uuid',
   tokenProvider: () async => myBackend.relavoiToken(),

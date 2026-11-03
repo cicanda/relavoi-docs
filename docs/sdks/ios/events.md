@@ -11,16 +11,15 @@ The iOS SDK exposes the same WebSocket event stream as Android. The Swift API us
 ## Connecting
 
 ```swift
+import SwiftUI
 import RelavoiSDK
 
 @main
 struct MyApp: App {
   init() {
-    Relavoi.initialize(
-      apiKey: Secrets.relavoiApiKey,
-      apiSecret: Secrets.relavoiApiSecret,
-      tenantId: Secrets.relavoiTenantId
-    )
+    Relavoi.initialize(tenantId: Secrets.relavoiTenantId) {
+      try await MyBackend.relavoiToken()
+    }
     Task {
       await Relavoi.shared.events.connect()
     }
@@ -35,7 +34,7 @@ struct MyApp: App {
 
 Each listener registers under a string key (the first, unlabeled argument). Re-registering with the same key replaces the previous handler, handy for SwiftUI views that re-render.
 
-```swift
+```swift fragment
 Relavoi.shared.events.addListener("home-view") { event in
   switch event {
   case let .sessionCreated(sessionId, proxyNumber, ts):
@@ -60,7 +59,7 @@ Relavoi.shared.events.addListener("home-view") { event in
 
 Remove a listener when the view goes away (id is also unlabeled):
 
-```swift
+```swift fragment
 Relavoi.shared.events.removeListener("home-view")
 ```
 
@@ -68,7 +67,7 @@ Relavoi.shared.events.removeListener("home-view")
 
 `RelavoiEvent` is an enum with associated values. There are no separate payload structs. Every case carries a `ts: Date` timestamp:
 
-```swift
+```swift reference
 public enum RelavoiEvent: Equatable {
   case sessionCreated(sessionId: String, proxyNumber: String, ts: Date)
   case sessionActivated(sessionId: String, ts: Date)
@@ -87,7 +86,7 @@ Unrecognized server event types decode into `.unknown(type:payload:)` rather tha
 
 `isConnected` is an `async` property:
 
-```swift
+```swift fragment
 Task {
   let live = await Relavoi.shared.events.isConnected
   print(live ? "Live" : "Offline")
@@ -100,7 +99,7 @@ The stream reconnects automatically with exponential backoff after a drop. Call 
 
 ## Disconnecting
 
-```swift
+```swift fragment
 await Relavoi.shared.events.disconnect()
 ```
 

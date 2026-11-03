@@ -56,7 +56,7 @@ have numbers from the same country.
 :::
  Every parameter except the two phone numbers has a default (`metadata: nil`, `gracePeriodMinutes: 15`, `directionMode: .bidirectional`), so this is equally valid:
 
-```swift
+```swift fragment
 let session = try await Relavoi.shared.sessions.create(
   agentPhone: agent,
   customerPhone: customer
@@ -80,6 +80,10 @@ func handle(_ error: RelavoiError) {
     showAlert("Auth failed: \(detail)")
   case .validation(let detail):
     showAlert("Bad request: \(detail)")
+  case .numberNotSupported(let detail):
+    showAlert("Relavoi does not connect that number: \(detail)")
+  case .crossBorderNotSupported(let detail):
+    showAlert("Both numbers must be in the same country: \(detail)")
   case .rateLimited(let retryAfterSeconds):
     let secs = retryAfterSeconds.map { Int($0) } ?? 30
     showAlert("Slow down — try again in \(secs) seconds")
@@ -95,13 +99,15 @@ func handle(_ error: RelavoiError) {
 
 The full case list:
 
-```swift
+```swift reference
 public enum RelavoiError: Error {
   case notInitialized
   case unauthorized(detail: String)
   case network(Error)
   case api(statusCode: Int, body: String?)
   case validation(detail: String)
+  case numberNotSupported(detail: String)
+  case crossBorderNotSupported(detail: String)
   case rateLimited(retryAfterSeconds: TimeInterval?)
   case unexpected(String)
 }
@@ -113,7 +119,7 @@ public enum RelavoiError: Error {
 
 `get` takes the id as its first, unlabeled argument:
 
-```swift
+```swift fragment
 let session = try await Relavoi.shared.sessions.get("sess_a1b2c3d4")
 ```
 
@@ -121,7 +127,7 @@ let session = try await Relavoi.shared.sessions.get("sess_a1b2c3d4")
 
 `list` accepts a single optional `state` filter and returns a `SessionListResponse`. Advance the cursor with `pagination.after`, which is `nil` on the last page.
 
-```swift
+```swift fragment
 var cursor: String? = nil
 var collected: [Session] = []
 
@@ -138,7 +144,7 @@ repeat {
 
 `SessionListResponse` is shaped:
 
-```swift
+```swift reference
 public struct SessionListResponse: Decodable {
   public let data: [Session]
   public let pagination: PaginationInfo
@@ -156,7 +162,7 @@ Pass `state: nil` (or omit it) to list sessions in every state.
 
 `end` also takes the id unlabeled and returns the updated `Session` (typically in `.gracePeriod`):
 
-```swift
+```swift fragment
 let result = try await Relavoi.shared.sessions.end("sess_a1b2c3d4")
 print(result.state)  // .gracePeriod
 ```
@@ -182,7 +188,7 @@ This is a thin wrapper over `UIApplication.shared.open` with a `tel://` URL for 
 
 ## The Session model
 
-```swift
+```swift reference
 public struct Session: Codable, Identifiable, Equatable {
   public let id: String
   public let tenantId: String
@@ -208,7 +214,7 @@ Note that on the returned `Session`, `metadata` is `[String: JSONValue]?`. The b
 
 ## Full lifecycle
 
-```swift
+```swift fragment
 let session = try await Relavoi.shared.sessions.create(
   agentPhone: "+2348012345678",
   customerPhone: "+2348087654321",

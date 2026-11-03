@@ -33,7 +33,11 @@ class App : Application() {
 
   override fun onCreate() {
     super.onCreate()
-    Relavoi.initialize(...)
+    Relavoi.initialize(
+      context = this,
+      tenantId = BuildConfig.RELAVOI_TENANT_ID,
+      tokenProvider = { myBackend.relavoiToken() },
+    )
 
     Relavoi.events.addListener(listener)
     Relavoi.events.connect()
@@ -47,7 +51,7 @@ class App : Application() {
 
 `RelavoiEvent` is a sealed class. The only common member is the nullable `sessionId`; each subclass carries a `ts` (ISO-8601 string) plus its own typed fields. There is no `eventId`, `tenantId`, or `occurredAt`.
 
-```kotlin
+```kotlin reference
 // Representative subclasses (see the SDK source for the full set):
 data class CallIncoming(
   override val sessionId: String,
@@ -68,7 +72,7 @@ The full hierarchy is `SessionCreated`, `SessionActivated`, `SessionExpired`, `C
 
 The SDK reconnects automatically with exponential backoff on transport failures. There is no connection-state stream to observe; use `isConnected()` for a synchronous snapshot:
 
-```kotlin
+```kotlin fragment
 if (!Relavoi.events.isConnected()) {
   Relavoi.events.connect()
 }
@@ -78,7 +82,7 @@ if (!Relavoi.events.isConnected()) {
 
 Keep a reference to the listener you added and pass it to `removeListener`:
 
-```kotlin
+```kotlin fragment
 val listener = EventListener { event -> /* ... */ }
 Relavoi.events.addListener(listener)
 
@@ -90,7 +94,7 @@ If your listener is tied to a UI component, remove it in `onDestroy()` to avoid 
 
 ## Disconnecting
 
-```kotlin
+```kotlin fragment
 Relavoi.events.disconnect()
 ```
 
