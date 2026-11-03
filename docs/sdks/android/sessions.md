@@ -40,8 +40,6 @@ class OrderViewModel : ViewModel() {
           metadata = mapOf("orderId" to orderId),
           gracePeriodMinutes = 15,
           directionMode = DirectionMode.BIDIRECTIONAL,
-          recordingEnabled = false,
-          consentPrompt = ConsentPrompt.NONE,
         )
       }.onSuccess { session ->
         Log.d("Relavoi", "Proxy ready: ${session.proxyNumber}")
@@ -62,16 +60,18 @@ suspend fun create(
     metadata: Map<String, String>? = null,
     gracePeriodMinutes: Int = 15,
     directionMode: DirectionMode = DirectionMode.BIDIRECTIONAL,
-    recordingEnabled: Boolean = false,
-    consentPrompt: ConsentPrompt = ConsentPrompt.NONE,
 ): Session
 ```
 
 `maxDurationMinutes` is set server-side and returned on the `Session`; it is not a create parameter.
 
-`recordingEnabled: true` is refused by the API with a `feature-not-available`
-problem. Leave it `false`, or leave it out. See
-[Not built yet](../../introduction#not-built-yet).
+:::note recordingEnabled and consentPrompt
+Neither is a `create` parameter. Recording is not available, so they would
+configure nothing: the API refuses `recordingEnabled: true` with a
+`feature-not-available` problem. Passing either one does not compile.
+Both fields are still **returned** on `Session`, because the API still returns
+them. See [Not built yet](../../introduction#not-built-yet).
+:::
 
 
 ## Fetch one

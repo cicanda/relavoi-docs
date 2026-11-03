@@ -22,9 +22,7 @@ func startMaskingSession(agent: String, customer: String, orderId: String) async
       customerPhone: customer,
       metadata: ["orderId": orderId],
       gracePeriodMinutes: 15,
-      directionMode: .bidirectional,
-      recordingEnabled: false,
-      consentPrompt: .none
+      directionMode: .bidirectional
     )
     print("Proxy ready: \(session.proxyNumber)")
   } catch let error as RelavoiError {
@@ -35,11 +33,15 @@ func startMaskingSession(agent: String, customer: String, orderId: String) async
 }
 ```
 
-The full parameter list is `create(agentPhone:customerPhone:metadata:gracePeriodMinutes:directionMode:recordingEnabled:consentPrompt:)`.
+The full parameter list is `create(agentPhone:customerPhone:metadata:gracePeriodMinutes:directionMode:)`.
 
-`recordingEnabled: true` is refused by the API with a `feature-not-available`
-problem. Leave it `false`, or leave it out. See
-[Not built yet](../../introduction#not-built-yet).
+:::note recordingEnabled and consentPrompt
+SDK 0.3.0 removed both from `create`. Recording is not available, so they
+configured nothing: the API refuses `recordingEnabled: true` with a
+`feature-not-available` problem. Passing either one is a compile error now.
+Both fields are still **returned** on `Session`, because the API still returns
+them. See [Not built yet](../../introduction#not-built-yet).
+:::
 
 
 :::info Supported numbers
@@ -52,7 +54,7 @@ Anything else comes back as `422` with type `number-not-supported`, and the
 message never contains the number that was sent. Both people in a session must
 have numbers from the same country.
 :::
- Every parameter except the two phone numbers has a default (`metadata: nil`, `gracePeriodMinutes: 15`, `directionMode: .bidirectional`, `recordingEnabled: false`, `consentPrompt: .none`), so this is equally valid:
+ Every parameter except the two phone numbers has a default (`metadata: nil`, `gracePeriodMinutes: 15`, `directionMode: .bidirectional`), so this is equally valid:
 
 ```swift
 let session = try await Relavoi.shared.sessions.create(

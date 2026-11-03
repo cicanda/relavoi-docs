@@ -39,7 +39,6 @@ Future<void> startMaskingSession(
       metadata: {'orderId': orderId},
       gracePeriodMinutes: 15,
       directionMode: DirectionMode.bidirectional,
-      recordingEnabled: false,
     );
     debugPrint('Proxy ready: ${session.proxyNumber}');
   } on ValidationException catch (e) {
@@ -61,13 +60,16 @@ Future<Session> create({
   Map<String, dynamic>? metadata,
   int gracePeriodMinutes = 15,
   DirectionMode directionMode = DirectionMode.bidirectional,
-  bool recordingEnabled = false,
 });
 ```
 
-`recordingEnabled: true` is refused by the API with a `feature-not-available`
-problem. Leave it `false`, or leave it out. See
-[Not built yet](../../introduction#not-built-yet).
+:::note recordingEnabled and consentPrompt
+Neither is a `create` parameter. Recording is not available, so they would
+configure nothing: the API refuses `recordingEnabled: true` with a
+`feature-not-available` problem. Passing either one does not compile.
+Both fields are still **returned** on `Session`, because the API still returns
+them. See [Not built yet](../../introduction#not-built-yet).
+:::
 
 Because the two phone numbers are the only required arguments, this is equally valid:
 

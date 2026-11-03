@@ -50,6 +50,8 @@ Relavoi.shared.events.addListener("home-view") { event in
     print("Answered \(sessionId)")
   case let .callEnded(sessionId, durationSeconds, _):
     print("Session \(sessionId) ended after \(durationSeconds)s")
+  case let .smsReceived(sessionId, _):
+    print("SMS on session \(sessionId)")
   case let .unknown(type, payload):
     print("Unhandled event \(type): \(payload)")
   }

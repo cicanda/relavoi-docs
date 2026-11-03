@@ -64,9 +64,8 @@ import WidgetKit
 import RelavoiSDK
 
 @available(iOS 17.0, *)
-@main
-struct MyWidgets: WidgetBundle {
-  var body: some Widget {
+struct RelavoiCallWidget: Widget {
+  var body: some WidgetConfiguration {
     ActivityConfiguration(for: RelavoiCallAttributes.self) { context in
       // Lock Screen / banner UI
       RelavoiCallActivityView(context: context)
@@ -91,7 +90,20 @@ struct MyWidgets: WidgetBundle {
     }
   }
 }
+
+@available(iOS 17.0, *)
+@main
+struct MyWidgets: WidgetBundle {
+  var body: some Widget {
+    RelavoiCallWidget()
+  }
+}
 ```
+`ActivityConfiguration` conforms to `WidgetConfiguration`, not to `Widget`, and
+a `WidgetBundle` body takes `Widget`s. So the configuration goes inside a type
+of your own that conforms to `Widget`, and the bundle lists that type. Putting
+the `ActivityConfiguration` straight into the bundle body does not compile.
+
 
 `RelavoiCallActivityView` (iOS 16.1+) renders the Lock Screen banner. `RelavoiCallCompactView` (iOS 17.0+) provides static helpers for each Dynamic Island region: `compactLeading`, `compactTrailing`, `minimal`, `expandedLeading`, `expandedTrailing`, and `expandedCenter`. Both show the proxy number, an elapsed timer, and a verified/unverified badge.
 
@@ -123,7 +135,7 @@ You typically do not construct this yourself. `LiveActivityManager.start(...)` d
 To push a new state (e.g. an updated elapsed time), build a `RelavoiCallAttributes.State` and pass it to `update`:
 
 ```swift
-await controller.liveActivity.update(
+await liveActivity.update(
   state: RelavoiCallAttributes.State(
     elapsedSeconds: 42,
     verified: true,
@@ -138,10 +150,10 @@ Call `end` when the call finishes. `dismissPolicy` defaults to `.immediate`:
 
 ```swift
 // Immediate dismissal (default)
-await controller.liveActivity.end()
+await liveActivity.end()
 
 // Or let it linger briefly after the call ends
-await controller.liveActivity.end(dismissPolicy: .after(.now + 5))
+await liveActivity.end(dismissPolicy: .after(.now + 5))
 ```
 
 `dismissPolicy` is an `ActivityUIDismissalPolicy`; common values are `.immediate`, `.default`, and `.after(Date)`.
