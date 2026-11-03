@@ -13,7 +13,7 @@ The Relavoi Flutter SDK ships as `relavoi_flutter`, a hybrid plugin: it is pure 
 - **Flutter**: 3.10 or newer
 - **Dart**: 3.0 or newer
 - **Android**: `minSdk` 24 (Android 7.0 Nougat)
-- **iOS**: 15.0 or newer
+- **iOS**: 13.0 or newer
 
 ## Add the dependency
 
@@ -25,7 +25,7 @@ dependencies:
   relavoi_flutter:
     git:
       url: https://github.com/cicanda/relavoi-flutter-sdk.git
-      ref: v0.3.1
+      ref: v0.3.2
 ```
 
 Then fetch it:
@@ -78,8 +78,16 @@ Declaring `READ_PHONE_STATE` in the manifest is necessary but not sufficient. On
 No extra permissions are needed. Native call detection on iOS uses `CXCallObserver`, which requires no user prompt and no `Info.plist` entry. Set the platform floor in `ios/Podfile`:
 
 ```ruby
-platform :ios, '15.0'
+platform :ios, '13.0'
 ```
+
+:::note Not 15.0
+This page said 15.0 until plugin 0.3.2. That is the **native iOS SDK's**
+floor, and this plugin does not depend on it. 13.0 is what the plugin needs:
+Flutter itself requires iOS 13, and so do the three dependencies with a native
+side (`firebase_messaging`, `url_launcher_ios`, `shared_preferences_foundation`).
+The plugin's own Swift uses `CXCallObserver` and nothing newer than iOS 10.
+:::
 
 Then install pods:
 
