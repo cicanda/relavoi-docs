@@ -42,7 +42,7 @@ Add the dependency in your app module's `build.gradle.kts`:
 
 ```kotlin manifest
 dependencies {
-  implementation("com.github.cicanda:relavoi-android-sdk:v0.3.1")
+  implementation("com.github.cicanda:relavoi-android-sdk:v0.4.0")
 }
 
 android {
