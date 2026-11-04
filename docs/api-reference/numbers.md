@@ -201,7 +201,7 @@ you:
 
 | | What it means | What to do |
 |---|---|---|
-| `429 number-quota-reached` | You hold every number your plan allows, and each is already in a session with one of these two people | Wait for a session to end, or ask to hold more |
+| `409 number-quota-reached` | You hold every number your plan allows, and each is already in a session with one of these two people | Wait for a session to end, or ask to hold more. Do not retry on a timer: there is no `Retry-After`, and it clears on a state change rather than after an interval |
 | `503 pool-exhausted` | No number is free anywhere in the pool, for anybody | Retry with backoff. This is our capacity, and it alerts us |
 
 See [Errors](./errors.md) for both.

@@ -36,7 +36,7 @@ Every error `type` resolves to a human-readable description page at `https://api
 | `rate-limit` | 429 | Per-tenant rate limit exceeded; check `Retry-After` header |
 | `not-found` | 404 | Resource does not exist or is not visible to your tenant |
 | `pool-exhausted` | 503 | No number is free anywhere in the pool. Our capacity, not your limit, and it alerts us |
-| `number-quota-reached` | 429 | Your workspace holds all the numbers its plan allows and each one is already in a session with one of these two people. See [Your numbers](./numbers.md) |
+| `number-quota-reached` | 409 | Your workspace holds all the numbers its plan allows and each one is already in a session with one of these two people. Not retryable on a timer. See [Your numbers](./numbers.md) |
 | `tier-session-limit` | 429 | Tenant's concurrent-session ceiling reached on `POST /v1/sessions` |
 | `number-not-supported` | 422 | A phone number is not one Relavoi can connect. See [Supported numbers](#supported-numbers) |
 | `cross-border-not-supported` | 422 | Both numbers are valid, but they are in different countries |
@@ -92,21 +92,33 @@ X-RateLimit-Remaining: 0
 X-RateLimit-Reset: 1747920712
 ```
 
-### 429 number-quota-reached
+### 409 number-quota-reached
 
 Your workspace is holding every number its plan allows it to hold at once, and
 each of them is already in a live session with one of the two people in this
 request. A number can carry many sessions at the same time but never the same
 person twice, so this is the point at which another number is genuinely needed.
 
-It clears on its own as sessions end. If it keeps happening, ask for a higher
-limit: see [Your numbers](./numbers.md).
+:::warning Do not retry this on a timer
+It is a `409` and not a `429` on purpose. `429` means you are going too fast,
+and most HTTP client libraries retry it on their own, which here would loop and
+create nothing. This condition does not clear by waiting: it clears when one of
+your sessions ends, or when a request for more numbers is approved. There is no
+`Retry-After` header.
+
+In the SDKs it is a typed error of its own, so you can tell it apart from a
+real rate limit: `RelavoiError.numberQuotaReached` (Swift),
+`RelavoiException.NumberQuotaReached` (Kotlin), `NumberQuotaReachedException`
+(Dart).
+:::
+
+If it keeps happening, ask for a higher limit: see [Your numbers](./numbers.md).
 
 ```json
 {
   "type": "https://api.relavoi.com/errors/number-quota-reached",
-  "title": "Too Many Requests",
-  "status": 429,
+  "title": "Conflict",
+  "status": 409,
   "detail": "This workspace is holding all 1 of its 1 proxy numbers, and every one of them is already in a live session with one of these two parties..."
 }
 ```

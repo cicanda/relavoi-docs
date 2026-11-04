@@ -1038,6 +1038,19 @@ paths:
         "400": { $ref: "#/components/responses/Validation" }
         "401": { $ref: "#/components/responses/Unauthorized" }
         "403": { $ref: "#/components/responses/Forbidden" }
+        "409":
+          description: |
+            `number-quota-reached`. Your workspace is holding every proxy
+            number its plan allows it to hold at once, and each one is already
+            in a live session with one of these two people.
+
+            **Do not retry this on a timer.** It is a 409 and not a 429 for
+            that reason: it does not clear by waiting, it clears when one of
+            your sessions ends or when a request for more numbers is approved.
+            There is no `Retry-After`.
+          content:
+            application/problem+json:
+              schema: { $ref: "#/components/schemas/Problem" }
         "422":
           description: |
             A number is not a Nigerian mobile, the two parties are in different
@@ -1047,7 +1060,11 @@ paths:
               schema: { $ref: "#/components/schemas/Problem" }
         "429": { $ref: "#/components/responses/RateLimited" }
         "503":
-          description: No number available, or the carrier breaker is open.
+          description: |
+            `pool-exhausted`. No number is free anywhere in the pool, for
+            anybody, or the carrier breaker is open. This one is ours rather
+            than yours: there is nothing for you to request, and it alerts us.
+            Retry with backoff.
           content:
             application/problem+json:
               schema: { $ref: "#/components/schemas/Problem" }

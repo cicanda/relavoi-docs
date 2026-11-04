@@ -96,6 +96,10 @@ try {
     is RelavoiException.Validation   -> Log.e("Relavoi", e.message ?: "invalid input")
     is RelavoiException.NumberNotSupported -> showUnsupportedNumber(e.message)
     is RelavoiException.CrossBorderNotSupported -> showSameCountryOnly(e.message)
+    // Every number this workspace may hold is already in a session with one of
+    // these two people. Do not retry on a timer: it clears when a session ends
+    // or when more numbers are approved.
+    is RelavoiException.NumberQuotaReached -> showAtNumberLimit(e.message)
     is RelavoiException.NotInitialized -> error("call Relavoi.initialize first")
   }
 }

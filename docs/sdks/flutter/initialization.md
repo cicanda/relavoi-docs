@@ -122,6 +122,14 @@ try {
 }
 ```
 
-The subclasses are `AuthenticationException`, `SessionException`, `NetworkException`, `ValidationException`, and `TierLimitException`.
+The subclasses are `AuthenticationException`, `SessionException`,
+`NetworkException`, `ValidationException`, `NumberNotSupportedException`,
+`CrossBorderNotSupportedException`, `NumberQuotaReachedException`, and
+`TierLimitException`.
+
+`NumberQuotaReachedException` is the one not to retry on a timer. It means the
+workspace holds every proxy number its plan allows at once and each is already
+in a session with one of the two people being connected, which clears when a
+session ends or when more numbers are approved, not after an interval.
 
 Next: [Sessions](./sessions).

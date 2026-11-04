@@ -84,9 +84,14 @@ func handle(_ error: RelavoiError) {
     showAlert("Relavoi does not connect that number: \(detail)")
   case .crossBorderNotSupported(let detail):
     showAlert("Both numbers must be in the same country: \(detail)")
+  case .numberQuotaReached(let detail):
+    // Every number this workspace may hold is already in a session with one of
+    // these two people. Do not retry on a timer: it clears when a session ends
+    // or when more numbers are approved.
+    showAlert(detail)
   case .rateLimited(let retryAfterSeconds):
     let secs = retryAfterSeconds.map { Int($0) } ?? 30
-    showAlert("Slow down — try again in \(secs) seconds")
+    showAlert("Slow down, try again in \(secs) seconds")
   case .api(let statusCode, let body):
     showAlert("Server error \(statusCode): \(body ?? "")")
   case .network(let underlying):
@@ -108,6 +113,7 @@ public enum RelavoiError: Error {
   case validation(detail: String)
   case numberNotSupported(detail: String)
   case crossBorderNotSupported(detail: String)
+  case numberQuotaReached(detail: String)
   case rateLimited(retryAfterSeconds: TimeInterval?)
   case unexpected(String)
 }

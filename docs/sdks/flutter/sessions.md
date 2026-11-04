@@ -6,7 +6,7 @@ description: Create, fetch, list, and end masking sessions from the Flutter SDK 
 
 # Sessions on Flutter
 
-All session APIs are `Future`-returning and are reached through `Relavoi.instance.sessions`. Errors throw a subclass of `RelavoiException`, typically `SessionException`, `ValidationException`, or `TierLimitException`.
+All session APIs are `Future`-returning and are reached through `Relavoi.instance.sessions`. Errors throw a subclass of `RelavoiException`, typically `SessionException`, `ValidationException`, `NumberQuotaReachedException`, or `TierLimitException`.
 
 ## Create a session
 
@@ -43,6 +43,11 @@ Future<void> startMaskingSession(
     debugPrint('Proxy ready: ${session.proxyNumber}');
   } on ValidationException catch (e) {
     debugPrint('Invalid input: $e');
+  } on NumberQuotaReachedException catch (e) {
+    // Every proxy number this workspace may hold is already in a session with
+    // one of these two people. Do not retry on a timer: it clears when a
+    // session ends or when more numbers are approved.
+    debugPrint('At the number limit: $e');
   } on TierLimitException catch (e) {
     debugPrint('Concurrent session limit reached: $e');
   } on RelavoiException catch (e) {
