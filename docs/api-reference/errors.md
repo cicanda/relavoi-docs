@@ -35,7 +35,8 @@ Every error `type` resolves to a human-readable description page at `https://api
 | `validation` | 400 / 422 | Field-level validation failure; includes `errors[]` |
 | `rate-limit` | 429 | Per-tenant rate limit exceeded; check `Retry-After` header |
 | `not-found` | 404 | Resource does not exist or is not visible to your tenant |
-| `pool-exhausted` | 503 | Number Pool Manager cannot satisfy participant-overlap rule with any available DID |
+| `pool-exhausted` | 503 | No number is free anywhere in the pool. Our capacity, not your limit, and it alerts us |
+| `number-quota-reached` | 429 | Your workspace holds all the numbers its plan allows and each one is already in a session with one of these two people. See [Your numbers](./numbers.md) |
 | `tier-session-limit` | 429 | Tenant's concurrent-session ceiling reached on `POST /v1/sessions` |
 | `number-not-supported` | 422 | A phone number is not one Relavoi can connect. See [Supported numbers](#supported-numbers) |
 | `cross-border-not-supported` | 422 | Both numbers are valid, but they are in different countries |
@@ -91,14 +92,37 @@ X-RateLimit-Remaining: 0
 X-RateLimit-Reset: 1747920712
 ```
 
+### 429 number-quota-reached
+
+Your workspace is holding every number its plan allows it to hold at once, and
+each of them is already in a live session with one of the two people in this
+request. A number can carry many sessions at the same time but never the same
+person twice, so this is the point at which another number is genuinely needed.
+
+It clears on its own as sessions end. If it keeps happening, ask for a higher
+limit: see [Your numbers](./numbers.md).
+
+```json
+{
+  "type": "https://api.relavoi.com/errors/number-quota-reached",
+  "title": "Too Many Requests",
+  "status": 429,
+  "detail": "This workspace is holding all 1 of its 1 proxy numbers, and every one of them is already in a live session with one of these two parties..."
+}
+```
+
 ### 503 pool-exhausted
+
+A different thing: no number is free anywhere in the pool, for anybody. That is
+our capacity and not your limit, there is nothing for you to request, and it
+raises an alert with us. Retry with backoff.
 
 ```json
 {
   "type": "https://api.relavoi.com/errors/pool-exhausted",
   "title": "Service Unavailable",
   "status": 503,
-  "detail": "No proxy number available satisfies the participant non-overlap rule. Try again or request more DIDs."
+  "detail": "No proxy numbers available for allocation"
 }
 ```
 

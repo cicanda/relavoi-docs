@@ -797,29 +797,134 @@
           }
         }
       },
-      "PoolStatus": {
+      "NumberQuota": {
+        "type": "object",
+        "description": "What your workspace holds, against what it may hold.\n\nThis used to report the shared pool: total, available, in use. Those\nfigures are ours and other workspaces', not yours, and they moved with\nother customers' traffic. What you can act on is your own holding.\n",
+        "properties": {
+          "held": {
+            "type": "integer",
+            "description": "Distinct proxy numbers your workspace is holding right now.",
+            "examples": [
+              1
+            ]
+          },
+          "limit": {
+            "type": "integer",
+            "description": "How many it may hold at once, from your plan or your contract.",
+            "examples": [
+              1
+            ]
+          },
+          "numbers": {
+            "type": "array",
+            "description": "The numbers themselves, in E.164.",
+            "items": {
+              "type": "string",
+              "examples": [
+                "+2348000000001"
+              ]
+            }
+          },
+          "explanation": {
+            "type": "string",
+            "description": "Why the limit is the size it is, in one sentence, so a dashboard\nor a support reply does not have to keep its own copy of it.\n"
+          },
+          "pendingRequest": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/NumberRequest"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Your open request to hold more, if you have one."
+          }
+        }
+      },
+      "NumberRequest": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "PENDING",
+              "APPROVED",
+              "DECLINED",
+              "WITHDRAWN"
+            ]
+          },
+          "requestedTotal": {
+            "type": "integer",
+            "description": "The total asked for, not an increment.",
+            "examples": [
+              3
+            ]
+          },
+          "quotaAtRequest": {
+            "type": "integer",
+            "description": "What the limit was when the request was made.",
+            "examples": [
+              1
+            ]
+          },
           "region": {
             "type": "string",
             "examples": [
               "lagos"
             ]
           },
-          "total": {
-            "type": "integer"
+          "note": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Your own words, for whoever buys the numbers."
           },
-          "available": {
-            "type": "integer"
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
           },
-          "inUse": {
-            "type": "integer"
+          "grantedTotal": {
+            "oneOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What was granted. May be lower than what was asked for."
           },
-          "cooldown": {
-            "type": "integer"
+          "decidedAt": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
-          "quarantined": {
-            "type": "integer"
+          "decisionNote": {
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "What we said when we decided it."
           }
         }
       }
@@ -2639,19 +2744,44 @@
         "tags": [
           "Numbers"
         ],
-        "summary": "Pool status by region",
+        "summary": "Your numbers, and your limit",
+        "description": "How many distinct proxy numbers your workspace is holding right now,\nand how many it may hold at once.\n\nA proxy number can carry many sessions at the same time, as long as no\nparticipant appears on it twice. So the number of numbers you need is\nthe most sessions any one rider or customer is in at the same moment,\nnot your volume: one number is enough for thousands of deliveries a\nday if each rider is on one delivery at a time.\n\nThis used to report the shared pool's total, available and in-use\ncounts. Those described our capacity and other workspaces' activity.\n",
         "responses": {
           "200": {
-            "description": "One entry per region.",
+            "description": "Your holding, your limit, and your open request if any.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NumberQuota"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/numbers/requests": {
+      "get": {
+        "tags": [
+          "Numbers"
+        ],
+        "summary": "Your requests for more numbers",
+        "description": "Newest first, decided and undecided.",
+        "responses": {
+          "200": {
+            "description": "Your requests.",
             "content": {
               "application/json": {
                 "schema": {
                   "type": "object",
                   "properties": {
-                    "pools": {
+                    "requests": {
                       "type": "array",
                       "items": {
-                        "$ref": "#/components/schemas/PoolStatus"
+                        "$ref": "#/components/schemas/NumberRequest"
                       }
                     }
                   }
@@ -2670,8 +2800,8 @@
         "tags": [
           "Numbers"
         ],
-        "summary": "Ask for more numbers",
-        "description": "Dashboard token, OWNER. Provisioning is a manual process today, so this\nanswers `501` and records the request: it is logged against your\nworkspace and raises an alert with us, so asking here is how you ask.\nWhich carrier your numbers come from is ours to choose.\n",
+        "summary": "Ask to hold more numbers",
+        "description": "Dashboard token, OWNER. Records a request for a person to decide.\n\nProvisioning is manual: a number is bought from the carrier,\nwhitelisted and loaded into the pool by hand, so no API call can do it.\nWe email you when it is decided, and an approval raises your limit\nwithout any change on your side. Which carrier your numbers come from\nis ours to choose.\n\nOne open request at a time. Withdraw the open one to ask for a\ndifferent figure.\n",
         "requestBody": {
           "required": true,
           "content": {
@@ -2685,23 +2815,101 @@
                       "lagos"
                     ]
                   },
+                  "requestedTotal": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "description": "The total you want to be able to hold at once, not how many\nmore you want.\n",
+                    "examples": [
+                      3
+                    ]
+                  },
                   "count": {
                     "type": "integer",
                     "minimum": 1,
-                    "maximum": 100
+                    "deprecated": true,
+                    "description": "The former name for `requestedTotal`, read the same way."
+                  },
+                  "note": {
+                    "type": "string",
+                    "maxLength": 1000,
+                    "description": "Why, in your own words. Say which of your people are in two\nlive sessions at once: that is the thing that decides it.\n"
                   }
                 },
                 "required": [
-                  "region",
-                  "count"
+                  "region"
                 ]
               }
             }
           }
         },
         "responses": {
-          "501": {
-            "description": "Not implemented. Provisioning is manual.",
+          "201": {
+            "description": "Recorded. We will email you when it is decided.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NumberRequest"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "You already have an open request.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The figure asked for is not more than your current limit.",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/numbers/requests/{id}/withdraw": {
+      "post": {
+        "tags": [
+          "Numbers"
+        ],
+        "summary": "Take back an open request",
+        "description": "Dashboard token, OWNER. Only while it is still open.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Withdrawn.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NumberRequest"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No open request with that id for your workspace.",
             "content": {
               "application/problem+json": {
                 "schema": {

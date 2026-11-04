@@ -877,7 +877,7 @@
       "description": "The proxy number pool.",
       "item": [
         {
-          "name": "Pool status by region",
+          "name": "Your numbers, and your limit",
           "request": {
             "method": "GET",
             "header": [],
@@ -891,12 +891,31 @@
                 "pool"
               ]
             },
-            "description": "Pool status by region"
+            "description": "How many distinct proxy numbers your workspace is holding right now,\nand how many it may hold at once.\n\nA proxy number can carry many sessions at the same time, as long as no\nparticipant appears on it twice. So the number of numbers you need is\nthe most sessions any one rider or customer is in at the same moment,\nnot your volume: one number is enough for thousands of deliveries a\nday if each rider is on one delivery at a time.\n\nThis used to report the shared pool's total, available and in-use\ncounts. Those described our capacity and other workspaces' activity."
           },
           "response": []
         },
         {
-          "name": "Ask for more numbers",
+          "name": "Your requests for more numbers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/numbers/requests",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "numbers",
+                "requests"
+              ]
+            },
+            "description": "Newest first, decided and undecided."
+          },
+          "response": []
+        },
+        {
+          "name": "Ask to hold more numbers",
           "request": {
             "method": "POST",
             "header": [
@@ -915,16 +934,44 @@
                 "provision"
               ]
             },
-            "description": "Dashboard token, OWNER. Provisioning is a manual process today, so this\nanswers `501` and records the request: it is logged against your\nworkspace and raises an alert with us, so asking here is how you ask.\nWhich carrier your numbers come from is ours to choose.",
+            "description": "Dashboard token, OWNER. Records a request for a person to decide.\n\nProvisioning is manual: a number is bought from the carrier,\nwhitelisted and loaded into the pool by hand, so no API call can do it.\nWe email you when it is decided, and an approval raises your limit\nwithout any change on your side. Which carrier your numbers come from\nis ours to choose.\n\nOne open request at a time. Withdraw the open one to ask for a\ndifferent figure.",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"region\": \"lagos\",\n  \"count\": 0\n}",
+              "raw": "{\n  \"region\": \"lagos\"\n}",
               "options": {
                 "raw": {
                   "language": "json"
                 }
               }
             }
+          },
+          "response": []
+        },
+        {
+          "name": "Take back an open request",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/numbers/requests/:id/withdraw",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "numbers",
+                "requests",
+                ":id",
+                "withdraw"
+              ],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "",
+                  "description": ""
+                }
+              ]
+            },
+            "description": "Dashboard token, OWNER. Only while it is still open."
           },
           "response": []
         }
