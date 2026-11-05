@@ -754,7 +754,14 @@ paths:
               type: object
               properties:
                 currentPassword: { type: string }
-                newPassword: { type: string, minLength: 8, maxLength: 128 }
+                newPassword:
+                  type: string
+                  minLength: 12
+                  maxLength: 128
+                  description: |
+                    The same floor signup and the reset form enforce. It was 8
+                    here until November 2026, which made changing your password
+                    the way round the policy.
               required: [currentPassword, newPassword]
       responses:
         "204": { description: Changed. Existing tokens stop working. }

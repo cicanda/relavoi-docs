@@ -1625,8 +1625,9 @@
                   },
                   "newPassword": {
                     "type": "string",
-                    "minLength": 8,
-                    "maxLength": 128
+                    "minLength": 12,
+                    "maxLength": 128,
+                    "description": "The same floor signup and the reset form enforce. It was 8\nhere until November 2026, which made changing your password\nthe way round the policy.\n"
                   }
                 },
                 "required": [

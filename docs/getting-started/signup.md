@@ -16,7 +16,7 @@ Sign up with a single `POST /v1/auth/signup` request. The endpoint accepts exact
 |-------|----------|-------|
 | `companyName` | yes | Your company or brand name |
 | `email` | yes | Owner login email |
-| `password` | yes | Minimum 8 characters |
+| `password` | yes | Minimum 12 characters. The same floor applies to the reset form and to changing your password |
 | `companySize` | no | Optional free-form string (e.g. `"11-50"`) |
 | `useCase` | no | Optional free-form string (e.g. `"delivery"`) |
 
