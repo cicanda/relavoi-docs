@@ -2048,6 +2048,33 @@
           "response": []
         }
       ]
+    },
+    {
+      "name": "Reference",
+      "description": "The fixed lists the dashboards build their dropdowns from.",
+      "item": [
+        {
+          "name": "Industry and country lists",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/reference",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "reference"
+              ]
+            },
+            "description": "No auth. The two lists behind the industry and country dropdowns, so a\nclient does not hold its own copy and drift from what the API will\naccept.\n\n`industries` is a fixed set of codes with display labels, and `OTHER`\nis always present. `countries` is the full ISO 3166-1 alpha-2 set with\nEnglish names, because `country` on your workspace is where your\nbusiness is registered, which is a different question from where we can\nconnect a call. The countries we connect today are Nigeria alone.\n\nConstant for the lifetime of a deploy, and sent with\n`Cache-Control: public, max-age=86400`.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": []
+        }
+      ]
     }
   ],
   "variable": [

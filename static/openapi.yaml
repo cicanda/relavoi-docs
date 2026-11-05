@@ -87,6 +87,8 @@ tags:
     description: Your tenant's settings.
   - name: Verification
     description: Business verification, needed before going live.
+  - name: Reference
+    description: The fixed lists the dashboards build their dropdowns from.
 components:
   securitySchemes:
     bearerAuth:
@@ -624,8 +626,16 @@ paths:
                 password: { type: string, minLength: 12, maxLength: 128 }
                 name: { type: string, maxLength: 255 }
                 workspaceSlug: { type: string, maxLength: 100 }
-                country: { type: string, minLength: 2, maxLength: 2, examples: ["NG"] }
-                industry: { type: string, maxLength: 50 }
+                country:
+                  type: string
+                  minLength: 2
+                  maxLength: 2
+                  examples: ["NG"]
+                  description: ISO 3166-1 alpha-2, from the `countries` list in `GET /reference`.
+                industry:
+                  type: string
+                  maxLength: 50
+                  description: An `industries` code from `GET /reference`; a display label is also accepted.
                 requestedPoolSize: { type: integer, minimum: 1 }
                 defaultSessionTtlMin: { type: integer, minimum: 1 }
                 cooldownMin: { type: integer, minimum: 0 }
@@ -934,6 +944,46 @@ paths:
                   tenant: { $ref: "#/components/schemas/Tenant" }
                   user: { type: object }
         "401": { $ref: "#/components/responses/Unauthorized" }
+  /reference:
+    get:
+      tags: [Reference]
+      summary: Industry and country lists
+      description: |
+        No auth. The two lists behind the industry and country dropdowns, so a
+        client does not hold its own copy and drift from what the API will
+        accept.
+
+        `industries` is a fixed set of codes with display labels, and `OTHER`
+        is always present. `countries` is the full ISO 3166-1 alpha-2 set with
+        English names, because `country` on your workspace is where your
+        business is registered, which is a different question from where we can
+        connect a call. The countries we connect today are Nigeria alone.
+
+        Constant for the lifetime of a deploy, and sent with
+        `Cache-Control: public, max-age=86400`.
+      security: []
+      responses:
+        "200":
+          description: Both lists.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  industries:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code: { type: string, examples: ["RIDE_HAILING"] }
+                        label: { type: string, examples: ["Ride-hailing"] }
+                  countries:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        code: { type: string, examples: ["NG"] }
+                        name: { type: string, examples: ["Nigeria"] }
   /config:
     get:
       tags: [Configuration]
@@ -976,6 +1026,25 @@ paths:
                     applied when it was not.
                 supportPhone: { type: string }
                 pushConfig: { type: object, additionalProperties: true }
+                workspaceSlug: { type: [string, "null"], maxLength: 100 }
+                country:
+                  type: [string, "null"]
+                  minLength: 2
+                  maxLength: 2
+                  description: |
+                    Where your business is registered, as an ISO 3166-1 alpha-2
+                    code. Sent upper-case or lower-case; stored upper-case. The
+                    accepted set is the `countries` list from `GET /reference`.
+                industry:
+                  type: [string, "null"]
+                  description: |
+                    One of the `industries` codes from `GET /reference`. A
+                    display label such as `Delivery` is also accepted and
+                    mapped to its code, because this field was free text until
+                    November 2026.
+                requestedPoolSize: { type: [integer, "null"], minimum: 1 }
+                defaultSessionTtlMin: { type: integer, minimum: 1 }
+                cooldownMin: { type: integer, minimum: 0 }
       responses:
         "200":
           description: The updated tenant.

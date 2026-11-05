@@ -32,6 +32,7 @@ const sidebars: SidebarsConfig = {
       items: [
         'api-reference/authentication',
         'api-reference/config',
+        'api-reference/reference',
         'api-reference/sessions',
         'api-reference/target-swap',
         'api-reference/calls',

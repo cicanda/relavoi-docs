@@ -47,6 +47,8 @@ curl https://api.relavoi.com/v1/config \
   "recordingConsentMode": "DEFAULT",
   "recordingConsentAudioUrl": null,
   "pushConfig": {},
+  "industry": "DELIVERY",
+  "country": "NG",
   "createdAt": "2026-07-11T20:44:05.776Z",
   "updatedAt": "2026-07-11T20:44:05.776Z"
 }
@@ -69,6 +71,8 @@ curl https://api.relavoi.com/v1/config \
 | recordingConsentMode | string | `DEFAULT`, `CUSTOM`, or `NONE` |
 | recordingConsentAudioUrl | string \| null | URL of custom consent audio (for `CUSTOM`) |
 | pushConfig | object | Per-tenant push notification config |
+| industry | string \| null | An industry code from [`GET /v1/reference`](./reference.md) |
+| country | string \| null | Where the business is registered, ISO 3166-1 alpha-2. Not where calls are placed |
 | createdAt | string | ISO-8601 timestamp |
 | updatedAt | string | ISO-8601 timestamp |
 
@@ -90,6 +94,8 @@ Updates one or more configuration fields. Only the fields you send are changed. 
 | recordingConsentMode | string | `DEFAULT`, `CUSTOM`, or `NONE` |
 | recordingConsentAudioUrl | string | URL of custom consent audio |
 | pushConfig | object | Push notification config |
+| industry | string \| null | One of the industry codes from [`GET /v1/reference`](./reference.md). A display label such as `Delivery` is also accepted and mapped to its code. Anything else is a `400` |
+| country | string \| null | ISO 3166-1 alpha-2, either case, stored upper case. The accepted set is the `countries` list from [`GET /v1/reference`](./reference.md), which is every country, not only the ones whose numbers we connect |
 
 :::note Recording is not available
 The recording fields are returned by `GET /config`, because they exist on your
@@ -157,6 +163,8 @@ Returns the full, updated config object (same shape as `GET /config`).
   "recordingConsentMode": "DEFAULT",
   "recordingConsentAudioUrl": null,
   "pushConfig": {},
+  "industry": "DELIVERY",
+  "country": "NG",
   "createdAt": "2026-07-11T20:44:05.776Z",
   "updatedAt": "2026-07-15T12:15:35.907Z"
 }
@@ -201,6 +209,8 @@ curl https://api.relavoi.com/v1/tenants/me \
     "recordingConsentMode": "DEFAULT",
     "recordingConsentAudioUrl": null,
     "pushConfig": {},
+    "industry": "DELIVERY",
+    "country": "NG",
     "createdAt": "2026-07-11T20:44:05.776Z",
     "updatedAt": "2026-07-11T20:44:05.776Z"
   }
