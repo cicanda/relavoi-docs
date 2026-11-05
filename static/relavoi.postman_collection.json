@@ -33,7 +33,7 @@
                 "health"
               ]
             },
-            "description": "No auth. Reports whether Postgres and Redis are reachable, and the commit the running image was built from.",
+            "description": "No auth. Reports whether Postgres and Redis are reachable, the commit\nthe running image was built from, and the API contract version each of\nour own frontends gates its build on.",
             "auth": {
               "type": "noauth"
             }

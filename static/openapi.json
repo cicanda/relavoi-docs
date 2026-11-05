@@ -1030,7 +1030,7 @@
           "Health"
         ],
         "summary": "Liveness",
-        "description": "No auth. Reports whether Postgres and Redis are reachable, and the commit the running image was built from.",
+        "description": "No auth. Reports whether Postgres and Redis are reachable, the commit\nthe running image was built from, and the API contract version each of\nour own frontends gates its build on.\n",
         "security": [],
         "responses": {
           "200": {
@@ -1069,6 +1069,13 @@
                       "type": "string",
                       "examples": [
                         "bd058e9"
+                      ]
+                    },
+                    "contractVersion": {
+                      "type": "integer",
+                      "description": "Monotonic. Bumped when the backend gains something a\nfrontend may depend on, so a frontend build can refuse\nto go live ahead of the backend it needs. Unrelated to\nthe `/v1` path, which is the tenant-facing promise.\n",
+                      "examples": [
+                        1
                       ]
                     },
                     "timestamp": {

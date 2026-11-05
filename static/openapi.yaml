@@ -455,7 +455,10 @@ paths:
     get:
       tags: [Health]
       summary: Liveness
-      description: No auth. Reports whether Postgres and Redis are reachable, and the commit the running image was built from.
+      description: |
+        No auth. Reports whether Postgres and Redis are reachable, the commit
+        the running image was built from, and the API contract version each of
+        our own frontends gates its build on.
       security: []
       responses:
         "200":
@@ -472,6 +475,14 @@ paths:
                       postgres: { type: string, enum: [ok, down] }
                       redis: { type: string, enum: [ok, down] }
                   sha: { type: string, examples: ["bd058e9"] }
+                  contractVersion:
+                    type: integer
+                    description: |
+                      Monotonic. Bumped when the backend gains something a
+                      frontend may depend on, so a frontend build can refuse
+                      to go live ahead of the backend it needs. Unrelated to
+                      the `/v1` path, which is the tenant-facing promise.
+                    examples: [1]
                   timestamp: { type: string, format: date-time }
   /health/cpaas:
     get:
