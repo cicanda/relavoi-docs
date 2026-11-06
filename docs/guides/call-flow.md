@@ -60,14 +60,13 @@ experiences before the other phone rings belongs to the mobile network.
 This is a target we hold ourselves to, not a measured average we are
 publishing.
 
-:::note Per-tenant routing latency is not exposed yet
-This page previously told you to alert on a `routing.latency.ms` metric in
-Analytics. No such metric exists: routing latency is measured, but only on our
-own side, and nothing returns it per workspace. What
+**Per-tenant routing latency is not exposed yet.** This page used to tell you
+to alert on a `routing.latency.ms` metric in Analytics. No such metric exists.
+Routing latency is measured, but only on our own side, and nothing returns it
+per workspace, so that alert could never have fired. What
 [Analytics](../api-reference/analytics) does give you is call volume, answer
 rates, outcomes and durations. If a latency figure is something you need to
-hold us to, ask us and we will expose it.
-:::
+hold us to, ask us and we will expose one.
 
 ## When a call does not connect
 
