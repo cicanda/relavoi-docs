@@ -105,15 +105,37 @@ NDPA 2023). Where we fall short of it, this list says so.
 
 - **Data minimization**: numbers are encrypted at rest, matched without being
   decrypted, and never logged.
-- **Retention limits**: 90 days is the intended default for call data. The
-  deletion job that enforces it is not built yet, so today data stays until it
-  is removed by hand on request.
+- **Retention limits**: 90 days after a session ends, we remove the personal
+  data it held: both parties' numbers, the values we match them by, the last
+  four digits and the metadata you attached. What stays is the part with no
+  person in it, which billing and tax need: times, duration, status, cost and
+  the provider's own call ids. Device tokens go 60 days after they were last
+  refreshed. See [What deletion does not reach](#what-deletion-does-not-reach).
+- **Right to erasure**: no self-service deletion endpoint exists yet. Ask us
+  and we will remove a tenant's session and call data by hand.
 - **Breach notification**: reports go to `security@relavoi.com`. No contractual
   notification window is in place yet.
 - **Data Processing Agreements**: not yet signed with the telephony provider.
   In progress.
-- **Right to erasure**: no self-service deletion endpoint exists yet. Ask us
-  and we will remove a tenant's session and call data by hand.
+
+### What deletion does not reach
+
+Removing a record from the database does not remove it from our backups, and
+we would rather say so than let you assume otherwise.
+
+| Copy | Kept for |
+|---|---|
+| Nightly database dumps | 90 days |
+| Machine snapshots | about 28 days |
+
+So a record deleted today can still exist in a backup for **up to 90 days
+afterwards**, and for the first 30 of those the dumps are under a lock that
+stops even us deleting them early. That lock is there to stop an attacker
+destroying our backups, and the cost of having it is this.
+
+Backups are encrypted at rest, are not readable by the running platform, which
+can write them and nothing else, and are only ever opened by a person
+restoring one. After 90 days every copy has expired on its own.
 
 We hold no SOC 2 report and no ISO certification. This page once offered a SOC
 2 Type II report that does not exist. If your procurement process needs one,
