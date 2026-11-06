@@ -24,7 +24,7 @@ Sign up with a single `POST /v1/auth/signup` request. The endpoint accepts exact
 curl -X POST https://api.relavoi.com/v1/auth/signup \
   -H "Content-Type: application/json" \
   -d '{
-    "companyName": "Chowdeck",
+    "companyName": "Example Logistics",
     "email": "dev@example.com",
     "password": "a-strong-password",
     "companySize": "11-50",

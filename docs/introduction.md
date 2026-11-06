@@ -8,7 +8,7 @@ description: Relavoi is a B2B phone-masking SaaS purpose-built for the Nigerian 
 
 Relavoi is a B2B SaaS platform that provides phone number masking as a service for the Nigerian market. We sit between your business apps and the telephony layer, so your couriers, riders, agents, and customers can talk to each other without ever exposing personal phone numbers.
 
-Unlike consumer privacy apps (Burner, Hushed) which target individual users, Relavoi is API-first and built for operations teams shipping production workloads: ride-hailing dispatch, last-mile delivery, marketplace transactions, healthcare scheduling, and logistics tracking. There is currently no dedicated number-masking provider operating in the Nigerian market, which is why Bolt and Uber connect riders and drivers using raw MSISDNs today. Relavoi closes that gap.
+Relavoi is API-first and built for operations teams shipping production workloads: ride-hailing dispatch, last-mile delivery, marketplace transactions, healthcare scheduling, and logistics tracking. It is a privacy layer for a platform that already has the relationship with both people on the call, which is a different job from a personal second-number app, and it is built for the Nigerian network rather than adapted to it.
 
 ## What you get
 

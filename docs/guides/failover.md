@@ -1,59 +1,40 @@
 ---
 title: High availability & failover
 sidebar_label: Failover
-description: The circuit breaker that watches the telephony provider, what each state means, and how to read it from the health endpoint.
+description: What Relavoi does when the telephony provider degrades, what your app sees, how to read provider state from the health endpoint, and what to do on your side.
 ---
 
 # High availability & failover
 
-Relavoi routes Nigerian voice over one licensed telephony provider. A circuit
-breaker watches it: repeated call-setup failures trip the breaker, which stops
-new sessions being allocated against a provider that is not answering, and
-probes it until it recovers.
+Relavoi watches the health of the telephony provider that carries your calls
+continuously. When it starts failing, we stop allocating new sessions against
+it rather than letting your requests queue behind a provider that is not
+answering, and we keep probing until it recovers.
 
-:::info There is one provider today
-A second provider to fail over **to** does not exist yet. No numbers are
-provisioned on a backup carrier, so while the breaker is `OPEN` new session
-creation is refused rather than rerouted. The breaker is still worth having:
-it turns a slow, half-broken provider into a clear error instead of a queue of
-calls that never connect, and it is what the recovery probing hangs off.
+The guarantee is that a degraded carrier reaches you as a clear, immediate
+error on session creation, and never as a call that rings nowhere.
 
-A secondary pool is on the roadmap. Until it exists, read `OPEN` as "the
-carrier is in trouble", not as "we have moved your traffic".
-:::
+## Provider states
 
-## Circuit breaker states
+| State | What it means for your app |
+|---|---|
+| `CLOSED` | Normal. New sessions are allocated as usual. |
+| `OPEN` | The provider is in trouble. New session creation is refused. Sessions you already hold keep working, and calls already bridged are unaffected. |
+| `HALF_OPEN` | Recovering. Some new sessions go through while we confirm the provider is healthy; the rest are still refused. |
 
-```text
-       failures exceed threshold
-CLOSED ---------------------------> OPEN
-   ^                                  |
-   | 95% success over 5 min           | health checks pass 5x in a row
-   |                                  v
-   +---------------------------- HALF_OPEN
-        any failure during probe
-```
+Two things are deliberately true of `OPEN` and worth designing for.
 
-| State | Routing behavior |
-|-------|------------------|
-| `CLOSED` | All new sessions allocated on the primary provider |
-| `OPEN` | New session creation is refused; existing sessions continue until natural expiry, and calls in flight are unaffected |
-| `HALF_OPEN` | A small share of new sessions probe the provider; the rest are still refused |
+**It sits on allocation, not on routing.** A session you created before the
+provider degraded continues to route calls, and a call already connected is
+never torn down. Only new session creation is refused.
 
-## Trip thresholds
+**It clears on its own.** You do not need to tell us, and there is nothing to
+reset. The state moves back through `HALF_OPEN` to `CLOSED` once the provider
+is answering reliably again.
 
-The breaker trips from `CLOSED` to `OPEN` when **either** condition is met:
+## Reading provider state
 
-1. 5 consecutive call-setup failures, **or**
-2. Greater than 10% error rate over a sliding 2-minute window
-
-A health check runs every 30 seconds while in `OPEN`. After 5 consecutive successful health checks, the breaker moves to `HALF_OPEN`.
-
-In `HALF_OPEN`, if the probe traffic maintains greater than 95% success over 5 minutes, the breaker closes. Any failure during the probe sends it back to `OPEN`.
-
-## Observing breaker state
-
-The current state is exposed at `GET /v1/health/cpaas`:
+`GET /v1/health/cpaas` reports it, unauthenticated:
 
 ```json
 {
@@ -65,15 +46,31 @@ The current state is exposed at `GET /v1/health/cpaas`:
       "lastError": null
     }
   ],
-  "timestamp": "2026-07-15T12:15:35.907Z"
+  "timestamp": "2026-11-06T18:28:19.407Z"
 }
 ```
 
-Each provider entry reports its circuit breaker `state` (`CLOSED`, `OPEN`, or `HALF_OPEN`), the `openedAt` timestamp (non-null only while the breaker is `OPEN`), and the `lastError` that most recently tripped it.
+| Field | Meaning |
+|---|---|
+| `state` | `CLOSED`, `OPEN` or `HALF_OPEN`, as above |
+| `openedAt` | When the provider was marked unhealthy. Non-null only while `OPEN`. |
+| `lastError` | The most recent failure that caused it, or `null` |
 
-## What your app sees while the breaker is open
+## What to do on your side
 
-`POST /v1/sessions` fails. Calls already bridged are unaffected, and existing
-sessions keep working until they expire, because the breaker sits on allocation
-rather than on routing. Retry session creation with backoff; `GET
-/v1/health/cpaas` tells you whether it is worth retrying yet.
+**Retry session creation with backoff.** A refusal while the provider is
+degraded is not a permanent failure and not a problem with your request.
+
+**Poll `GET /v1/health/cpaas` rather than retrying blindly.** It tells you
+whether a retry is worth making yet, and it costs you nothing: no auth, no
+rate limit against your tier.
+
+**Do not tear down sessions you already have.** They still work. Ending them
+because session creation is failing is the one reaction that turns our outage
+into yours.
+
+**Keep a path that does not need us.** For the window where new sessions
+cannot be created, the safe fallback is your own: hold the order, retry, or
+put the two people in touch through whatever channel you used before Relavoi.
+Tell us if that window ever costs you something, because that is the number
+that decides what we build next here.

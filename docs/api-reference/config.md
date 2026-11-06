@@ -36,7 +36,7 @@ curl https://api.relavoi.com/v1/config \
 ```json
 {
   "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "name": "Chowdeck",
+  "name": "Example Logistics",
   "tier": "GROWTH",
   "status": "ACTIVE",
   "webhookUrl": null,
@@ -152,7 +152,7 @@ Returns the full, updated config object (same shape as `GET /config`).
 ```json
 {
   "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "name": "Chowdeck",
+  "name": "Example Logistics",
   "tier": "GROWTH",
   "status": "ACTIVE",
   "webhookUrl": "https://client.example.com/hook",
@@ -198,7 +198,7 @@ curl https://api.relavoi.com/v1/tenants/me \
 {
   "tenant": {
     "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "name": "Chowdeck",
+    "name": "Example Logistics",
     "tier": "GROWTH",
     "status": "ACTIVE",
     "webhookUrl": null,

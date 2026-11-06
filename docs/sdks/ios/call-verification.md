@@ -69,7 +69,7 @@ struct BannerView: View {
 ```
 
 :::note context is not populated yet
-`context` is reserved for a human-readable string like "Your Chowdeck rider is calling", but the backend does not populate it today: it is always `nil`. Always provide a fallback label as shown above.
+`context` is reserved for a human-readable string like "Your rider is calling", carrying your own brand, but the backend does not populate it today: it is always `nil`. Always provide a fallback label as shown above.
 :::
 
 ## VerificationResult struct

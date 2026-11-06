@@ -1,63 +1,84 @@
 ---
 title: Call flow and routing
 sidebar_label: Call flow
-description: End-to-end sequence of a masked call from agent dial to bridged customer, plus the latency budget that keeps p99 routing under 500 ms.
+description: What happens between your agent tapping call and your customer's phone ringing, what your app sees at each step, and the routing latency you can hold us to.
 ---
 
 # Call flow and routing
 
-This guide walks the full request path of a masked voice call and shows where each millisecond goes.
+This guide walks a masked voice call from the tap to the bridge, from the
+outside: what each party does, and what your app can observe at each step.
 
 ## Primary call flow
 
-The agent taps "Call customer" in your app. The SDK already knows the active session and proxy number. From there:
+The agent taps "Call customer" in your app. The SDK already knows the active
+session and its proxy number. From there:
 
 ```mermaid
 sequenceDiagram
-  participant Agent as Agent (Driver app)
+  participant Agent as Agent (driver app)
   participant SDK as Relavoi SDK
   participant Dialer as Native dialer
-  participant Carrier as Telephony Provider
-  participant WH as Webhook Handler
-  participant CR as Call Router
-  participant Redis
+  participant Network as Nigerian mobile network
+  participant Relavoi
   participant Customer as Customer phone
 
   Agent->>SDK: tap "Call customer"
   SDK->>Dialer: open tel://+2349000000100
-  Dialer->>Carrier: PSTN call to proxy
-  Carrier->>WH: POST /v1/webhooks/cpaas/voice (HMAC signed)
-  WH->>WH: verify signature + dedupe event_id
-  WH->>CR: route(proxy, caller)
-  CR->>Redis: HGET session:proxy:+2349000000100
-  Redis-->>CR: session sess_a1b2c3d4 (state=ACTIVE)
-  CR->>CR: caller matches party_a -> forward to party_b
-  CR-->>WH: <Dial>+2349000000002</Dial>
-  WH-->>Carrier: 200 OK + dial XML
-  Carrier->>Customer: ring with caller ID +2349000000100
-  Customer-->>Carrier: answer
-  Carrier->>WH: call.answered event
-  WH->>Redis: SET session.activated_at
+  Dialer->>Network: PSTN call to the proxy number
+  Network->>Relavoi: inbound call on the proxy
+  Relavoi->>Relavoi: identify the caller, pick the other party
+  Relavoi-->>Network: connect this call to party B
+  Network->>Customer: ring, caller ID +2349000000100
+  Customer-->>Network: answer
+  Network->>Relavoi: the call is answered
+  Relavoi-->>SDK: call.answered
 ```
 
-## Latency budget
+Three things in that sequence are worth holding on to.
 
-Our routing SLO is `p99 < 500 ms` from webhook receipt to dial response. The budget breakdown:
+**Neither phone ever learns the other's number.** The agent dials the proxy,
+and the customer's handset shows the proxy as the caller ID. That is the whole
+product, and it is why the proxy number is the only number either side sees.
 
-| Stage | Budget | Notes |
-|-------|--------|-------|
-| TLS + HTTP parse | 20 ms | Fastify with HTTP/2 |
-| HMAC signature verify | 5 ms | `crypto.timingSafeEqual` |
-| Redis dedup lookup | 5 ms | `GET webhook:dedup:{event_id}` |
-| Redis session lookup | 10 ms | `HGETALL session:proxy:{number}` |
-| Routing decision | 5 ms | Pure CPU, no I/O |
-| Response serialization | 10 ms | XML build |
-| Network back to carrier | 30 ms | Same-region (Cape Town) |
-| **Total p50** | ~85 ms | |
-| **Total p99 headroom** | 415 ms | Absorbs GC pauses, retries |
+**The customer needs no app.** The leg that reaches them is an ordinary call on
+the Nigerian mobile network, so it rings on a feature phone exactly as it rings
+on a smartphone, with no data connection.
 
-Anything that pushes routing onto PostgreSQL violates the budget. The Call Router is explicitly designed to never hit Postgres on the hot path.
+**Your app is told, rather than having to ask.** Every state change arrives as
+a webhook and on the event stream: `call.incoming`, `call.answered`,
+`call.ended`, `call.failed`. See [Webhook
+integration](./webhook-integration).
 
-:::tip Observe your own latency
-The `routing.latency.ms` metric is surfaced per tenant in [Analytics](../api-reference/analytics). Set an alert at p99 > 400 ms to catch degradation before customers notice.
+## Routing latency
+
+Our routing target is **p99 under 500 ms**, measured from the moment the
+network hands us the call to the moment we answer with where to connect it.
+That window is the part of call setup we own; the rest of what a caller
+experiences before the other phone rings belongs to the mobile network.
+
+This is a target we hold ourselves to, not a measured average we are
+publishing.
+
+:::note Per-tenant routing latency is not exposed yet
+This page previously told you to alert on a `routing.latency.ms` metric in
+Analytics. No such metric exists: routing latency is measured, but only on our
+own side, and nothing returns it per workspace. What
+[Analytics](../api-reference/analytics) does give you is call volume, answer
+rates, outcomes and durations. If a latency figure is something you need to
+hold us to, ask us and we will expose it.
 :::
+
+## When a call does not connect
+
+A call that reaches a proxy with no live session for the caller is not dropped
+in silence. The caller hears whichever behaviour your workspace is configured
+for, and the attempt is still recorded against the session:
+
+| `expiredCallBehavior` | What the caller hears |
+|---|---|
+| `DEAD_LINE` | A short message that the number is no longer in service |
+| `REDIRECT_SUPPORT` | The call is connected to your support line |
+| `PLAY_MESSAGE` | Your own recorded message |
+
+Set it with `PATCH /v1/config`. See [Config](../api-reference/config).

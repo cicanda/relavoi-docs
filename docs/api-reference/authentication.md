@@ -159,7 +159,7 @@ Programmatic tenant provisioning. The dashboard wraps this with extra UX, but yo
 curl -X POST https://api.relavoi.com/v1/auth/signup \
   -H "Content-Type: application/json" \
   -d '{
-    "companyName": "Chowdeck Production",
+    "companyName": "Example Logistics Production",
     "email": "ops@example.com",
     "password": "YOUR_PASSWORD",
     "companySize": "50-200",
@@ -234,7 +234,7 @@ curl -X POST https://api.relavoi.com/v1/auth/dashboard/login \
   },
   "tenant": {
     "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-    "name": "Chowdeck",
+    "name": "Example Logistics",
     "tier": "GROWTH",
     "status": "ACTIVE"
   }

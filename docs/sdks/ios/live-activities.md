@@ -37,7 +37,7 @@ final class CallActivityController {
           try? await self.liveActivity.start(
             sessionId: sessionId,
             proxyNumber: "+2349000000100",
-            otherPartyLabel: "Chowdeck rider",
+            otherPartyLabel: "Delivery rider",
             verified: true
           )
         }
@@ -139,7 +139,7 @@ await liveActivity.update(
   state: RelavoiCallAttributes.State(
     elapsedSeconds: 42,
     verified: true,
-    otherPartyLabel: "Chowdeck rider"
+    otherPartyLabel: "Delivery rider"
   )
 )
 ```

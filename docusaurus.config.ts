@@ -22,8 +22,21 @@ const config: Config = {
   organizationName: 'relavoi',
   projectName: 'relavoi-docs',
 
-  onBrokenLinks: 'warn',
-  onBrokenMarkdownLinks: 'warn',
+  // Both throw rather than warn. A warning in a build log is a broken link
+  // that ships: the build goes green, Vercel deploys, and the 404 is found by
+  // a reader. Six broken docs deep links reached the marketing site that way
+  // (see CLAIMS.md in relavoi-site), and nothing in this repository would have
+  // stopped them.
+  onBrokenLinks: 'throw',
+  onBrokenAnchors: 'throw',
+
+  markdown: {
+    hooks: {
+      // The top-level onBrokenMarkdownLinks is deprecated in Docusaurus 3 and
+      // removed in 4; this is the same setting in its current home.
+      onBrokenMarkdownLinks: 'throw',
+    },
+  },
 
   i18n: {
     defaultLocale: 'en',

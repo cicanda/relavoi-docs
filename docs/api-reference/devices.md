@@ -48,7 +48,7 @@ curl -X POST https://api.relavoi.com/v1/devices/token \
     "userPhone": "+2349000000001",
     "token": "fcm_ekQ9...c1a",
     "platform": "android",
-    "appBundleId": "com.chowdeck.rider"
+    "appBundleId": "com.example.rider"
   }'
 ```
 

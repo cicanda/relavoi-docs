@@ -86,7 +86,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 ```dart reference
 class VerificationResult {
   final bool verified;
-  final String? context;      // e.g. "Your Chowdeck rider is calling"
+  final String? context;      // e.g. "Your rider is calling", in your brand
   final String? sessionId;
   final String? proxyNumber;
 }
