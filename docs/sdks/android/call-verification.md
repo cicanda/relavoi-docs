@@ -29,7 +29,7 @@ class HomeFragment : Fragment() {
     super.onResume()
     if (Relavoi.verification.isCallActive()) {
       viewLifecycleOwner.lifecycleScope.launch {
-        val result = Relavoi.verification.verify(userPhone = "+2348087654321")
+        val result = Relavoi.verification.verify(userPhone = "+2349000000002")
         showBanner(result)
       }
     }

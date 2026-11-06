@@ -34,7 +34,7 @@ Auth: Bearer JWT (tenant), the same as the rest of the sessions API.
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| customerPhone | string | yes | E.164, e.g. `+2349090000002`. Becomes the new party B. |
+| customerPhone | string | yes | E.164, e.g. `+2349000000002`. Becomes the new party B. |
 
 **Request**
 
@@ -42,7 +42,7 @@ Auth: Bearer JWT (tenant), the same as the rest of the sessions API.
 curl -X PATCH https://api.relavoi.com/v1/sessions/67701c43-2a23-4233-b723-80d2b94dacf5/target \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
-  -d '{"customerPhone":"+2349090000002"}'
+  -d '{"customerPhone":"+2349000000002"}'
 ```
 
 **Response** `200 OK`, the full session, identical in shape to `GET /v1/sessions/:id`:
@@ -51,7 +51,7 @@ curl -X PATCH https://api.relavoi.com/v1/sessions/67701c43-2a23-4233-b723-80d2b9
 {
   "id": "67701c43-2a23-4233-b723-80d2b94dacf5",
   "tenantId": "f656ac1b-3b5d-4af0-8ff1-c4cbc1076144",
-  "proxyNumber": "+2342017001428",
+  "proxyNumber": "+2349000000100",
   "state": "ACTIVE",
   "directionMode": "BIDIRECTIONAL",
   "metadata": { "orderId": "ORD-9281" },

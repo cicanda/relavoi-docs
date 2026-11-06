@@ -46,8 +46,8 @@ curl -X POST https://api.relavoi.com/v1/sessions \
   -H "Authorization: Bearer $RELAVOI_JWT" \
   -H "Content-Type: application/json" \
   -d '{
-    "agentPhone": "+2348012345678",
-    "customerPhone": "+2348087654321",
+    "agentPhone": "+2349000000001",
+    "customerPhone": "+2349000000002",
     "directionMode": "BIDIRECTIONAL",
     "gracePeriodMinutes": 15,
     "recordingEnabled": false,
@@ -61,7 +61,7 @@ Response:
 {
   "id": "5661962a-d7ad-4aea-88a0-210388e1285b",
   "tenantId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "proxyNumber": "+2348000000009",
+  "proxyNumber": "+2349000000100",
   "state": "ACTIVE",
   "directionMode": "BIDIRECTIONAL",
   "metadata": { "orderId": "ORD-9281" },
@@ -125,7 +125,7 @@ Response:
 {
   "id": "5661962a-d7ad-4aea-88a0-210388e1285b",
   "tenantId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "proxyNumber": "+2348000000009",
+  "proxyNumber": "+2349000000100",
   "state": "GRACE_PERIOD",
   "directionMode": "BIDIRECTIONAL",
   "metadata": { "orderId": "ORD-9281" },

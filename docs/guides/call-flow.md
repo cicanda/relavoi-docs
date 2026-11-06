@@ -24,17 +24,17 @@ sequenceDiagram
   participant Customer as Customer phone
 
   Agent->>SDK: tap "Call customer"
-  SDK->>Dialer: open tel://+2348000000001
+  SDK->>Dialer: open tel://+2349000000100
   Dialer->>Carrier: PSTN call to proxy
   Carrier->>WH: POST /v1/webhooks/cpaas/voice (HMAC signed)
   WH->>WH: verify signature + dedupe event_id
   WH->>CR: route(proxy, caller)
-  CR->>Redis: HGET session:proxy:+2348000000001
+  CR->>Redis: HGET session:proxy:+2349000000100
   Redis-->>CR: session sess_a1b2c3d4 (state=ACTIVE)
   CR->>CR: caller matches party_a -> forward to party_b
-  CR-->>WH: <Dial>+2348087654321</Dial>
+  CR-->>WH: <Dial>+2349000000002</Dial>
   WH-->>Carrier: 200 OK + dial XML
-  Carrier->>Customer: ring with caller ID +2348000000001
+  Carrier->>Customer: ring with caller ID +2349000000100
   Customer-->>Carrier: answer
   Carrier->>WH: call.answered event
   WH->>Redis: SET session.activated_at

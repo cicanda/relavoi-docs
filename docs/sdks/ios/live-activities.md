@@ -36,7 +36,7 @@ final class CallActivityController {
         Task {
           try? await self.liveActivity.start(
             sessionId: sessionId,
-            proxyNumber: "+2348000000001",
+            proxyNumber: "+2349000000100",
             otherPartyLabel: "Chowdeck rider",
             verified: true
           )

@@ -1,119 +1,65 @@
 ---
 title: Security model
 sidebar_label: Security
-description: Encryption at rest and in transit, phone number handling, API key model, and NDPR compliance posture for Relavoi.
+description: What Relavoi guarantees about your users' phone numbers, encryption at rest and in transit, the API key model, and our honest NDPR position.
 ---
 
 # Security model
 
-This page is the canonical reference for how Relavoi protects credentials, phone numbers and tenant data.
+This page is the canonical statement of what Relavoi guarantees about
+credentials, phone numbers and workspace data. It describes the guarantees
+rather than the machinery behind them, and it is explicit about what we do not
+have yet.
 
-## Encryption at rest
+## Phone numbers
 
-Phone numbers are encrypted with **AES-256-GCM**, in
-`sessions.party_a_phone_enc` and `party_b_phone_enc`. They are the only
-encrypted fields: everything else a session holds is routing metadata.
+Four guarantees, in the order they matter to your users.
 
-How the key is reached:
+**A number is encrypted at rest.** Both parties' numbers are stored only as
+**AES-256-GCM** ciphertext, under a key derived for your workspace alone.
+Nobody's key opens another workspace's records, and a key can be replaced
+without downtime and without making older records unreadable.
 
-```text
-Key material, held in AWS Secrets Manager and read at boot
-    -> Per-tenant key: PBKDF2-SHA256(material, tenant id, 100,000 iterations)
-        -> AES-256-GCM, with the key's id written into the ciphertext
-```
+**We never hand a number back.** Not to your app, not to your dashboard, not
+to the other party. Reading a session returns the **last four digits** of each
+party and nothing more, so a seller can tell one order from another, and no
+response from this API has ever carried a number anyone could dial.
 
-Keys are versioned in a ring, and a ciphertext names the key that wrote it, so
-a key can be replaced without downtime and old records stay readable. Derived
-keys are memoised per tenant, because deriving one per call would put 100,000
-PBKDF2 iterations on the routing path.
+**A number is never written to a log in plaintext.** Not in a request line,
+not in a query string, not in an error. A plaintext number found in any
+Relavoi log or response is a P0 incident, not a tidy-up.
 
-There is no KMS-managed master key, no per-record data key and no envelope
-encryption, and no key has been rotated on a schedule. This page described all
-three for months; none of it was ever built.
+**A number is decrypted only when the number itself is needed.** That is the
+request in which you create the session, the instant of dialling, when we have
+to tell the network where to ring, and a change of a session's second party,
+where we compare against both existing parties so that nobody can be bridged
+to themselves. It is never decrypted to search, to report, to bill or to
+display. Replacing an encryption key and checking that a backup still opens
+read it too, and both are audited operator actions rather than part of serving
+your traffic.
 
-A number exists in plaintext in two places: the request that creates the
-session, and the routing path at the moment of dialling, where the Call Router
-decrypts it to tell the carrier where to connect the call.
+Matching an incoming caller to their session does not require the number
+itself. We match on an irreversible pseudonym, and because it is derived with
+a secret only the platform holds, somebody who obtained the stored values
+could not test a guessed number against them.
 
-There is a third place it is held, and it is not plaintext. A carrier retries a
-callback it thinks failed, so the routing answer is cached for 60 seconds and
-replayed rather than recomputed, which is what stops one incoming call becoming
-two outgoing ones. That cached answer names the number to dial, so it is sealed
-with the same key that encrypts the number in the database and opened only when
-a retry replays it.
-
-### The lookup hashes
-
-`party_a_phone_hash_v2` and `party_b_phone_hash_v2` are **HMAC-SHA256 keyed by
-a secret held only by the platform**, separate from the encryption keyring.
-They let the routing layer match an incoming caller without decrypting
-anything, which is their purpose, and they keep numbers out of indexes and
-logs.
-
-Being secret-keyed is what makes them a real pseudonym rather than a
-reformatted number. The same subscriber hashes to the same value in every
-workspace, which is deliberate: it is how the number pool can tell that one
-person already holds a candidate number under some other tenant, and the pool
-is shared across all of them. It also means nobody who obtains the column can
-test a guessed number against it without the key.
-
-The key is independent of the encryption keyring on purpose, so rotating an
-encryption key never moves a hash the routing path matches on.
-
-:::note What used to be here
-Until 2 November 2026 there was a second pair of columns,
-`party_a_phone_hash` and `party_b_phone_hash`, keyed by the **tenant id**. A
-tenant id is not secret: it appears in API responses, dashboard URLs and JWT
-claims, so anyone holding those columns and a workspace id could test candidate
-numbers against them, and the Nigerian mobile range is small enough to walk.
-They were an index that kept numbers out of logs, and this page described them
-as more than that.
-
-They are gone. Nothing reads them, nothing writes them, and the columns have
-been dropped, along with the copy of the routing index that was kept under
-them and the per-tenant hash that used to travel inside an SDK token issued to
-a handset.
-
-`device_tokens.user_phone_hash` was the same family in the table that resolves
-a push notification to a handset, and it went the same way on the same day.
-Device registration, the push lookup and the presence key are all keyed by the
-platform secret now. Nothing in the service computes a per-tenant hash any
-more.
-:::
+If you spot a plaintext MSISDN in any Relavoi log or response, file a security
+bug at `security@relavoi.com`. That is a P0.
 
 ## Encryption in transit
 
 - **External**: TLS from Let's Encrypt, terminated at the edge, with HSTS
   `max-age=63072000; includeSubDomains` on every host. Not preloaded: that is a
   submission to a browser list which is slow to undo.
-- **Internal**: the database and cache sit on a Docker network with no gateway,
-  so neither has a route off the host: not to the internet, not to the instance
-  metadata service. The API reaches them by service name and nothing reaches
-  them from outside.
+- **Internal**: the database and cache have no route off the host at all,
+  inbound or outbound. Nothing reaches them from the internet.
 - **WebSocket**: WSS, with the JWT presented on the handshake. Device tokens
   are refused on this path.
 
-## Phone numbers never logged in plaintext
-
-The logger redacts by field name. Every field a number travels in is on an
-explicit list (`agentPhone`, `customerPhone`, `userPhone`, `callerNumber`,
-`destinationNumber`, the `party_*_phone*` columns and the carrier's own
-spellings), and a redacted value is replaced with `[REDACTED]` rather than
-partially masked.
-
-- Database queries use bound parameters, so a number never reaches a query log
-  by string interpolation
-- Carrier callback paths carry a secret token, so the request log masks the
-  path and drops the query string
-- There is no APM or crash reporter in the stack, so there is no third party
-  for a number to be redacted before reaching
-
-The list is a list: a new field carrying a number has to be added to it. No
-lint rule enforces that, which this page used to claim. Review of anything
-that logs a request body is the control, and a plaintext number in a log is a
-P0.
-
-If you spot a plaintext MSISDN in any Relavoi log or response, file a security bug at `security@relavoi.com`. That is a P0.
+Carrier callbacks arrive at Relavoi over the public internet and securing them
+is our responsibility, not yours. Nothing you build touches that path. The
+webhooks **we** send **you** are a different thing, and you do verify those:
+see [Webhook integration](./webhook-integration).
 
 ## API key and secret model
 
@@ -123,11 +69,11 @@ they belong to, so a sandbox credential can never be mistaken for a live one:
 your workspace is verified (for example `rk_live_dd38d52e...`,
 `rs_live_e028efcc...`).
 
-- `apiKey` is a SHA-256 hash stored in `tenants.api_key_hash`
-- `apiSecret` is a bcrypt hash (cost factor 12) stored in `tenants.api_secret_hash`
-- Neither value is recoverable. Rotation via `POST /v1/auth/rotate-key` (OWNER only) issues a new pair and immediately invalidates the old.
-
-The credentials never appear in dashboard URLs, logs, or webhook payloads.
+- Both values are stored only as one-way hashes. Neither is recoverable by us,
+  so neither can be read back out of a support request or a breach.
+- Rotation via `POST /v1/auth/rotate-key` (OWNER only) issues a new pair and
+  immediately invalidates the old.
+- The credentials never appear in dashboard URLs, logs, or webhook payloads.
 
 SDKs trade the key and secret for a short-lived **JWT (15 min TTL)** at startup
 and refresh transparently. The JWT carries `tenantId` and `tier`. Tenant-user
@@ -141,10 +87,8 @@ can be read back out of it. `POST /v1/auth/sdk-token`, called from your own
 backend, mints a token for **one user** carrying only the scopes you ask for,
 for fifteen minutes.
 
-- The subject is a hash of the number, never the number, and it is the
-  secret-keyed one described above. It used to be the per-tenant hash, which
-  anyone holding the token and a workspace id could have tested a guess
-  against.
+- The subject identifies the user without being their number, and cannot be
+  turned back into one.
 - A route accepts a device token only if it has opted in by name, so the
   default for everything is refusal.
 - Reading a session the user is not a party to answers `404`, the same as one
@@ -156,9 +100,11 @@ See [SDK tokens](./sdk-tokens).
 
 ## NDPR compliance
 
-Relavoi is built around the Nigeria Data Protection Regulation 2019 (and the NDPA 2023):
+Relavoi is built around the Nigeria Data Protection Regulation 2019 (and the
+NDPA 2023). Where we fall short of it, this list says so.
 
-- **Data minimization**: phone numbers encrypted at rest, hashed for lookup, never logged
+- **Data minimization**: numbers are encrypted at rest, matched without being
+  decrypted, and never logged.
 - **Retention limits**: 90 days is the intended default for call data. The
   deletion job that enforces it is not built yet, so today data stays until it
   is removed by hand on request.
@@ -166,11 +112,12 @@ Relavoi is built around the Nigeria Data Protection Regulation 2019 (and the NDP
   notification window is in place yet.
 - **Data Processing Agreements**: not yet signed with the telephony provider.
   In progress.
-- **Right to erasure**: no self-service deletion endpoint exists yet. Ask us and we will remove a tenant's session and call data by hand
+- **Right to erasure**: no self-service deletion endpoint exists yet. Ask us
+  and we will remove a tenant's session and call data by hand.
 
-We hold no SOC 2 report and no ISO certification. This page offered a SOC 2
-Type II report that does not exist. If your procurement process needs one, tell
-us and we will tell you honestly where we are.
+We hold no SOC 2 report and no ISO certification. This page once offered a SOC
+2 Type II report that does not exist. If your procurement process needs one,
+tell us and we will tell you honestly where we are.
 
 ## Abuse prevention
 
@@ -180,8 +127,8 @@ us and we will tell you honestly where we are.
 - A session has a hard maximum duration, 120 minutes by default, after which it
   expires whether or not your app ended it
 - A number can be quarantined, which takes it out of the pool and replaces it.
-  An operator does that by hand after a report; there is no automatic detection
-  and no time commitment on it
+  An operator does that by hand after a report; there is no time commitment
+  on it
 
 There is no anomaly detection. This page claimed unusual call-volume patterns
 triggered a webhook to your security team, and nothing of the kind exists.

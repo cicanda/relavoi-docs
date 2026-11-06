@@ -29,7 +29,7 @@ Auth: Bearer JWT (tenant).
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| agentPhone | string | yes | Nigerian mobile. `+2348012345678`, `2348012345678`, `08012345678` and `8012345678` are all accepted and normalised. See [Supported numbers](./errors#supported-numbers) |
+| agentPhone | string | yes | Nigerian mobile. `+2349000000001`, `2349000000001`, `09000000001` and `9000000001` are all accepted and normalised. See [Supported numbers](./errors#supported-numbers) |
 | customerPhone | string | yes | Nigerian mobile, same forms |
 | metadata | object | no | Free-form key/value context |
 | gracePeriodMinutes | integer | no | Default 15 |
@@ -45,8 +45,8 @@ curl -X POST https://api.relavoi.com/v1/sessions \
   -H "Authorization: Bearer $RELAVOI_JWT" \
   -H "Content-Type: application/json" \
   -d '{
-    "agentPhone": "+2348012345678",
-    "customerPhone": "+2348087654321",
+    "agentPhone": "+2349000000001",
+    "customerPhone": "+2349000000002",
     "directionMode": "BIDIRECTIONAL",
     "gracePeriodMinutes": 15,
     "recordingEnabled": false,
@@ -60,7 +60,7 @@ curl -X POST https://api.relavoi.com/v1/sessions \
 {
   "id": "5661962a-d7ad-4aea-88a0-210388e1285b",
   "tenantId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "proxyNumber": "+2348000000009",
+  "proxyNumber": "+2349000000100",
   "state": "ACTIVE",
   "directionMode": "BIDIRECTIONAL",
   "metadata": { "orderId": "DOC-1" },
@@ -116,7 +116,7 @@ curl "https://api.relavoi.com/v1/sessions?state=ACTIVE&limit=20" \
     {
       "id": "5661962a-d7ad-4aea-88a0-210388e1285b",
       "tenantId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-      "proxyNumber": "+2348000000009",
+      "proxyNumber": "+2349000000100",
       "state": "ACTIVE",
       "directionMode": "BIDIRECTIONAL",
       "metadata": { "orderId": "DOC-1" },
@@ -172,7 +172,7 @@ curl https://api.relavoi.com/v1/sessions/5661962a-d7ad-4aea-88a0-210388e1285b \
 {
   "id": "5661962a-d7ad-4aea-88a0-210388e1285b",
   "tenantId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "proxyNumber": "+2348000000009",
+  "proxyNumber": "+2349000000100",
   "state": "ACTIVE",
   "directionMode": "BIDIRECTIONAL",
   "metadata": { "orderId": "DOC-1" },
@@ -226,7 +226,7 @@ curl -X PATCH https://api.relavoi.com/v1/sessions/5661962a-d7ad-4aea-88a0-210388
 {
   "id": "5661962a-d7ad-4aea-88a0-210388e1285b",
   "tenantId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "proxyNumber": "+2348000000009",
+  "proxyNumber": "+2349000000100",
   "state": "ACTIVE",
   "directionMode": "BIDIRECTIONAL",
   "metadata": { "note": "x", "orderId": "DOC-1" },
@@ -272,7 +272,7 @@ curl -X POST https://api.relavoi.com/v1/sessions/5661962a-d7ad-4aea-88a0-210388e
 {
   "id": "5661962a-d7ad-4aea-88a0-210388e1285b",
   "tenantId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
-  "proxyNumber": "+2348000000009",
+  "proxyNumber": "+2349000000100",
   "state": "GRACE_PERIOD",
   "directionMode": "BIDIRECTIONAL",
   "metadata": { "note": "x", "orderId": "DOC-1" },
@@ -303,7 +303,7 @@ curl -X POST https://api.relavoi.com/v1/sessions/5661962a-d7ad-4aea-88a0-210388e
 
 Auth: Bearer JWT (tenant). Called by the SDK to drive the call-verification banner; not typically called by your backend directly.
 
-The tenant is derived from the JWT. Pass the user's **raw phone number** as `userPhone`. The backend normalises it, then hashes it internally, with a secret held only by the platform, to look up an active session. A local form such as `08012345678` works, which matters because that is often what a handset reports.
+The tenant is derived from the JWT. Pass the user's **raw phone number** as `userPhone`. The backend normalises it, then hashes it internally, with a secret held only by the platform, to look up an active session. A local form such as `09000000001` works, which matters because that is often what a handset reports.
 
 | Query | Type | Required | Description |
 |-------|------|----------|-------------|
@@ -312,7 +312,7 @@ The tenant is derived from the JWT. Pass the user's **raw phone number** as `use
 **Request**
 
 ```bash
-curl "https://api.relavoi.com/v1/sessions/verify?userPhone=+2348012340001" \
+curl "https://api.relavoi.com/v1/sessions/verify?userPhone=+2349000000001" \
   -H "Authorization: Bearer $RELAVOI_JWT"
 ```
 
@@ -322,7 +322,7 @@ curl "https://api.relavoi.com/v1/sessions/verify?userPhone=+2348012340001" \
 {
   "verified": true,
   "sessionId": "5661962a-d7ad-4aea-88a0-210388e1285b",
-  "proxyNumber": "+2348000000009",
+  "proxyNumber": "+2349000000100",
   "metadata": { "orderId": "DOC-1" }
 }
 ```

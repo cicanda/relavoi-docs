@@ -43,9 +43,9 @@ the reference:
 - **Push notifications before a call.** The SDKs register device tokens today,
   which is the half that works. Nothing sends a notification yet.
 
-Automatic failover between carriers is also not live: the circuit breaker is
-real and monitors health, but there is no secondary pool to fail over to. See
-[Failover](./guides/failover).
+Automatic failover between carriers is also not live. We monitor the
+provider's health continuously, but there is no secondary pool to fail over
+to. See [Failover](./guides/failover).
 
 ## Five-layer architecture
 
@@ -90,11 +90,11 @@ A lightweight Kotlin, Swift or Dart library. It handles short-lived JWT refresh,
 
 ### Layer 3: Relavoi Platform
 
-The control plane. Allocates proxy numbers atomically, routes calls in under 500 ms p99, deduplicates telephony webhooks, and fans out events to your registered webhooks.
+The control plane. Allocates proxy numbers so that two calls can never be crossed onto the same number, routes calls against a sub-500 ms p99 budget, never lets a repeated telephony callback place a second call, and fans out events to your registered webhooks.
 
 ### Layer 4: Telephony Provider
 
-We route Nigerian voice over a licensed telephony provider optimized for in-region pricing and PSTN routing. Its health is monitored by a circuit breaker; a second provider to fail over to is on the roadmap rather than in place.
+We route Nigerian voice over a licensed telephony provider optimized for in-region pricing and PSTN routing. We monitor its health continuously; a second provider to fail over to is on the way rather than in place.
 
 ### Layer 5: Telco Infrastructure
 

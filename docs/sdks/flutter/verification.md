@@ -20,7 +20,7 @@ Native call detection is the one place the Flutter SDK drops to a platform chann
 
 ## Basic usage
 
-Poll `isCallActive()` at a natural UI moment (typically when your screen resumes) and call `verify()` when a call is in progress. A phone number passed here can be the local `0803...` form, `234...`, or full `+234...` (for example `+2348087654321`). Separators such as spaces and brackets are stripped for you.
+Poll `isCallActive()` at a natural UI moment (typically when your screen resumes) and call `verify()` when a call is in progress. A phone number passed here can be the local `0803...` form, `234...`, or full `+234...` (for example `+2349000000002`). Separators such as spaces and brackets are stripped for you.
 
 ```dart
 import 'package:flutter/material.dart';
@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Future<void> _maybeVerify() async {
     if (await Relavoi.instance.verification.isCallActive()) {
       final result =
-          await Relavoi.instance.verification.verify('+2348087654321');
+          await Relavoi.instance.verification.verify('+2349000000002');
       setState(() => _result = result);
     }
   }

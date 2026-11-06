@@ -47,8 +47,8 @@ info:
     ## Conventions
 
     - Timestamps are ISO 8601 with a `Z` offset.
-    - Phone numbers are Nigerian mobile numbers. `+2348012345678`,
-      `08012345678` and `8012345678` are all accepted and normalised to E.164.
+    - Phone numbers are Nigerian mobile numbers. `+2349000000001`,
+      `09000000001` and `9000000001` are all accepted and normalised to E.164.
       Anything else is refused with `422 number-not-supported`.
     - Money is an object: integer `kobo`, a formatted `display`, and `naira`.
     - Lists are cursor-paginated. Pass `pagination.after` back as `after`.
@@ -151,7 +151,7 @@ components:
         proxyNumber:
           type: string
           description: The number both parties dial. E.164.
-          examples: ["+2342017001428"]
+          examples: ["+2349000000100"]
         agentPhoneMasked:
           type: string
           description: |
@@ -366,7 +366,7 @@ components:
         numbers:
           type: array
           description: The numbers themselves, in E.164.
-          items: { type: string, examples: ["+2348000000001"] }
+          items: { type: string, examples: ["+2349000000100"] }
         explanation:
           type: string
           description: |
@@ -588,7 +588,7 @@ paths:
                 userPhone:
                   type: string
                   description: The user this token is for. A Nigerian mobile number.
-                  examples: ["+2349091231192"]
+                  examples: ["+2349000000002"]
                 scope:
                   type: array
                   minItems: 1
@@ -1094,8 +1094,8 @@ paths:
             schema:
               type: object
               properties:
-                agentPhone: { type: string, examples: ["+2348031234421"] }
-                customerPhone: { type: string, examples: ["+2349091231192"] }
+                agentPhone: { type: string, examples: ["+2349000000001"] }
+                customerPhone: { type: string, examples: ["+2349000000002"] }
                 metadata:
                   type: object
                   additionalProperties: true
@@ -2049,7 +2049,7 @@ paths:
                 state: { type: string, maxLength: 100 }
                 contactName: { type: string, maxLength: 255 }
                 contactPhone:
-                  { type: string, example: "+2348012345678", description: E.164. }
+                  { type: string, example: "+2349000000001", description: E.164. }
                 website:
                   type: string
                   format: uri

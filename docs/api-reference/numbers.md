@@ -66,7 +66,7 @@ curl https://api.relavoi.com/v1/numbers/pool \
 {
   "held": 1,
   "limit": 1,
-  "numbers": ["+2348000000001"],
+  "numbers": ["+2349000000100"],
   "explanation": "A proxy number can carry many sessions at the same time, as long as no participant appears on it twice...",
   "pendingRequest": null
 }

@@ -4,7 +4,7 @@
     "title": "Relavoi API",
     "version": "1.0.0",
     "summary": "Phone number masking for Nigerian platforms.",
-    "description": "Relavoi connects two people by phone without either seeing the other's\nnumber. You create a session for a pair of Nigerian mobile numbers, we\nallocate a proxy number, and each party dials that proxy instead.\n\n## Authentication\n\nEvery endpoint except `/health` and `/auth/*` takes a bearer JWT.\n\nThere are two kinds, and they are not interchangeable:\n\n- An **SDK token**, from `POST /auth/token` with your API key and secret.\n  This is what a mobile app or your backend uses to create sessions.\n- A **dashboard token**, from `POST /auth/dashboard/login`. Some endpoints\n  are dashboard-only, and some are restricted further by the user's role.\n\nTokens last 15 minutes. Mint a new one rather than trying to refresh.\n\n## Conventions\n\n- Timestamps are ISO 8601 with a `Z` offset.\n- Phone numbers are Nigerian mobile numbers. `+2348012345678`,\n  `08012345678` and `8012345678` are all accepted and normalised to E.164.\n  Anything else is refused with `422 number-not-supported`.\n- Money is an object: integer `kobo`, a formatted `display`, and `naira`.\n- Lists are cursor-paginated. Pass `pagination.after` back as `after`.\n- Errors are RFC 7807 `application/problem+json`.\n",
+    "description": "Relavoi connects two people by phone without either seeing the other's\nnumber. You create a session for a pair of Nigerian mobile numbers, we\nallocate a proxy number, and each party dials that proxy instead.\n\n## Authentication\n\nEvery endpoint except `/health` and `/auth/*` takes a bearer JWT.\n\nThere are two kinds, and they are not interchangeable:\n\n- An **SDK token**, from `POST /auth/token` with your API key and secret.\n  This is what a mobile app or your backend uses to create sessions.\n- A **dashboard token**, from `POST /auth/dashboard/login`. Some endpoints\n  are dashboard-only, and some are restricted further by the user's role.\n\nTokens last 15 minutes. Mint a new one rather than trying to refresh.\n\n## Conventions\n\n- Timestamps are ISO 8601 with a `Z` offset.\n- Phone numbers are Nigerian mobile numbers. `+2349000000001`,\n  `09000000001` and `9000000001` are all accepted and normalised to E.164.\n  Anything else is refused with `422 number-not-supported`.\n- Money is an object: integer `kobo`, a formatted `display`, and `naira`.\n- Lists are cursor-paginated. Pass `pagination.after` back as `after`.\n- Errors are RFC 7807 `application/problem+json`.\n",
     "contact": {
       "name": "Relavoi support",
       "email": "support@relavoi.com"
@@ -204,7 +204,7 @@
             "type": "string",
             "description": "The number both parties dial. E.164.",
             "examples": [
-              "+2342017001428"
+              "+2349000000100"
             ]
           },
           "agentPhoneMasked": {
@@ -825,7 +825,7 @@
             "items": {
               "type": "string",
               "examples": [
-                "+2348000000001"
+                "+2349000000100"
               ]
             }
           },
@@ -1229,7 +1229,7 @@
                     "type": "string",
                     "description": "The user this token is for. A Nigerian mobile number.",
                     "examples": [
-                      "+2349091231192"
+                      "+2349000000002"
                     ]
                   },
                   "scope": {
@@ -2237,13 +2237,13 @@
                   "agentPhone": {
                     "type": "string",
                     "examples": [
-                      "+2348031234421"
+                      "+2349000000001"
                     ]
                   },
                   "customerPhone": {
                     "type": "string",
                     "examples": [
-                      "+2349091231192"
+                      "+2349000000002"
                     ]
                   },
                   "metadata": {
@@ -4186,7 +4186,7 @@
                   },
                   "contactPhone": {
                     "type": "string",
-                    "example": "+2348012345678",
+                    "example": "+2349000000001",
                     "description": "E.164."
                   },
                   "website": {

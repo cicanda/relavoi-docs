@@ -49,10 +49,10 @@ A failed creation (number pool exhausted, carrier error) transitions `PENDING` t
 
 ## Proxy numbers
 
-A proxy number is a real Nigerian MSISDN provisioned through our carrier pool. Proxy numbers are a finite resource, and the Number Pool Manager allocates them under three invariants:
+A proxy number is a real Nigerian MSISDN provisioned through our carrier pool. Proxy numbers are a finite resource, and we allocate them under three guarantees:
 
 1. **Pool sharing**. A single proxy may host multiple concurrent sessions as long as no participant overlaps between sessions on that proxy.
-2. **Participant non-overlap**. If session S1 on proxy P contains phones `+2348012345678` and `+2348087654321`, no other session on P may include either of those phones. This is enforced atomically via a Redis Lua script.
+2. **Participant non-overlap**. If session S1 on proxy P contains two parties, no other session on P may include either of them. Two calls can never be crossed onto the same number, and two sessions asking for a number in the same instant cannot both be given one that already carries either of their parties.
 3. **Cooldown**. After a session expires, the proxy number enters a 5-minute cooldown (configurable). During cooldown it cannot be reallocated, reducing the chance of a customer calling back and reaching a stranger.
 
 ## Direction modes

@@ -65,7 +65,7 @@ const device = await fetch("https://api.relavoi.com/v1/auth/sdk-token", {
     authorization: `Bearer ${tenant.accessToken}`,
   },
   body: JSON.stringify({
-    userPhone: "+2348012345678",
+    userPhone: "+2349000000001",
     scope: ["sessions:verify", "sessions:read", "devices:write"],
   }),
 }).then((r) => r.json());
@@ -85,7 +85,7 @@ device = requests.post(
     "https://api.relavoi.com/v1/auth/sdk-token",
     headers={"authorization": f"Bearer {tenant['accessToken']}"},
     json={
-        "userPhone": "+2348012345678",
+        "userPhone": "+2349000000001",
         "scope": ["sessions:verify", "sessions:read", "devices:write"],
     },
 ).json()

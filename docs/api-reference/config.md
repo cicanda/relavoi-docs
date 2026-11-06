@@ -141,7 +141,7 @@ curl -X PATCH https://api.relavoi.com/v1/config \
   -d '{
     "webhookUrl": "https://client.example.com/hook",
     "expiredCallBehavior": "REDIRECT_SUPPORT",
-    "supportPhone": "+2348000000001"
+    "supportPhone": "+2349000000200"
   }'
 ```
 
@@ -158,7 +158,7 @@ Returns the full, updated config object (same shape as `GET /config`).
   "webhookUrl": "https://client.example.com/hook",
   "defaultGracePeriod": 15,
   "expiredCallBehavior": "REDIRECT_SUPPORT",
-  "supportPhone": "+2348000000001",
+  "supportPhone": "+2349000000200",
   "recordingEnabled": false,
   "recordingConsentMode": "DEFAULT",
   "recordingConsentAudioUrl": null,

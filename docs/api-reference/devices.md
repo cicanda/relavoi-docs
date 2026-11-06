@@ -12,8 +12,8 @@ Registration works and the tokens are stored against the user and tenant. Nothin
 
 Auth: Bearer JWT, either a tenant SDK token (`POST /auth/token`) or a dashboard user token.
 
-Phone numbers are Nigerian mobile numbers. `+2348012345678`, `08012345678` and
-`8012345678` are all accepted and normalised to E.164; anything else is a `422
+Phone numbers are Nigerian mobile numbers. `+2349000000001`, `09000000001` and
+`9000000001` are all accepted and normalised to E.164; anything else is a `422
 number-not-supported`. See [Supported numbers](./errors#supported-numbers).
 
 ## Endpoints
@@ -33,7 +33,7 @@ Registers a new APNs/FCM device token or refreshes an existing one. The operatio
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
-| userPhone | string | yes | End-user Nigerian mobile, any accepted form, e.g. `+2348012345678` or `08012345678` |
+| userPhone | string | yes | End-user Nigerian mobile, any accepted form, e.g. `+2349000000001` or `09000000001` |
 | token | string | yes | APNs or FCM device token |
 | platform | string | yes | `ios` or `android` |
 | appBundleId | string | no | Client app bundle identifier |
@@ -45,7 +45,7 @@ curl -X POST https://api.relavoi.com/v1/devices/token \
   -H "Authorization: Bearer $RELAVOI_JWT" \
   -H "Content-Type: application/json" \
   -d '{
-    "userPhone": "+2348012345678",
+    "userPhone": "+2349000000001",
     "token": "fcm_ekQ9...c1a",
     "platform": "android",
     "appBundleId": "com.chowdeck.rider"
@@ -116,7 +116,7 @@ curl -X POST https://api.relavoi.com/v1/devices/presence \
   -H "Authorization: Bearer $RELAVOI_JWT" \
   -H "Content-Type: application/json" \
   -d '{
-    "userPhone": "+2348012345678",
+    "userPhone": "+2349000000001",
     "status": "online",
     "platform": "android"
   }'
@@ -146,7 +146,7 @@ Returns the most recently reported presence for a user.
 **Request**
 
 ```bash
-curl "https://api.relavoi.com/v1/devices/presence?userPhone=+2348012345678" \
+curl "https://api.relavoi.com/v1/devices/presence?userPhone=+2349000000001" \
   -H "Authorization: Bearer $RELAVOI_JWT"
 ```
 

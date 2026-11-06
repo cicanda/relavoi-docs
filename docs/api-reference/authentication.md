@@ -83,7 +83,7 @@ curl -X POST https://api.relavoi.com/v1/auth/sdk-token \
   -H "Authorization: Bearer $RELAVOI_JWT" \
   -H "Content-Type: application/json" \
   -d '{
-    "userPhone": "+2348012345678",
+    "userPhone": "+2349000000001",
     "scope": ["sessions:verify", "sessions:read", "devices:write"]
   }'
 ```

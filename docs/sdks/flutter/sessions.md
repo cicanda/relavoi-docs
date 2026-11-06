@@ -14,8 +14,8 @@ All session APIs are `Future`-returning and are reached through `Relavoi.instanc
 
 :::info Supported numbers
 Relavoi connects **Nigerian mobile numbers** today: `+234` followed by 10
-digits starting 7, 8 or 9. You can pass `+2348012345678`, `2348012345678`,
-`08012345678` or `8012345678` and the backend normalises it, so there is no
+digits starting 7, 8 or 9. You can pass `+2349000000001`, `2349000000001`,
+`09000000001` or `9000000001` and the backend normalises it, so there is no
 need to reformat what a user typed.
 
 Anything else comes back as `422` with type `number-not-supported`, and the
@@ -178,8 +178,8 @@ class Session {
 
 ```dart fragment
 final session = await Relavoi.instance.sessions.create(
-  agentPhone: '+2348012345678',
-  customerPhone: '+2348087654321',
+  agentPhone: '+2349000000001',
+  customerPhone: '+2349000000002',
   metadata: {'orderId': 'ORD-9281'},
 );
 
