@@ -19,7 +19,7 @@ function Cover() {
   return (
     <section
       style={{
-        background: '#0B1220',
+        background: '#0E1B2C',
         color: 'white',
         position: 'relative',
         overflow: 'hidden',
@@ -34,7 +34,7 @@ function Cover() {
           inset: 0,
           opacity: 0.04,
           backgroundImage:
-            'linear-gradient(#CBD5E1 1px, transparent 1px), linear-gradient(90deg, #CBD5E1 1px, transparent 1px)',
+            'linear-gradient(#EEF3F2 1px, transparent 1px), linear-gradient(90deg, #EEF3F2 1px, transparent 1px)',
           backgroundSize: '48px 48px',
         }}
       />
@@ -75,7 +75,7 @@ function Cover() {
                 style={{
                   marginTop: 10,
                   fontSize: 11,
-                  color: '#94A3B8',
+                  color: '#88919A',
                   fontFamily: "'IBM Plex Mono', monospace",
                   textTransform: 'uppercase',
                   letterSpacing: 0.1,
@@ -91,7 +91,7 @@ function Cover() {
             style={{
               marginTop: 96,
               fontSize: 14,
-              color: '#94A3B8',
+              color: '#88919A',
               fontFamily: "'IBM Plex Mono', monospace",
               textTransform: 'uppercase',
               letterSpacing: 0.1,
@@ -119,13 +119,13 @@ function Cover() {
             style={{
               marginTop: 28,
               fontSize: 18,
-              color: '#CBD5E1',
+              color: '#EEF3F2',
               maxWidth: 780,
               lineHeight: 1.5,
             }}
           >
             The privacy-preserving telephony platform for the Nigerian market: masked phone
-            calls, SMS, push notifications, and call verification, behind a single API.
+            calls and in-call verification, behind a single API.
           </p>
 
           {/* CTAs */}
@@ -140,7 +140,7 @@ function Cover() {
                 padding: '0 22px',
                 borderRadius: 8,
                 background: 'oklch(0.72 0.16 145)',
-                color: '#0B1220',
+                color: '#0E1B2C',
                 fontWeight: 600,
                 fontSize: 14,
                 textDecoration: 'none',
@@ -159,7 +159,7 @@ function Cover() {
                 borderRadius: 8,
                 background: 'transparent',
                 color: 'white',
-                border: '1px solid #334155',
+                border: '1px solid #0E1B2C',
                 fontWeight: 500,
                 fontSize: 14,
                 textDecoration: 'none',
@@ -177,7 +177,7 @@ function Cover() {
                 padding: '0 22px',
                 borderRadius: 8,
                 background: 'transparent',
-                color: '#94A3B8',
+                color: '#88919A',
                 fontFamily: "'IBM Plex Mono', monospace",
                 fontSize: 13,
                 textDecoration: 'none',
@@ -217,7 +217,7 @@ function Cover() {
                 <div
                   style={{
                     fontSize: 12,
-                    color: '#94A3B8',
+                    color: '#88919A',
                     fontFamily: "'IBM Plex Mono', monospace",
                     textTransform: 'uppercase',
                     letterSpacing: 0.08,
@@ -232,7 +232,7 @@ function Cover() {
           <div
             style={{
               fontSize: 11,
-              color: '#64748B',
+              color: '#5B6B7A',
               fontFamily: "'IBM Plex Mono', monospace",
             }}
           >

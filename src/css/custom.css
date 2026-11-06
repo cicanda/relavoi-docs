@@ -1,31 +1,85 @@
 /* Relavoi brand styling for the docs site.
- * Primary uses the deep teal #1B4F72 from the design system; signal-green
- * (#5BC97A) is reserved for accents in dark mode.
+ *
+ * Every value is a brand token or derived from one. The six are:
+ *   Ink #0E1B2C   Relay Teal #0B7A6B   Pulse Teal #2CC5AE
+ *   Proxy Amber #F5A524   Mist #EEF3F2   Slate #5B6B7A
+ *
+ * Light mode takes Relay Teal as the Infima primary: it is the brand colour
+ * and it carries text on white at 5.24:1. Dark mode takes Pulse Teal, which
+ * is 8.01:1 on Ink and is what the guidelines reserve for dark grounds; it is
+ * never used for text on white, where it is only 2.16:1.
  */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap');
+
+/* Self-hosted, latin subsets, 46 KB in total. Sora is variable, so one file
+   carries both the 400 body and the 600 headline weight. The preload for the
+   headline face is in docusaurus.config.ts under headTags. */
+@font-face{font-family:'Sora';font-style:normal;font-weight:400 600;font-display:swap;src:url('/fonts/sora-variable.woff2') format('woff2')}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/ibm-plex-mono-400.woff2') format('woff2')}
+@font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/ibm-plex-mono-500.woff2') format('woff2')}
 
 :root {
-  --ifm-color-primary: #1B4F72;
-  --ifm-color-primary-dark: #184668;
-  --ifm-color-primary-darker: #17425E;
-  --ifm-color-primary-darkest: #11314A;
-  --ifm-color-primary-light: #1F587F;
-  --ifm-color-primary-lighter: #225D87;
-  --ifm-color-primary-lightest: #2C7CB1;
+  --relavoi-ink: #0E1B2C;
+  --relavoi-relay: #0B7A6B;
+  --relavoi-pulse: #2CC5AE;
+  --relavoi-amber: #F5A524;
+  --relavoi-mist: #EEF3F2;
+  --relavoi-slate: #5B6B7A;
+
+  --ifm-color-primary: #0B7A6B;
+  --ifm-color-primary-dark: #0A7466;
+  --ifm-color-primary-darker: #096E60;
+  --ifm-color-primary-darkest: #076458;
+  --ifm-color-primary-light: #33D6C0;
+  --ifm-color-primary-lighter: #DDE4E2;
+  --ifm-color-primary-lightest: #EFF2F1;
+
+  --ifm-color-success: #1F7A43;
+  --ifm-color-danger: #B3261E;
+  --ifm-color-warning: #9A4F11;
+  --ifm-color-info: #1F5FA6;
+
+  --ifm-background-color: #FFFFFF;
+  --ifm-background-surface-color: #F8FAF9;
+  --ifm-font-color-base: #0E1B2C;
+  --ifm-heading-color: #0E1B2C;
+  --ifm-toc-border-color: #ECEDEE;
+  --ifm-hr-border-color: #ECEDEE;
+  --ifm-blockquote-color: #5B6B7A;
+  --ifm-code-background: #EFF2F1;
 
   --ifm-code-font-size: 95%;
-  --ifm-font-family-base: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --ifm-font-family-base: 'Sora', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --ifm-heading-font-family: 'Sora', system-ui, -apple-system, sans-serif;
+  --ifm-heading-font-weight: 600;
+  --ifm-font-weight-bold: 600;
   --ifm-font-family-monospace: 'IBM Plex Mono', SFMono-Regular, Menlo, monospace;
-  --docusaurus-highlighted-code-line-bg: rgba(91, 201, 122, 0.12);
+  --docusaurus-highlighted-code-line-bg: rgba(11, 122, 107, 0.12);
 }
 
 [data-theme='dark'] {
-  --ifm-color-primary: #5BC97A;
-  --ifm-color-primary-dark: #4AAF68;
-  --ifm-color-primary-darker: #3A9456;
-  --ifm-color-primary-darkest: #2A7944;
-  --ifm-color-primary-light: #7AD491;
-  --ifm-color-primary-lighter: #99DFA8;
-  --ifm-color-primary-lightest: #B8EBC0;
-  --docusaurus-highlighted-code-line-bg: rgba(91, 201, 122, 0.15);
+  /* Pulse Teal is the accent on dark grounds, per the guidelines. */
+  --ifm-color-primary: #2CC5AE;
+  --ifm-color-primary-dark: #28B8A3;
+  --ifm-color-primary-darker: #28B8A3;
+  --ifm-color-primary-darkest: #1F8B7D;
+  --ifm-color-primary-light: #2CC5AE;
+  --ifm-color-primary-lighter: #2CC5AE;
+  --ifm-color-primary-lightest: #2CC5AE;
+
+  /* Status tones lightened for an ink ground; all clear AA there. */
+  --ifm-color-success: #8BCFA6;
+  --ifm-color-danger: #D68985;
+  --ifm-color-warning: #DBA980;
+  --ifm-color-info: #86ABD5;
+
+  --ifm-background-color: #0E1B2C;
+  --ifm-background-surface-color: #25303E;
+  --ifm-font-color-base: #EEF3F2;
+  --ifm-heading-color: #FFFFFF;
+  --ifm-toc-border-color: #313D4A;
+  --ifm-hr-border-color: #313D4A;
+  --ifm-blockquote-color: #88919A;
+  --ifm-code-background: #25303E;
+
+  --docusaurus-highlighted-code-line-bg: rgba(44, 197, 174, 0.15);
 }

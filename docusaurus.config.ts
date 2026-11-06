@@ -12,6 +12,20 @@ const config: Config = {
       tagName: 'link',
       attributes: { rel: 'icon', type: 'image/svg+xml', href: '/img/favicon.svg' },
     },
+    // Preload the headline face. Sora is variable, so this one file is both
+    // the 400 body and the 600 headline weight and preloading it covers the
+    // whole page. The two mono weights are not preloaded: they are used for
+    // code and numbers, which are never the first thing painted.
+    {
+      tagName: 'link',
+      attributes: {
+        rel: 'preload',
+        href: '/fonts/sora-variable.woff2',
+        as: 'font',
+        type: 'font/woff2',
+        crossorigin: 'anonymous',
+      },
+    },
   ],
 
   future: { v4: true },
