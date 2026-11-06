@@ -15,7 +15,8 @@
     "typecheck": "tsc",
     "check:copy": "node check-em-dashes.js",
     "lint": "eslint .",
-    "check:sdk-versions": "node check-sdk-versions.mjs"
+    "check:sdk-versions": "node check-sdk-versions.mjs",
+    "check:admonitions": "node check-admonitions.js"
   },
   "dependencies": {
     "@docusaurus/core": "3.10.1",

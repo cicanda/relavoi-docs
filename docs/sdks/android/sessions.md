@@ -12,7 +12,7 @@ All session calls are `suspend` functions. Call them from a coroutine scope, typ
 
 `create` takes named parameters directly. There is no request wrapper class. Only `agentPhone` and `customerPhone` are required; everything else has a default.
 
-:::info Supported numbers
+:::info[Supported numbers]
 Relavoi connects **Nigerian mobile numbers** today: `+234` followed by 10
 digits starting 7, 8 or 9. You can pass `+2349000000001`, `2349000000001`,
 `09000000001` or `9000000001` and the backend normalises it, so there is no
@@ -65,7 +65,7 @@ suspend fun create(
 
 `maxDurationMinutes` is set server-side and returned on the `Session`; it is not a create parameter.
 
-:::note recordingEnabled and consentPrompt
+:::note[recordingEnabled and consentPrompt]
 Neither is a `create` parameter. Recording is not available, so they would
 configure nothing: the API refuses `recordingEnabled: true` with a
 `feature-not-available` problem. Passing either one does not compile.

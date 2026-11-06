@@ -8,7 +8,7 @@ description: Initialize the Relavoi Swift SDK in App.init or AppDelegate, config
 
 The SDK is a process-wide singleton accessed via `Relavoi.shared`. Initialize it once during app launch.
 
-:::warning Do not compile a live secret into the app
+:::warning[Do not compile a live secret into the app]
 An IPA is an archive and `Info.plist` is a file inside it, so anything put
 there can be read back out. From 0.3.0 the SDK takes a token provider instead:
 your backend holds the secret and mints a short-lived token for one user. See
@@ -93,7 +93,7 @@ The SDK persists the short-lived JWT in the iOS Keychain as a device-local gener
 | `enableLogging` | `Bool` | `false` | Verbose `os_log` output. Phone numbers always redacted |
 | `offlineQueueMaxSize` | `Int` | `100` | Maximum offline-queue length; oldest entries drop when exceeded. **The queue is manual, see below** |
 
-:::caution The offline queue is yours to drive
+:::caution[The offline queue is yours to drive]
 `OfflineQueue` is not wired into the SDK's HTTP client. A request that fails
 because the device has no network throws, and nothing is queued for you.
 
@@ -122,7 +122,7 @@ Relavoi.initialize(
 }
 ```
 
-:::warning Initialize first
+:::warning[Initialize first]
 Touching `Relavoi.shared.sessions` before `Relavoi.initialize(...)` traps with a precondition failure. Initialize in `App.init` or `application(_:didFinishLaunchingWithOptions:)`.
 :::
 

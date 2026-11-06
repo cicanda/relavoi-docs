@@ -12,7 +12,7 @@ All session APIs are `Future`-returning and are reached through `Relavoi.instanc
 
 `create` takes named parameters. Only `agentPhone` and `customerPhone` are required; everything else has a default.
 
-:::info Supported numbers
+:::info[Supported numbers]
 Relavoi connects **Nigerian mobile numbers** today: `+234` followed by 10
 digits starting 7, 8 or 9. You can pass `+2349000000001`, `2349000000001`,
 `09000000001` or `9000000001` and the backend normalises it, so there is no
@@ -68,7 +68,7 @@ Future<Session> create({
 });
 ```
 
-:::note recordingEnabled and consentPrompt
+:::note[recordingEnabled and consentPrompt]
 Neither is a `create` parameter. Recording is not available, so they would
 configure nothing: the API refuses `recordingEnabled: true` with a
 `feature-not-available` problem. Passing either one does not compile.
@@ -85,7 +85,7 @@ final session = await Relavoi.instance.sessions.create(
 );
 ```
 
-:::note maxDurationMinutes is server-controlled
+:::note[maxDurationMinutes is server-controlled]
 The hard call-duration cap is enforced by the backend and surfaced on the returned `Session` as `maxDurationMinutes`. It is not a creation parameter. Likewise, if recording is enabled the server requires a consent prompt. That combination is validated server-side.
 :::
 

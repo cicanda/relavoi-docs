@@ -87,7 +87,7 @@ ${timestamp}.${rawBody}
 
 The signature is the hex HMAC-SHA256 of the signing string using your webhook secret as the key, sent as `X-Relavoi-Signature: sha256=<hex>`. The `X-Relavoi-Delivery` header is a stable delivery id (unchanged across retries of the same event). Use it as your idempotency key.
 
-:::warning Reject stale timestamps
+:::warning[Reject stale timestamps]
 Always reject requests where `|now - timestamp| > 300 seconds`. This prevents replay attacks if a signed payload leaks.
 :::
 
@@ -226,6 +226,6 @@ If your endpoint returns anything other than `2xx` within 5 seconds, Relavoi ret
 
 After the fourth attempt the event goes to the dead-letter queue, visible at `GET /v1/webhooks/logs`. You can replay any DLQ event from the dashboard.
 
-:::tip Idempotency
+:::tip[Idempotency]
 Always treat webhook delivery as at-least-once. Use the `X-Relavoi-Delivery` header as your idempotency key. It is stable across retries of the same event.
 :::

@@ -10,7 +10,7 @@ The SDK is a process-wide singleton. Initialize it exactly once in `Application.
 
 ## Basic initialization
 
-:::warning Do not compile a live secret into the app
+:::warning[Do not compile a live secret into the app]
 `BuildConfig` constants land in `classes.dex` as string literals, so anything
 put there can be read out of the APK with `unzip` and `strings`. From 0.3.0 the
 SDK takes a token provider instead: your backend holds the secret and mints a
@@ -98,7 +98,7 @@ For production builds, source the same values from your CI secret manager.
 | `enableLogging` | Boolean | `false` | Verbose Logcat output. Phone numbers always redacted |
 | `offlineQueueMaxSize` | Int | `100` | Max actions buffered in the offline queue before the oldest are dropped. **The queue is manual, see below** |
 
-:::caution The offline queue is yours to drive
+:::caution[The offline queue is yours to drive]
 `OfflineQueue` is not wired into `ApiClient`. A request that fails because the
 device has no network throws `RelavoiException.Network`, and nothing is queued
 for you.
@@ -118,7 +118,7 @@ failed request it was trying to paper over.
 
 The SDK persists the JWT in **Android Keystore-backed EncryptedSharedPreferences**. You do not need to manage tokens yourself; refresh is transparent.
 
-:::warning Initialize before any other call
+:::warning[Initialize before any other call]
 Accessing any subsystem (`Relavoi.sessions`, `Relavoi.events`, `Relavoi.verification`, `Relavoi.push`, `Relavoi.presence`) before `Relavoi.initialize(...)` throws `RelavoiException.NotInitialized`. Use `Relavoi.isInitialized()` to check first if you are unsure.
 :::
 

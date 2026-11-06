@@ -106,6 +106,6 @@ Relavoi.instance.events.disconnect();
 
 Call this on user logout. Combined with `removeAllListeners`, it fully detaches the stream.
 
-:::tip Foreground-only listening
+:::tip[Foreground-only listening]
 If your app does not need events while backgrounded, gate `connect()` / `disconnect()` on the app lifecycle (`WidgetsBindingObserver.didChangeAppLifecycleState`). This saves battery on long sessions.
 :::

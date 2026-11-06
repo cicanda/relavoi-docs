@@ -97,6 +97,6 @@ val hasOverlay = Settings.canDrawOverlays(this)
 
 Useful for a settings screen that shows the user which features are currently degraded.
 
-:::warning Do not ask all at once
+:::warning[Do not ask all at once]
 A wall of permission prompts at launch tanks grant rates. Ask each permission contextually: when the feature it unlocks is about to be used.
 :::

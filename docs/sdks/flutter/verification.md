@@ -94,7 +94,7 @@ class VerificationResult {
 
 Read `verified` first. Use `context` for the banner label when present, falling back to a generic string otherwise.
 
-:::note About `context`
+:::note[About `context`]
 The backend does not always populate the `context` string, so fall back to a generic `"Verified call"` for verified results. Do not hard-code a brand name from the result.
 :::
 
@@ -138,6 +138,6 @@ if (!hasOverlay) {
 }
 ```
 
-:::tip UX guidance
+:::tip[UX guidance]
 Show the green banner only after `verify()` returns `verified: true`. Never assume the call is legitimate just because one is in progress. The red banner has even more value than the green one: customers learn to trust the warning.
 :::

@@ -8,7 +8,7 @@ description: Initialize the Relavoi Flutter SDK once at app startup, configure R
 
 The SDK is a process-wide singleton. Initialize it exactly once, before `runApp`, and await the call. `initialize` is `static` and asynchronous.
 
-:::warning Do not compile a live secret into the app
+:::warning[Do not compile a live secret into the app]
 A `--dart-define` constant ends up in the built binary, so anything put there
 can be read back out. From 0.3.0 the SDK takes a token provider instead: your
 backend holds the secret and mints a short-lived token for one user. See
@@ -89,7 +89,7 @@ if (Relavoi.isInitialized) {
 }
 ```
 
-:::warning Initialize before any other call
+:::warning[Initialize before any other call]
 `Relavoi.instance` asserts if accessed before `Relavoi.initialize(...)` completes. Await initialization in `main()` before touching `sessions`, `events`, `verification`, `push`, or `presence`.
 :::
 

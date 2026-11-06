@@ -99,7 +99,7 @@ each of them is already in a live session with one of the two people in this
 request. A number can carry many sessions at the same time but never the same
 person twice, so this is the point at which another number is genuinely needed.
 
-:::warning Do not retry this on a timer
+:::warning[Do not retry this on a timer]
 It is a `409` and not a `429` on purpose. `429` means you are going too fast,
 and most HTTP client libraries retry it on their own, which here would loop and
 create nothing. This condition does not clear by waiting: it clears when one of
@@ -150,7 +150,7 @@ raises an alert with us. Retry with backoff.
 }
 ```
 
-:::tip Correlation
+:::tip[Correlation]
 Whenever you open a support ticket, include the `instance` value from the error payload. It maps directly to a trace span in our observability stack.
 :::
 

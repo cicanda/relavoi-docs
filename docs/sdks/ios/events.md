@@ -105,6 +105,6 @@ await Relavoi.shared.events.disconnect()
 
 Call this on user logout to tear down the connection and stop reconnect attempts.
 
-:::tip Foreground gating
+:::tip[Foreground gating]
 If you only need events while the app is visible, observe `ScenePhase` and `connect()` / `disconnect()` on `.active` / `.background`. This avoids unnecessary battery drain.
 :::

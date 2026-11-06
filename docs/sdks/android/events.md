@@ -100,6 +100,6 @@ Relavoi.events.disconnect()
 
 Call this on user logout. The SDK also tears down the connection automatically when the process is killed.
 
-:::tip Foreground-only listening
+:::tip[Foreground-only listening]
 If your app does not need events when backgrounded, gate `connect()` on `ProcessLifecycleOwner.get().lifecycle` state. This saves battery on long sessions.
 :::

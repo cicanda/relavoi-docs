@@ -62,7 +62,7 @@ Sync Gradle. The SDK brings in `kotlin-stdlib`, `kotlinx-coroutines-android`,
 `androidx.lifecycle` (`process` and `runtime-ktx`),
 `androidx.security:security-crypto` and `firebase-messaging-ktx` transitively.
 
-:::note Why JitPack
+:::note[Why JitPack]
 Maven Central publishing is held until the first integration customer, so the
 coordinates above are the supported way to install today. JitPack builds the
 public repository on demand at a tag, which means the first build of a new tag
@@ -88,7 +88,7 @@ If your own app posts notifications, add `POST_NOTIFICATIONS` to its manifest, s
 <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 ```
 
-:::warning Runtime permission still required
+:::warning[Runtime permission still required]
 Declaring `READ_PHONE_STATE` in the manifest is necessary but not sufficient. On API 23+ your host app must request it at runtime. See [Permissions](./permissions). Same for `POST_NOTIFICATIONS` on API 33+ and `SYSTEM_ALERT_WINDOW` (for the floating verification bubble).
 :::
 

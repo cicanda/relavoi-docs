@@ -158,7 +158,7 @@ await liveActivity.end(dismissPolicy: .after(.now + 5))
 
 `dismissPolicy` is an `ActivityUIDismissalPolicy`; common values are `.immediate`, `.default`, and `.after(Date)`.
 
-:::tip Brand fidelity
+:::tip[Brand fidelity]
 The activity views use `Color.accentColor` for branding, so set your app's accent color in the Widget Extension's asset catalog and it flows through automatically.
 :::
 

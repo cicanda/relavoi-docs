@@ -36,45 +36,48 @@ design page still render, since both are hand-built rather than themed.
 Not done now because it is a dependency upgrade of the whole site generator and
 has nothing to do with introducing a linter.
 
-## Admonitions render as literal `:::note` text on most pages
+## Resolved 2026-11-06: admonitions rendered as literal `:::note` text
 
-Found on 6 November 2026 while rewriting the call-flow and failover guides.
-
-27 of the 29 pages that use an admonition emit the directive into the HTML as
-ordinary paragraph text, so a reader sees a line reading
+**Cause: Docusaurus 3 moved to MDX 3, and MDX 3 requires the directive label
+in square brackets.**
 
 ```
-:::info Supported numbers
+:::note[Title]      a callout titled "Title"
+:::note             a callout titled "note"
+:::note Title       NOT a directive. Falls through as a paragraph.
 ```
 
-followed by the body and a line reading `:::`, instead of a styled callout.
-This is live on docs.relavoi.com now. It is not new and it is not caused by
-anything in that rewrite; the two pages rewritten that day were converted to
-plain markdown so they render correctly, which is why they are not in the
-count.
+That last line is the Docusaurus 2 form. In MDX 3 the directive name must be
+followed by an optional `[label]`, an optional `{attributes}`, or nothing, so a
+bare word after the name stops the line matching the directive rule entirely.
+Nothing warns, at any log level. The build succeeds, Vercel deploys, and the
+reader gets a line of literal `:::note Title` where the callout should be.
 
-It matters more than cosmetics. The callouts are where the honest
-qualifications live: "Supported numbers", "recordingEnabled and consentPrompt",
-"maxDurationMinutes is server-controlled", "Not built yet". A reader skimming
-sees punctuation noise exactly where the caveat was supposed to catch them.
+Established by a three-case reproduction page: no title rendered, bracketed
+title rendered, bare title did not. It explains every observation that looked
+inconsistent before, including the page with two admonitions where one worked:
+`api-reference/webhooks.md` had `:::danger` with no title, which rendered, and
+`:::info Single webhook URL per tenant`, which did not. The three pages that
+worked were the three whose admonitions had no title.
 
-What was established, so the next person does not repeat it:
+Also explains why `markdown.format: 'mdx'` appeared to "half fix" it. It
+changed nothing about the directive rule; it only brought three pages into MDX
+parsing whose admonitions were already in a form that works.
 
-- Admonitions render on exactly three pages, all under `api-reference`:
-  `webhooks.md`, `devices.md`, `authentication.md`. Everything under `sdks/`
-  and `guides/`, plus `introduction.md`, does not.
-- Setting `markdown.format: 'mdx'` in `docusaurus.config.ts` changes the
-  behaviour but does not fix it: with it, those same three pages gain
-  `theme-admonition` markup and the other 24 stay literal. It was reverted
-  rather than shipped, because a partial change to how every page is parsed is
-  worse than a defect that is written down.
-- Not the cause: hard-wrapped body lines (un-wrapping one made no difference),
-  and the position of the admonition relative to the first code fence
-  (`devices.md` and `authentication.md` both have fences first and still
-  render).
-- Every page is `.md`; there are no `.mdx` sources.
+**Fixed:** 47 admonitions across 26 pages converted to the bracket form. The
+built site now contains zero literal `:::` outside a code block, and 50
+rendered callouts.
 
-Worth an hour with a minimal reproduction: one new page with a single
-`:::note`, built, and bisected against a page that works. Likely somewhere in
-the remark/MDX pipeline or the per-plugin markdown options rather than in the
-content.
+**Guarded:** `check-admonitions.js`, wired into CI as two steps. A source pass
+before the build, which names the file, the line and the fix, and a built pass
+after it, which fails on a literal `:::` in any built page outside a code
+block. The second exists because the first only knows the six names Docusaurus
+ships: a `::::`, a `:::Note` or a future syntax change would slip past it. Both
+were confirmed to fail on the bug before being committed.
+
+What this cost while it was live: the callouts are where the qualifications
+sit. "Supported numbers", "Do not compile a live secret into the app",
+"recordingEnabled and consentPrompt", "Save these now", "Reject stale
+timestamps". A reader skimming met punctuation noise exactly where the warning
+was meant to stop them.
+

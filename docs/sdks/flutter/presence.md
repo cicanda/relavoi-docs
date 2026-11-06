@@ -8,7 +8,7 @@ description: Report device reachability and app foreground state to Relavoi auto
 
 The presence module reports device reachability to Relavoi so the backend knows whether a user is online, backgrounded, or offline.
 
-:::note What presence does today
+:::note[What presence does today]
 It is recorded, and you can read it back with `GET /v1/devices/presence`. Nothing on our side acts on it yet: the call router does not consult it when deciding where to send a call, and the push service does not consult it either. This page used to say the state fed routing and push decisions, which was not true of either.
 
 Report it anyway if it is cheap for you to do. It is useful to you through the API now, and it is what a "call them or notify them" decision will be built on when there is one.
@@ -66,6 +66,6 @@ Future<void> onSignedOut() async {
 }
 ```
 
-:::tip Start once
+:::tip[Start once]
 Call `start` a single time per signed-in session. Calling it again with a different phone is how you switch users; there is no need to restart it on every foreground, as the module already tracks lifecycle transitions on its own.
 :::

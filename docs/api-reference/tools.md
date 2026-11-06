@@ -27,7 +27,7 @@ Three files, all derived from one spec, all served from this site:
 Every other request inherits bearer auth from the collection and reads that
 variable, so once it is set the whole collection works.
 
-:::note The environment file holds no secrets
+:::note[The environment file holds no secrets]
 `accessToken`, `apiKey` and `apiSecret` ship empty and are typed as secrets, so
 Postman masks whatever you paste. Nothing you put in them is saved back to this
 site. Do not commit a filled-in copy to your own repository either: a token

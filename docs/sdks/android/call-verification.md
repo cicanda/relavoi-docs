@@ -50,7 +50,7 @@ class HomeFragment : Fragment() {
 
 The fields available on `VerificationResult` are `verified: Boolean`, `context: String?`, `sessionId: String?`, `proxyNumber: String?`, and `expiresAt: String?`, plus the derived `bannerText: String?`.
 
-:::note About `context`
+:::note[About `context`]
 The backend does not currently populate the `context` string, so `bannerText` returns the generic `"Verified call"` for verified results today. Do not hard-code a brand name from the result.
 :::
 
@@ -71,6 +71,6 @@ if (!Relavoi.verification.hasPhoneStatePermission(requireContext())) {
 }
 ```
 
-:::tip UX guidance
+:::tip[UX guidance]
 Show the green banner only after `verify()` returns `Verified`. Never assume the call is legitimate just because one is in progress. The red banner has even more value than the green one: customers learn to trust the warning.
 :::

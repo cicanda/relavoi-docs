@@ -39,7 +39,7 @@ resolves it to whatever the branch points at that day, so two machines can
 build different code from the same `pubspec.yaml`, and `pubspec.lock` is the
 only record of which. A tag is immutable.
 
-:::note Why not pub.dev
+:::note[Why not pub.dev]
 Publishing is held until the first integration customer, so the version you
 would depend on would be one nobody has used yet. The tag above is the same
 code, resolved the same way, and the move to pub.dev will not change the
@@ -69,7 +69,7 @@ Declare the required permissions in `android/app/src/main/AndroidManifest.xml`, 
 
 `INTERNET` covers all REST and WebSocket traffic. `READ_PHONE_STATE` backs native call detection for the [verification banner](./verification).
 
-:::warning Runtime permission still required
+:::warning[Runtime permission still required]
 Declaring `READ_PHONE_STATE` in the manifest is necessary but not sufficient. On API 23+ your app must also request it at runtime. The SDK exposes `Relavoi.instance.verification.hasPhoneStatePermission()` to check the grant. See [Verification](./verification).
 :::
 
@@ -81,7 +81,7 @@ No extra permissions are needed. Native call detection on iOS uses `CXCallObserv
 platform :ios, '13.0'
 ```
 
-:::note Not 15.0
+:::note[Not 15.0]
 This page said 15.0 until plugin 0.3.2. That is the **native iOS SDK's**
 floor, and this plugin does not depend on it. 13.0 is what the plugin needs:
 Flutter itself requires iOS 13, and so do the three dependencies with a native

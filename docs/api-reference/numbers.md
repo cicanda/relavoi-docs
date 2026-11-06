@@ -80,7 +80,7 @@ curl https://api.relavoi.com/v1/numbers/pool \
 | explanation | Why the limit is the size it is, in one sentence |
 | pendingRequest | Your open request to hold more, or `null` |
 
-:::info This used to be the shared pool
+:::info[This used to be the shared pool]
 Until November 2026 this endpoint returned the pool's `total`, `available`,
 `inUse` and `cooldown` per region. Those figures described Relavoi's capacity
 and other workspaces' activity, not yours: "available: 40" never meant 40 were

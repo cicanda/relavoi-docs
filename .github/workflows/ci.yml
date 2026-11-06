@@ -36,8 +36,24 @@ jobs:
         # when the runner cannot reach GitHub.
         run: npm run check:sdk-versions
 
+      - name: Admonitions use the bracket title form
+        # Cheap and before the build, because the message names the file, the
+        # line and the fix. Docusaurus 3 needs :::note[Title]; the Docusaurus 2
+        # form :::note Title is not a directive and renders as literal text
+        # with nothing warning about it. That shipped on 47 admonitions across
+        # 26 pages.
+        run: npm run check:admonitions -- --source
+
       - name: Build
         run: npm run build
+
+      - name: No admonition leaked into the built HTML
+        # The backstop, after the build. The source pass only knows the six
+        # names Docusaurus ships, so this is what catches a misspelled
+        # directive, a ::::, a :::Note, or a future syntax change that quietly
+        # stops matching. Fails if any built page carries a literal ":::"
+        # outside a code block.
+        run: npm run check:admonitions
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4

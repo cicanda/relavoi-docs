@@ -97,7 +97,7 @@ Updates one or more configuration fields. Only the fields you send are changed. 
 | industry | string \| null | One of the industry codes from [`GET /v1/reference`](./reference.md). A display label such as `Delivery` is also accepted and mapped to its code. Anything else is a `400` |
 | country | string \| null | ISO 3166-1 alpha-2, either case, stored upper case. The accepted set is the `countries` list from [`GET /v1/reference`](./reference.md), which is every country, not only the ones whose numbers we connect |
 
-:::note Recording is not available
+:::note[Recording is not available]
 The recording fields are returned by `GET /config`, because they exist on your
 tenant row, and they are listed above so this reference matches what you will
 actually see. Setting `recordingEnabled` to `true` is refused with `422
@@ -120,7 +120,7 @@ your app put in the session's `metadata` (`orderId`, `order_id` or
 `reference`). A placeholder we cannot fill is replaced with nothing, so do not
 invent your own.
 
-:::caution Nothing is delivered yet
+:::caution[Nothing is delivered yet]
 These three keys are read and applied, which they were not until recently: the
 dashboard wrote them under these names while the service looked for `title`
 and `body`, so every notification used the built-in wording and the enabled

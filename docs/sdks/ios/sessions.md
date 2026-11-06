@@ -35,7 +35,7 @@ func startMaskingSession(agent: String, customer: String, orderId: String) async
 
 The full parameter list is `create(agentPhone:customerPhone:metadata:gracePeriodMinutes:directionMode:)`.
 
-:::note recordingEnabled and consentPrompt
+:::note[recordingEnabled and consentPrompt]
 SDK 0.3.0 removed both from `create`. Recording is not available, so they
 configured nothing: the API refuses `recordingEnabled: true` with a
 `feature-not-available` problem. Passing either one is a compile error now.
@@ -44,7 +44,7 @@ them. See [Not built yet](../../introduction#not-built-yet).
 :::
 
 
-:::info Supported numbers
+:::info[Supported numbers]
 Relavoi connects **Nigerian mobile numbers** today: `+234` followed by 10
 digits starting 7, 8 or 9. You can pass `+2349000000001`, `2349000000001`,
 `09000000001` or `9000000001` and the backend normalises it, so there is no
@@ -63,7 +63,7 @@ let session = try await Relavoi.shared.sessions.create(
 )
 ```
 
-:::note maxDurationMinutes is server-controlled
+:::note[maxDurationMinutes is server-controlled]
 The hard call-duration cap is enforced by the backend and surfaced on the returned `Session` as `maxDurationMinutes`. It is not a creation parameter.
 :::
 

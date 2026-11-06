@@ -68,7 +68,7 @@ struct BannerView: View {
 }
 ```
 
-:::note context is not populated yet
+:::note[context is not populated yet]
 `context` is reserved for a human-readable string like "Your rider is calling", carrying your own brand, but the backend does not populate it today: it is always `nil`. Always provide a fallback label as shown above.
 :::
 
@@ -89,6 +89,6 @@ When `verified == true`, `sessionId` identifies the matched session and `expires
 
 `CXCallObserver` is part of CallKit and Apple intentionally exposes it without a permission prompt. Apple considers passive call-state observation by an app whose user is in an active call to be safe. This is why iOS gets the native, Revolut-style UX: no dialogs, just clean detection. (On Android the equivalent requires the `READ_PHONE_STATE` runtime permission.)
 
-:::tip Pair with Live Activities
+:::tip[Pair with Live Activities]
 Combine verification with [Live Activities](./live-activities) to keep the verified banner pinned to the Lock Screen and Dynamic Island for the duration of the call. End users find it dramatically more reassuring.
 :::

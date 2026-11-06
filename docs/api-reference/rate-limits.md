@@ -73,6 +73,6 @@ This is a separate counter (`tenant:{tenantId}:active_sessions`) atomically incr
 - Spread session creation across the minute rather than bursting at the top of every minute (cron jobs are a common culprit)
 - If you regularly hit the ceiling, upgrade tier or request a temporary lift via your account manager
 
-:::tip Pre-flight check
+:::tip[Pre-flight check]
 Use `X-RateLimit-Remaining` from your previous response to decide whether to fire another request. Treat anything below 10% of your limit as a yellow light.
 :::

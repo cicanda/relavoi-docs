@@ -51,7 +51,7 @@ Response:
 }
 ```
 
-:::tip Prefer the dashboard?
+:::tip[Prefer the dashboard?]
 You can also sign up at [https://app.relavoi.com/signup](https://app.relavoi.com/signup). The dashboard collects the same fields and shows your credentials on the **API Keys** screen after creation.
 :::
 
@@ -63,7 +63,7 @@ The signup response is the only time your `apiSecret` is shown in full. Capture 
 - `RELAVOI_API_SECRET`: the `apiSecret`, which looks like `rs_e028efcc...` (prefix `rs_` followed by 64 hex characters)
 - `RELAVOI_TENANT_ID`: the `tenantId` UUID
 
-:::danger Save these now
+:::danger[Save these now]
 The API key and secret are hashed before they touch our database. We physically cannot show them to you again. If you lose them, you must rotate the pair from the dashboard, which invalidates the old pair immediately.
 :::
 

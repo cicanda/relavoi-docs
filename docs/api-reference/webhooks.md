@@ -11,7 +11,7 @@ There are two distinct webhook flows:
 - **Tenant webhooks** (outbound, us → you): you configure **one** webhook URL for your tenant and a list of event types. We POST events to that URL and sign each delivery with your webhook secret. See [Webhook integration](../guides/webhook-integration).
 - **Carrier callbacks** (inbound, provider → us): the telephony provider posts call events to Relavoi. You do **not** call these endpoints; they are documented under [Carrier callbacks (inbound)](#carrier-callbacks-inbound) so you understand the full picture.
 
-:::info Single webhook URL per tenant
+:::info[Single webhook URL per tenant]
 Relavoi stores **one** webhook URL per tenant, not a collection of webhook subscriptions. Registering again overwrites the previous URL, event list, and secret. There are no per-webhook ids and no `409 conflict` on duplicate URLs.
 :::
 

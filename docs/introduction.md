@@ -118,6 +118,6 @@ The user never installs anything weird. The proxy number is a real Nigerian MSIS
 
 See [Rate Limits](./api-reference/rate-limits) for the full 429 contract and Retry-After semantics.
 
-:::tip Where to next
+:::tip[Where to next]
 New to Relavoi? Start at [Sign up](./getting-started/signup), then run through [Your first session](./getting-started/first-session).
 :::
