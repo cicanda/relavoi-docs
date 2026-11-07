@@ -1,52 +1,60 @@
 import type { ReactNode, CSSProperties } from 'react';
 import Layout from '@theme/Layout';
 
-// Recreated from the design canvas's StyleGuide artboard (Relavoi Frontend.html).
 // Public reference for the design tokens shared across the tenant dashboard,
 // operator console, and mobile SDKs.
+//
+// Every swatch is PAINTED from its CSS variable in src/css/custom.css, so this
+// page cannot drift from the tokens it documents. The hex beside it is display
+// text, and is the same value the variable holds.
 
 interface Swatch {
   name: string;
-  value: string; // CSS color string used to render the chip
-  raw?: string;  // sRGB hex shown alongside oklch values
-  light?: boolean; // if true, render label in dark ink
+  css: string;     // the variable the chip is painted from
+  value: string;   // the same value as display text
+  light?: boolean; // if true, render the label in Ink rather than paper
 }
 
+// Relay Teal carries the brand. Pulse Teal is the accent for dark grounds and
+// is never text on white. Proxy Amber marks the proxy moment and nothing else,
+// which is why the warning tone below is a separate colour.
 const SWATCHES: Swatch[] = [
-  { name: 'ink-900', value: '#0B1220' },
-  { name: 'ink-800', value: '#131C2E' },
-  { name: 'ink-700', value: '#1E293B' },
-  { name: 'ink-500', value: '#64748B' },
-  { name: 'ink-200', value: '#E2E8F0', light: true },
-  { name: 'bone-100', value: '#F5F2EC', light: true },
-  { name: 'paper', value: '#FFFFFF', light: true },
-  { name: 'signal-500', value: 'oklch(0.72 0.16 145)', raw: '#5BC97A' },
-  { name: 'amber-500', value: 'oklch(0.78 0.14 75)', raw: '#E8A857' },
-  { name: 'terra-500', value: 'oklch(0.65 0.16 35)', raw: '#D45A4A' },
-  { name: 'iris-500', value: 'oklch(0.62 0.14 270)', raw: '#7B7BD9' },
+  { name: 'ink-900', css: 'var(--relavoi-ink)', value: '#0E1B2C' },
+  { name: 'ink-800', css: 'var(--relavoi-ink-800)', value: '#25303E' },
+  { name: 'ink-700', css: 'var(--relavoi-ink-700)', value: '#313D4A' },
+  { name: 'ink-500', css: 'var(--relavoi-slate)', value: '#5B6B7A' },
+  { name: 'ink-200', css: 'var(--relavoi-ink-200)', value: '#ECEDEE', light: true },
+  { name: 'mist-100', css: 'var(--relavoi-mist)', value: '#EEF3F2', light: true },
+  { name: 'paper', css: 'var(--relavoi-paper)', value: '#FFFFFF', light: true },
+  { name: 'relay-500', css: 'var(--relavoi-relay)', value: '#0B7A6B' },
+  { name: 'pulse-500', css: 'var(--relavoi-pulse)', value: '#2CC5AE', light: true },
+  { name: 'amber-500', css: 'var(--relavoi-amber)', value: '#F5A524', light: true },
 ];
 
+// Status tones, harmonised with the palette but deliberately distinct from the
+// brand teal, so "active" never reads as "branded". Grace uses the warning
+// tone and not Proxy Amber. Every pair below clears AA on its own tint.
 const STATE_PILLS: Array<{ label: string; bg: string; fg: string; live?: boolean }> = [
-  { label: 'active', bg: 'oklch(0.96 0.04 145)', fg: 'oklch(0.62 0.17 145)', live: true },
-  { label: 'grace · 18m left', bg: 'oklch(0.96 0.04 75)', fg: 'oklch(0.45 0.14 75)' },
-  { label: 'pending', bg: 'oklch(0.96 0.03 270)', fg: 'oklch(0.55 0.14 270)' },
-  { label: 'expired', bg: '#EEF2F7', fg: '#334155' },
-  { label: 'failed', bg: 'oklch(0.96 0.04 35)', fg: 'oklch(0.55 0.17 35)' },
-  { label: 'quarantined', bg: 'oklch(0.96 0.04 35)', fg: 'oklch(0.55 0.17 35)' },
+  { label: 'active', bg: 'var(--relavoi-success-100)', fg: 'var(--relavoi-success-500)', live: true },
+  { label: 'grace · 18m left', bg: 'var(--relavoi-warning-100)', fg: 'var(--relavoi-warning-500)' },
+  { label: 'pending', bg: 'var(--relavoi-info-100)', fg: 'var(--relavoi-info-500)' },
+  { label: 'expired', bg: 'var(--relavoi-ink-200)', fg: 'var(--relavoi-slate)' },
+  { label: 'failed', bg: 'var(--relavoi-danger-100)', fg: 'var(--relavoi-danger-500)' },
+  { label: 'quarantined', bg: 'var(--relavoi-danger-100)', fg: 'var(--relavoi-danger-500)' },
 ];
 
 // Shared style fragments — keeps the JSX readable.
 const eyebrow: CSSProperties = {
   fontSize: 11,
-  fontFamily: "'IBM Plex Mono', monospace",
-  color: '#64748B',
+  fontFamily: 'var(--relavoi-font-mono)',
+  color: 'var(--relavoi-slate)',
   textTransform: 'uppercase',
   letterSpacing: 0.1,
   marginBottom: 14,
 };
 const card: CSSProperties = {
-  background: 'white',
-  border: '1px solid #E2E8F0',
+  background: 'var(--relavoi-paper)',
+  border: '1px solid var(--relavoi-ink-200)',
   borderRadius: 10,
   padding: 24,
 };
@@ -55,7 +63,7 @@ const subheading: CSSProperties = {
   fontWeight: 600,
   letterSpacing: '-0.02em',
   marginTop: 6,
-  color: '#0B1220',
+  color: 'var(--relavoi-ink)',
 };
 
 function PulseDot(): ReactNode {
@@ -85,9 +93,9 @@ function StyleGuide() {
   return (
     <section
       style={{
-        background: '#FAF8F3',
-        color: '#0B1220',
-        fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+        background: 'var(--relavoi-mist)',
+        color: 'var(--relavoi-ink)',
+        fontFamily: 'var(--relavoi-font-sans)',
         padding: '48px max(48px, 8vw)',
         minHeight: '88vh',
       }}
@@ -110,13 +118,13 @@ function StyleGuide() {
         <div
           style={{
             fontSize: 11,
-            fontFamily: "'IBM Plex Mono', monospace",
-            color: '#64748B',
+            fontFamily: 'var(--relavoi-font-mono)',
+            color: 'var(--relavoi-slate)',
             textAlign: 'right',
           }}
         >
-          <div>IBM Plex Sans · IBM Plex Mono</div>
-          <div style={{ marginTop: 4 }}>warm bone surfaces · ink chrome · signal-green accents</div>
+          <div>Sora · IBM Plex Mono</div>
+          <div style={{ marginTop: 4 }}>mist surfaces · ink chrome · relay teal accents</div>
         </div>
       </header>
 
@@ -144,15 +152,15 @@ function StyleGuide() {
             <div
               style={{
                 fontSize: 11,
-                color: '#64748B',
-                fontFamily: "'IBM Plex Mono', monospace",
+                color: 'var(--relavoi-slate)',
+                fontFamily: 'var(--relavoi-font-mono)',
                 marginTop: 4,
               }}
             >
-              Plex Sans · 600 · -2.5%
+              Sora · 600 · -2.5%
             </div>
 
-            <div style={{ height: 1, background: '#EEF2F7', margin: '18px 0' }} />
+            <div style={{ height: 1, background: 'var(--relavoi-ink-200)', margin: '18px 0' }} />
             <div
               style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.02em', lineHeight: 1 }}
             >
@@ -161,15 +169,15 @@ function StyleGuide() {
             <div
               style={{
                 fontSize: 11,
-                color: '#64748B',
-                fontFamily: "'IBM Plex Mono', monospace",
+                color: 'var(--relavoi-slate)',
+                fontFamily: 'var(--relavoi-font-mono)',
                 marginTop: 4,
               }}
             >
-              Plex Sans · 600 · -2%
+              Sora · 600 · -2%
             </div>
 
-            <div style={{ height: 1, background: '#EEF2F7', margin: '18px 0' }} />
+            <div style={{ height: 1, background: 'var(--relavoi-ink-200)', margin: '18px 0' }} />
             <div style={{ fontSize: 14, lineHeight: 1.5 }}>
               Body: used everywhere for paragraph copy, descriptions and form labels. Designed
               for readability at standard interface densities.
@@ -177,23 +185,23 @@ function StyleGuide() {
             <div
               style={{
                 fontSize: 11,
-                color: '#64748B',
-                fontFamily: "'IBM Plex Mono', monospace",
+                color: 'var(--relavoi-slate)',
+                fontFamily: 'var(--relavoi-font-mono)',
                 marginTop: 8,
               }}
             >
-              Plex Sans · 400 · 14/21
+              Sora · 400 · 14/21
             </div>
 
-            <div style={{ height: 1, background: '#EEF2F7', margin: '18px 0' }} />
-            <div style={{ fontFamily: "'IBM Plex Mono', monospace", fontSize: 14 }}>
-              +234 800 042 1183 · sess_7f3a8b2c
+            <div style={{ height: 1, background: 'var(--relavoi-ink-200)', margin: '18px 0' }} />
+            <div style={{ fontFamily: 'var(--relavoi-font-mono)', fontSize: 14 }}>
+              +234 900 000 0100 · sess_7f3a8b2c
             </div>
             <div
               style={{
                 fontSize: 11,
-                color: '#64748B',
-                fontFamily: "'IBM Plex Mono', monospace",
+                color: 'var(--relavoi-slate)',
+                fontFamily: 'var(--relavoi-font-mono)',
                 marginTop: 6,
               }}
             >
@@ -210,12 +218,12 @@ function StyleGuide() {
               <div
                 key={s.name}
                 style={{
-                  background: s.raw ?? s.value,
-                  color: s.light ? '#0B1220' : 'white',
+                  background: s.css,
+                  color: s.light ? 'var(--relavoi-ink)' : 'var(--relavoi-paper)',
                   borderRadius: 8,
                   padding: 14,
                   height: 78,
-                  border: s.name === 'paper' ? '1px solid #E2E8F0' : 'none',
+                  border: s.name === 'paper' ? '1px solid var(--relavoi-ink-200)' : 'none',
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between',
@@ -225,7 +233,7 @@ function StyleGuide() {
                   style={{
                     fontSize: 12,
                     fontWeight: 500,
-                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontFamily: 'var(--relavoi-font-mono)',
                   }}
                 >
                   --{s.name}
@@ -233,7 +241,7 @@ function StyleGuide() {
                 <div
                   style={{
                     fontSize: 10,
-                    fontFamily: "'IBM Plex Mono', monospace",
+                    fontFamily: 'var(--relavoi-font-mono)',
                     opacity: 0.85,
                   }}
                 >
@@ -284,8 +292,8 @@ function StyleGuide() {
           <span
             style={{
               fontSize: 12,
-              color: '#64748B',
-              fontFamily: "'IBM Plex Mono', monospace",
+              color: 'var(--relavoi-slate)',
+              fontFamily: 'var(--relavoi-font-mono)',
             }}
           >
             States echo the lifecycle FSM in the architecture doc.
@@ -301,31 +309,31 @@ function StyleGuide() {
             style={{
               flex: 1,
               minWidth: 240,
-              background: '#FFFFFF',
-              border: '1px solid #E2E8F0',
+              background: 'var(--relavoi-paper)',
+              border: '1px solid var(--relavoi-ink-200)',
               borderRadius: 8,
               padding: 16,
             }}
           >
             <div style={{ fontWeight: 600, marginBottom: 4 }}>Tenant console (light)</div>
-            <div style={{ fontSize: 13, color: '#64748B', lineHeight: 1.5 }}>
-              Bone-100 page background, white cards, ink-200 borders. For builders integrating
-              the platform: warm, document-oriented, low contrast.
+            <div style={{ fontSize: 13, color: 'var(--relavoi-slate)', lineHeight: 1.5 }}>
+              Mist page background, white cards, ink-200 borders. For builders integrating
+              the platform: calm, document-oriented, low contrast.
             </div>
           </div>
           <div
             style={{
               flex: 1,
               minWidth: 240,
-              background: '#0B1220',
-              color: '#E2E8F0',
+              background: 'var(--relavoi-ink)',
+              color: 'var(--relavoi-mist)',
               borderRadius: 8,
               padding: 16,
             }}
           >
             <div style={{ fontWeight: 600, marginBottom: 4 }}>Operator console (dark)</div>
-            <div style={{ fontSize: 13, color: '#94A3B8', lineHeight: 1.5 }}>
-              Ink-900 page, ink-800 chrome and cards, signal-green active states. For Relavoi
+            <div style={{ fontSize: 13, color: 'var(--relavoi-ink-400)', lineHeight: 1.5 }}>
+              Ink-900 page, ink-800 chrome and cards, pulse teal active states. For Relavoi
               operations: NOC-style, high-density, status-first.
             </div>
           </div>

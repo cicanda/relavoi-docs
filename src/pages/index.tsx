@@ -4,9 +4,10 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import useBaseUrl from '@docusaurus/useBaseUrl';
 import Layout from '@theme/Layout';
 
-// Recreated from the design canvas's Cover artboard (Relavoi Frontend.html):
-// ink-900 hero, atmospheric grid, radial signal-green glow, IBM Plex pairing,
-// 4 stat counters in mono. Public marketing-facing landing page for docs.
+// Public marketing-facing landing page for the docs site.
+// Ink hero, atmospheric grid, radial Pulse Teal glow, Sora and IBM Plex Mono.
+// Every colour and font here reads a token from src/css/custom.css; nothing
+// on this page names a colour or a typeface of its own.
 
 const COVER_STATS: Array<{ k: string; v: string }> = [
   { k: '5', v: 'frontend surfaces' },
@@ -19,12 +20,12 @@ function Cover() {
   return (
     <section
       style={{
-        background: '#0E1B2C',
-        color: 'white',
+        background: 'var(--relavoi-ink)',
+        color: 'var(--relavoi-paper)',
         position: 'relative',
         overflow: 'hidden',
         minHeight: '88vh',
-        fontFamily: "'IBM Plex Sans', system-ui, sans-serif",
+        fontFamily: 'var(--relavoi-font-sans)',
       }}
     >
       {/* Atmospheric grid — subtle */}
@@ -34,11 +35,11 @@ function Cover() {
           inset: 0,
           opacity: 0.04,
           backgroundImage:
-            'linear-gradient(#EEF3F2 1px, transparent 1px), linear-gradient(90deg, #EEF3F2 1px, transparent 1px)',
+            'linear-gradient(var(--relavoi-mist) 1px, transparent 1px), linear-gradient(90deg, var(--relavoi-mist) 1px, transparent 1px)',
           backgroundSize: '48px 48px',
         }}
       />
-      {/* Radial signal-green glow */}
+      {/* Radial Pulse Teal glow: an accent on a dark ground, per the guidelines. */}
       <div
         style={{
           position: 'absolute',
@@ -48,7 +49,7 @@ function Cover() {
           height: 520,
           borderRadius: 999,
           background:
-            'radial-gradient(circle, oklch(0.72 0.16 145 / 0.18) 0%, transparent 60%)',
+            'radial-gradient(circle, color-mix(in srgb, var(--relavoi-pulse) 18%, transparent) 0%, transparent 60%)',
         }}
       />
 
@@ -75,8 +76,8 @@ function Cover() {
                 style={{
                   marginTop: 10,
                   fontSize: 11,
-                  color: '#88919A',
-                  fontFamily: "'IBM Plex Mono', monospace",
+                  color: 'var(--relavoi-ink-400)',
+                  fontFamily: 'var(--relavoi-font-mono)',
                   textTransform: 'uppercase',
                   letterSpacing: 0.1,
                 }}
@@ -91,8 +92,8 @@ function Cover() {
             style={{
               marginTop: 96,
               fontSize: 14,
-              color: '#88919A',
-              fontFamily: "'IBM Plex Mono', monospace",
+              color: 'var(--relavoi-ink-400)',
+              fontFamily: 'var(--relavoi-font-mono)',
               textTransform: 'uppercase',
               letterSpacing: 0.1,
             }}
@@ -107,19 +108,19 @@ function Cover() {
               fontWeight: 500,
               letterSpacing: '-0.035em',
               maxWidth: 1100,
-              color: 'white',
+              color: 'var(--relavoi-paper)',
             }}
           >
             The full surface area
             <br />
             of{' '}
-            <span style={{ color: 'oklch(0.72 0.16 145)' }}>Relavoi</span>, documented.
+            <span style={{ color: 'var(--relavoi-pulse)' }}>Relavoi</span>, documented.
           </h1>
           <p
             style={{
               marginTop: 28,
               fontSize: 18,
-              color: '#EEF3F2',
+              color: 'var(--relavoi-mist)',
               maxWidth: 780,
               lineHeight: 1.5,
             }}
@@ -139,8 +140,8 @@ function Cover() {
                 height: 44,
                 padding: '0 22px',
                 borderRadius: 8,
-                background: 'oklch(0.72 0.16 145)',
-                color: '#0E1B2C',
+                background: 'var(--relavoi-pulse)',
+                color: 'var(--relavoi-ink)',
                 fontWeight: 600,
                 fontSize: 14,
                 textDecoration: 'none',
@@ -158,8 +159,8 @@ function Cover() {
                 padding: '0 22px',
                 borderRadius: 8,
                 background: 'transparent',
-                color: 'white',
-                border: '1px solid #0E1B2C',
+                color: 'var(--relavoi-paper)',
+                border: '1px solid var(--relavoi-slate)',
                 fontWeight: 500,
                 fontSize: 14,
                 textDecoration: 'none',
@@ -177,8 +178,8 @@ function Cover() {
                 padding: '0 22px',
                 borderRadius: 8,
                 background: 'transparent',
-                color: '#88919A',
-                fontFamily: "'IBM Plex Mono', monospace",
+                color: 'var(--relavoi-ink-400)',
+                fontFamily: 'var(--relavoi-font-mono)',
                 fontSize: 13,
                 textDecoration: 'none',
                 textTransform: 'uppercase',
@@ -209,7 +210,7 @@ function Cover() {
                     fontSize: 40,
                     fontWeight: 500,
                     letterSpacing: '-0.02em',
-                    fontFamily: "'IBM Plex Sans', sans-serif",
+                    fontFamily: 'var(--relavoi-font-mono)',
                   }}
                 >
                   {s.k}
@@ -217,8 +218,8 @@ function Cover() {
                 <div
                   style={{
                     fontSize: 12,
-                    color: '#88919A',
-                    fontFamily: "'IBM Plex Mono', monospace",
+                    color: 'var(--relavoi-ink-400)',
+                    fontFamily: 'var(--relavoi-font-mono)',
                     textTransform: 'uppercase',
                     letterSpacing: 0.08,
                     marginTop: 4,
@@ -232,8 +233,8 @@ function Cover() {
           <div
             style={{
               fontSize: 11,
-              color: '#5B6B7A',
-              fontFamily: "'IBM Plex Mono', monospace",
+              color: 'var(--relavoi-slate)',
+              fontFamily: 'var(--relavoi-font-mono)',
             }}
           >
             v1.1 architecture · NDPR-aligned · NCC type-approved carrier

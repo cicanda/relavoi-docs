@@ -44,6 +44,12 @@ jobs:
         # 26 pages.
         run: npm run check:admonitions -- --source
 
+      - name: Design tokens
+        # Fails on a colour or a font that is not a brand token. The brand pass
+        # left the old signal green and IBM Plex Sans in this site's homepage
+        # inline styles; it was caught by looking at the page, not by a search.
+        run: npm run check:tokens
+
       - name: Build
         run: npm run build
 

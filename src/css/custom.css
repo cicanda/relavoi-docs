@@ -18,12 +18,47 @@
 @font-face{font-family:'IBM Plex Mono';font-style:normal;font-weight:500;font-display:swap;src:url('/fonts/ibm-plex-mono-500.woff2') format('woff2')}
 
 :root {
+  /* The six brand colours. */
   --relavoi-ink: #0E1B2C;
   --relavoi-relay: #0B7A6B;
   --relavoi-pulse: #2CC5AE;
   --relavoi-amber: #F5A524;
   --relavoi-mist: #EEF3F2;
   --relavoi-slate: #5B6B7A;
+
+  /* The derived scale. Light steps mix toward white in linear light; dark
+     steps mix Ink toward Slate, because mixing Ink toward Mist desaturates
+     into greys lighter than Slate itself and inverts the scale. The pages
+     under src/pages render with inline styles and read these, so every
+     colour the docs site paints is declared in this file. */
+  --relavoi-ink-950: #091321;
+  --relavoi-ink-800: #25303E;
+  --relavoi-ink-700: #313D4A;
+  --relavoi-ink-600: #3E4B59;
+  --relavoi-ink-400: #88919A;
+  --relavoi-ink-300: #D4D6D9;
+  --relavoi-ink-200: #ECEDEE;
+  --relavoi-ink-50: #F8FAF9;
+  --relavoi-paper: #FFFFFF;
+  --relavoi-relay-700: #096E60;
+  --relavoi-relay-200: #DDE4E2;
+  --relavoi-relay-100: #EFF2F1;
+  --relavoi-pulse-600: #28B8A3;
+
+  /* Status tones, kept distinct from the brand teal. Warning is deliberately
+     not Proxy Amber: amber marks the proxy moment and nothing else. */
+  --relavoi-success-500: #1F7A43;
+  --relavoi-success-100: #EFF2F0;
+  --relavoi-danger-500: #B3261E;
+  --relavoi-danger-100: #F6EFEF;
+  --relavoi-warning-500: #9A4F11;
+  --relavoi-warning-100: #F4F0EF;
+  --relavoi-info-500: #1F5FA6;
+  --relavoi-info-100: #EFF1F5;
+
+  /* Type. The pages read these so a font name appears in one file only. */
+  --relavoi-font-sans: 'Sora', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --relavoi-font-mono: 'IBM Plex Mono', SFMono-Regular, Menlo, monospace;
 
   --ifm-color-primary: #0B7A6B;
   --ifm-color-primary-dark: #0A7466;
@@ -48,11 +83,11 @@
   --ifm-code-background: #EFF2F1;
 
   --ifm-code-font-size: 95%;
-  --ifm-font-family-base: 'Sora', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  --ifm-heading-font-family: 'Sora', system-ui, -apple-system, sans-serif;
+  --ifm-font-family-base: var(--relavoi-font-sans);
+  --ifm-heading-font-family: var(--relavoi-font-sans);
   --ifm-heading-font-weight: 600;
   --ifm-font-weight-bold: 600;
-  --ifm-font-family-monospace: 'IBM Plex Mono', SFMono-Regular, Menlo, monospace;
+  --ifm-font-family-monospace: var(--relavoi-font-mono);
   --docusaurus-highlighted-code-line-bg: rgba(11, 122, 107, 0.12);
 }
 
