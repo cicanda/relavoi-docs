@@ -131,7 +131,11 @@ function StyleGuide() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+          // min(360px, 100%), not 360px: a track with a 360px floor cannot
+          // shrink, so at 390px with 48px of side padding the grid was 408px
+          // wide and the page scrolled sideways. The min() lets the track
+          // give way on a narrow screen and changes nothing above it.
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(360px, 100%), 1fr))',
           gap: 32,
         }}
       >
